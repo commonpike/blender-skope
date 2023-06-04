@@ -12,9 +12,8 @@ class KaleidoScopeSettings:
   max_mirrors=8
   num_frames=360
   source_dir = ""
-  thumbs_dir = ""
+  output_dir = ""
   selected_dir = ""
-  stills_dir = ""
   
   def __init__(self,settings):
     self.set(settings)
@@ -22,9 +21,8 @@ class KaleidoScopeSettings:
   def set(self, settings = {}):
     for attr in settings:
       if attr == 'source_dir' : self.source_dir = settings[attr]
-      elif attr == 'thumbs_dir' : self.thumbs_dir = settings[attr]
+      elif attr == 'output_dir' : self.output_dir = settings[attr]
       elif attr == 'selected_dir' : self.selected_dir = settings[attr]
-      elif attr == 'stills_dir' : self.stills_dir = settings[attr]
     
 
 class KaleidoScopeMirror:
@@ -197,8 +195,6 @@ class KaleidoScope:
       self.state.mirrors.append(KaleidoScopeMirror())
     self.state.readScene(bpy.context.scene);
     
-    # RenderSettings.filePath = self.settings.thumbs_dir
-
   # render mode 
   
   def render_stills(self): 
@@ -221,13 +217,20 @@ class KaleidoScope:
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
-    scene.render.filepath = self.settings.stills_dir + '/' + basename
+    scene.render.filepath = self.settings.output_dir + '/' + basename
     print("Rendering",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
     
   # generate mode
   
+  def reset_screen(self):
+    print("Reset screen")
+    self.state.screen.location["y"] = 0
+    self.state.screen.image1 = random.choice(self.images)
+    self.state.screen.image2 = random.choice(self.images)
+    self.state.screen.mix = .5
+
   def prepare_screen(self):
     print("Prepare screen")
     self.state.screen.location["y"] = TWO_PI*KaleidoScopeState.frame_num/self.settings.num_frames
@@ -235,11 +238,38 @@ class KaleidoScope:
     self.state.screen.image2 = random.choice(self.images)
     self.state.screen.mix =random.random()
     
+  def reset_camera(self):
+    print("Reset camera")
+    self.state.camera.location["x"] = 0
+    self.state.camera.location["z"] = 0
+
   def prepare_camera(self):
     print("Prepare camera")
     self.state.camera.location["x"] = (random.random()-.5)*self.state.inner_radius
     self.state.camera.location["z"] = (random.random()-.5)*self.state.inner_radius
     
+  def reset_mirrors(self):
+    print("Reset mirrors")
+    
+    self.state.num_mirrors = random.randint(3, self.settings.max_mirrors)
+    self.state.mirror_shift=KaleidoScopeState.frame_num/self.settings.num_frames
+    
+    for n in range(self.state.num_mirrors):
+        print('show ',n)
+        mirror = self.state.mirrors[n]
+        a=self.state.default_mirror_angle(n)
+        x,z=self.state.default_mirror_center(n)
+        mirror.rotation["y"]=a
+        mirror.location["x"]=x
+        mirror.location["y"]=0
+        mirror.location["z"]=z
+        mirror.hide = False
+        
+    for n in range(self.state.num_mirrors,self.settings.max_mirrors):
+        print('hide ',n)
+        mirror = self.state.mirrors[n]
+        mirror.hide = True
+
   def prepare_mirrors(self):
     print("Prepare mirrors")
     
@@ -278,7 +308,7 @@ class KaleidoScope:
     self.prepare_mirrors()
     self.state.apply(scene)
     if self.state.rendering:
-      scene.render.filepath = self.settings.thumbs_dir+ '/'
+      scene.render.filepath = self.settings.output_dir+ '/'
       print("Generating",scene.render.filepath)
       # TODO scale settings
       # scene.render.resolution_percentage=10

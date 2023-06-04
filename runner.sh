@@ -17,7 +17,7 @@ select mode in edit edit-stills generate-thumbs render-stills; do
                 --render-anim -- \
                 --mode=generate-thumbs \
                 --source-dir ./source/ \
-                --thumbs-dir ./output/thumbs/
+                --output-dir ./output/thumbs/
             break ;;
         render-stills) 
             $BLENDER ./kaleidogen.blend --background \
@@ -25,7 +25,7 @@ select mode in edit edit-stills generate-thumbs render-stills; do
                 --mode=render-stills \
                 --source-dir ./source/ \
                 --selected-dir ./output/selected/ \
-                --stills-dir ./output/stills/
+                --output-dir ./output/stills/
             break ;;
         edit-stills) 
             $BLENDER ./kaleidogen.blend \

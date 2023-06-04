@@ -12,23 +12,20 @@ import kaleidogen
 parser = argparse.ArgumentParser(description='Kaleidoscope runner')
 parser.add_argument('--mode', default='edit')
 parser.add_argument('--source-dir', default=os.path.dirname(bpy.data.filepath)+'/source')
-parser.add_argument('--thumbs-dir', default=os.path.dirname(bpy.data.filepath)+'/output/thumbs')
+parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/output')
 parser.add_argument('--selected-dir', default=os.path.dirname(bpy.data.filepath)+'/output/selected')
-parser.add_argument('--stills-dir', default=os.path.dirname(bpy.data.filepath)+'/output/stills')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
-global scope
 scope = kaleidogen.KaleidoScope(args.source_dir)
-
+bpy.types.Scene.scope = scope
 
 def main():
   
   print("Kaleidogen Runner",args)
   scope.settings.set({
-    'thumbs_dir': args.thumbs_dir,
-    'selected_dir': args.selected_dir,
-    'stills_dir': args.stills_dir
+    'output_dir': args.output_dir,
+    'selected_dir': args.selected_dir
   })
 
   if args.mode == "edit-stills":
