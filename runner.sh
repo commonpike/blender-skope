@@ -9,7 +9,7 @@ mkdir -p ./output/thumbs/
 mkdir -p ./output/selected/
 mkdir -p ./output/stills/
 
-select mode in edit edit-thumbs generate-thumbs render-stills; do
+select mode in edit edit-stills generate-thumbs render-stills; do
     case $mode in
         generate-thumbs) 
             $BLENDER ./kaleidogen.blend --background \
@@ -27,6 +27,11 @@ select mode in edit edit-thumbs generate-thumbs render-stills; do
                 --selected-dir ./output/selected/ \
                 --large-dir ./output/stills/
             break ;;
+        edit-stills) 
+            $BLENDER ./kaleidogen.blend \
+                --python ./runner.py -- \
+                --mode=edit-stills
+            break;;
         *) 
             $BLENDER ./kaleidogen.blend \
                 --python ./runner.py -- \

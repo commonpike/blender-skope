@@ -20,11 +20,11 @@ class KaleidoScopeSettings:
     self.set(settings)
 
   def set(self, settings = {}):
-    for attr, value in settings:
-      if attr == 'source_dir' : self.source_dir = value
-      if attr == 'thumbs_dir' : self.thumbs_dir = value
-      if attr == 'selected_dir' : self.selected_dir = value
-      if attr == 'stills_dir' : self.stills_dir = value
+    for attr in dir(settings):
+      if attr == 'source_dir' : self.source_dir = settings[attr]
+      if attr == 'thumbs_dir' : self.thumbs_dir = settings[attr]
+      if attr == 'selected_dir' : self.selected_dir = settings[attr]
+      if attr == 'stills_dir' : self.stills_dir = settings[attr]
     
 
 class KaleidoScopeMirror:

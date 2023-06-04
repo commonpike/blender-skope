@@ -1,9 +1,9 @@
-# Kaleidoscope
+# Kaleidogen
 
-dont open the belnd file.
-instead, click on `runner.command`
+dont open the .blend file.
+instead, run `runner.sh`
 
-there are 3 modes of running the project:
+there are several modes of running the project:
  - 'edit' (edit the blend file)
  - 'edit-stills' (edit the blend file, but each frame is a random state)
  - 'generate-thumbs' (generate random thumbs) 
