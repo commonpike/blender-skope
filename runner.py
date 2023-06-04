@@ -14,10 +14,11 @@ parser.add_argument('--mode', default='edit')
 parser.add_argument('--source-dir', default=os.path.dirname(bpy.data.filepath)+'/source')
 parser.add_argument('--thumbs-dir', default=os.path.dirname(bpy.data.filepath)+'/output/thumbs')
 parser.add_argument('--selected-dir', default=os.path.dirname(bpy.data.filepath)+'/output/selected')
-parser.add_argument('--stills-dir', default=os.path.dirname(bpy.data.filepath)+'/output/large')
+parser.add_argument('--stills-dir', default=os.path.dirname(bpy.data.filepath)+'/output/stills')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
+global scope
 scope = kaleidogen.KaleidoScope(args.source_dir)
 
 
@@ -49,7 +50,7 @@ def main():
   elif args.mode == "render-stills":
     # this will manually render the files from 
     # the selected dir
-    scope.render()
+    scope.render_stills()
 
   else:
     # just open the file

@@ -25,7 +25,7 @@ select mode in edit edit-stills generate-thumbs render-stills; do
                 --mode=render-stills \
                 --source-dir ./source/ \
                 --selected-dir ./output/selected/ \
-                --large-dir ./output/stills/
+                --stills-dir ./output/stills/
             break ;;
         edit-stills) 
             $BLENDER ./kaleidogen.blend \

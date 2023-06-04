@@ -20,11 +20,11 @@ class KaleidoScopeSettings:
     self.set(settings)
 
   def set(self, settings = {}):
-    for attr in dir(settings):
+    for attr in settings:
       if attr == 'source_dir' : self.source_dir = settings[attr]
-      if attr == 'thumbs_dir' : self.thumbs_dir = settings[attr]
-      if attr == 'selected_dir' : self.selected_dir = settings[attr]
-      if attr == 'stills_dir' : self.stills_dir = settings[attr]
+      elif attr == 'thumbs_dir' : self.thumbs_dir = settings[attr]
+      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
+      elif attr == 'stills_dir' : self.stills_dir = settings[attr]
     
 
 class KaleidoScopeMirror:
@@ -201,7 +201,7 @@ class KaleidoScope:
 
   # render mode 
   
-  def render(self): 
+  def render_stills(self): 
     print("Rendering selected json files ..")
     state_files=glob.glob(self.settings.selected_dir+'/*.json')
     scene = bpy.context.scene
@@ -212,12 +212,12 @@ class KaleidoScope:
     # TODO format settings
     #scene.render.image_settings.file_format = 'PNG' # set output format to .png
     for state_file in state_files:
-      self.render_file(state_file,scene)
+      self.render_still(state_file,scene)
     scene.render.filepath = ofp
     scene.render.resolution_percentage = orp
     print("Rendering done.")
     
-  def render_file(self,file,scene): 
+  def render_still(self,file,scene): 
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
@@ -270,6 +270,7 @@ class KaleidoScope:
   def init_frame(self,scene,x):
     global TWO_PI
     
+    # TODO self.state
     KaleidoScopeState.frame_num = scene.frame_current
   
     self.prepare_screen()
