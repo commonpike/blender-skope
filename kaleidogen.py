@@ -49,10 +49,11 @@ class KaleidoScopeState:
 
   rendering = False;
   frame_num=0
-
-  mirror_wiggle=1/5 # 1 = 100%
   max_mirrors=8
   num_frames=360
+
+  # settings
+  mirror_wiggle=1/5 # 1 = 100%
 
   def __init__(self,source_dir):
     self.source_dir=source_dir
@@ -64,7 +65,17 @@ class KaleidoScopeState:
     self.camera = KaleidoScopeCamera()
     self.screen = KaleidoScopeScreen()
     self.mirrors = []
+
+    KaleidoScopeState.frame_num = bpy.context.scene.frame_current
+    for n in range(self.max_mirrors):
+      self.mirrors.append(KaleidoScopeMirror())
+    self.readScene(bpy.context.scene)
+  
     
+  def set(self, settings = {}):
+    for attr in settings:
+      if attr == 'mirror_wiggle' : KaleidoScopeState.mirror_wiggle = settings[attr]
+
   def readScene(self,scene):
     print("Read state")
     
@@ -93,6 +104,7 @@ class KaleidoScopeState:
       self.mirrors[n].rotation["y"] = mirror.rotation_euler.y
       self.mirrors[n].rotation["z"] = mirror.rotation_euler.z
       self.mirrors[n].hide = mirror.hide_viewport
+
 
   def default_mirror_angle(self,n):
     global TWO_PI
@@ -150,6 +162,7 @@ class KaleidoScopeState:
     
     for n in range(self.num_mirrors):
         mirror = self.mirrors[n]
+        print(n,mirror)
         a=self.default_mirror_angle(n)
         x,z=self.default_mirror_center(n)
         print('show mirror ',mirror,a,x,z)
@@ -210,60 +223,113 @@ class KaleidoScopeState:
       mirror.rotation_euler.y = self.mirrors[n].rotation["y"]
       mirror.rotation_euler.z = self.mirrors[n].rotation["z"]
       mirror.hide_viewport = self.mirrors[n].hide
+      mirror.hide_render = self.mirrors[n].hide
 
     # render
     # https://docs.blender.org/api/blender2.8/bpy.ops.render.html#bpy.ops.render.render
     
+  def setKeyFrame(self,scene,frame):
+    print("setKeyFrame",frame)
+    
+    # screen
+    screen = scene.objects["screen1"]
+    screen.keyframe_insert(data_path="rotation_euler",index= 1, frame=frame)
+    # ...
+    # bpy.data.images['source1'].filepath = self.screen.image1
+    # bpy.data.images['source2'].filepath = self.screen.image2
+    # bpy.data.materials['image'].node_tree.nodes["Mix Shader"].inputs[0].default_value=self.screen.mix
+    
+    # camera
+    camera = scene.objects["camera"]
+    camera.keyframe_insert(data_path="location",index=-1, frame=frame)
+    
+    # mirrors
+    for n in range(self.max_mirrors):
+      mirror = scene.objects["mirror"+str(n+1)]
+      mirror.keyframe_insert(data_path="location",index=-1, frame=frame)
+      mirror.keyframe_insert(data_path="rotation_euler",index=-1, frame=frame)
+      mirror.keyframe_insert(data_path="hide_viewport",index=-1, frame=frame)
+      mirror.keyframe_insert(data_path="hide_render",index=-1, frame=frame)
+          
+    # easing, interpolation ...
+    # https://blender.stackexchange.com/questions/260149/set-keyframe-interpolation-constant-while-setting-a-keyframe-in-blender-python
+    # https://docs.blender.org/api/current/bpy.types.Keyframe.html
+
   def writeJSON(self,file):
     print("Write json", file)
     with open(file, "w") as outfile:
       outfile.write(json.dumps(self,default=vars,indent=4))
-  
+    
   def readJSON(self,file):
     print("Read json", file)
     with open(file, "r") as infile:
       data = json.load(infile)
-      
-      # self
-      self.num_mirrors = data["num_mirrors"]
-      self.inner_radius = data["inner_radius"]
-      self.mirror_shift = data["mirror_shift"]
-      
-      # screen
-      self.screen.location["x"] = data["screen"]["location"]["x"]
-      self.screen.location["y"] = data["screen"]["location"]["y"]
-      self.screen.location["z"] = data["screen"]["location"]["z"]
-      self.screen.rotation["x"] = data["screen"]["rotation"]["x"]
-      self.screen.rotation["y"] = data["screen"]["rotation"]["y"]
-      self.screen.rotation["z"] = data["screen"]["rotation"]["z"]
-      self.screen.image1 = data["screen"]["image1"]
-      self.screen.image2 = data["screen"]["image2"]
-      self.screen.mix = data["screen"]["mix"]
-    
-      # camera
-      self.camera.location["x"] = data["camera"]["location"]["x"]
-      self.camera.location["y"] = data["camera"]["location"]["y"]
-      self.camera.location["z"] = data["camera"]["location"]["z"]
-    
-      # mirrors
-      for n in range(len(data["mirrors"])):
-        self.mirrors[n].location["x"] = data["mirrors"][n]["location"]["x"]
-        self.mirrors[n].location["y"] = data["mirrors"][n]["location"]["y"]
-        self.mirrors[n].location["z"] = data["mirrors"][n]["location"]["z"]
-        self.mirrors[n].rotation["x"] = data["mirrors"][n]["rotation"]["x"]
-        self.mirrors[n].rotation["y"] = data["mirrors"][n]["rotation"]["y"]
-        self.mirrors[n].rotation["z"] = data["mirrors"][n]["rotation"]["z"]
-        self.mirrors[n].hide = data["mirrors"][n]["hide"]
-      
-      #print(json.dumps(self,default=vars,indent=4))
-      
+      self.fromJSON(data)
 
+  def toJSON(self):
+    return json.dumps(self,default=vars,indent=4)
+
+  def fromJSON(self,data):
+    # self
+    self.num_mirrors = data["num_mirrors"]
+    self.inner_radius = data["inner_radius"]
+    self.mirror_shift = data["mirror_shift"]
+    
+    # screen
+    self.screen.location["x"] = data["screen"]["location"]["x"]
+    self.screen.location["y"] = data["screen"]["location"]["y"]
+    self.screen.location["z"] = data["screen"]["location"]["z"]
+    self.screen.rotation["x"] = data["screen"]["rotation"]["x"]
+    self.screen.rotation["y"] = data["screen"]["rotation"]["y"]
+    self.screen.rotation["z"] = data["screen"]["rotation"]["z"]
+    self.screen.image1 = data["screen"]["image1"]
+    self.screen.image2 = data["screen"]["image2"]
+    self.screen.mix = data["screen"]["mix"]
+  
+    # camera
+    self.camera.location["x"] = data["camera"]["location"]["x"]
+    self.camera.location["y"] = data["camera"]["location"]["y"]
+    self.camera.location["z"] = data["camera"]["location"]["z"]
+  
+    # mirrors
+    for n in range(len(data["mirrors"])):
+      self.mirrors[n].location["x"] = data["mirrors"][n]["location"]["x"]
+      self.mirrors[n].location["y"] = data["mirrors"][n]["location"]["y"]
+      self.mirrors[n].location["z"] = data["mirrors"][n]["location"]["z"]
+      self.mirrors[n].rotation["x"] = data["mirrors"][n]["rotation"]["x"]
+      self.mirrors[n].rotation["y"] = data["mirrors"][n]["rotation"]["y"]
+      self.mirrors[n].rotation["z"] = data["mirrors"][n]["rotation"]["z"]
+      self.mirrors[n].hide = data["mirrors"][n]["hide"]
+    
+    #print(json.dumps(self,default=vars,indent=4))
+
+      
 class KaleidoScopeClip:
   
+  # settings 
   interpolation = 'BEZIER'
-  def __init__(self):
-    self.src = KaleidoScopeState()
-    self.dst = KaleidoScopeState()
+  
+  def __init__(self,source_dir):
+    self.start = KaleidoScopeState(source_dir)
+    self.end = KaleidoScopeState(source_dir)
+    
+  def set(self, settings = {}):
+    for attr in settings:
+      if attr == 'interpolation' : KaleidoScopeClip.interpolation = settings[attr]
+
+  def randomizeStart(self,scene):
+    self.start.randomize()
+    self.start.apply(scene)
+    self.start.setKeyFrame(scene,1)
+
+  def randomizeEnd(self,scene):
+    self.end.randomize()
+    self.end.apply(scene)
+    self.end.setKeyFrame(scene,361)
+
+  def randomize(self,scene):
+    self.randomizeStart(scene)
+    self.randomizeEnd(scene)
     
 class KaleidoScope:
   """A kaleidoscope for use in blender"""
@@ -273,31 +339,26 @@ class KaleidoScope:
   
     print("Kaleidoscope init",source_dir)
     
-    self.settings= {
-      'source_dir': source_dir,
-      'output_dir': '',
-      'selected_dir': ''
-    }
+    # settings 
+    self.source_dir = source_dir
+    self.output_dir = ''
+    self.selected_dir = ''
+    
     
     self.state = KaleidoScopeState(source_dir)
-    
-    # TODO move to state
-    KaleidoScopeState.frame_num = bpy.context.scene.frame_current
-    for n in range(self.state.max_mirrors):
-      self.state.mirrors.append(KaleidoScopeMirror())
-    self.state.readScene(bpy.context.scene);
-    
+    self.clip = KaleidoScopeClip(source_dir)
+
   def set(self, settings = {}):
     for attr in settings:
-      if attr == 'source_dir' : self.settings['source_dir'] = settings[attr]
-      elif attr == 'output_dir' : self.settings['output_dir'] = settings[attr]
-      elif attr == 'selected_dir' : self.settings['selected_dir'] = settings[attr]
+      if attr == 'source_dir' : self.source_dir = settings[attr]
+      elif attr == 'output_dir' : self.output_dir = settings[attr]
+      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
 
   # render mode 
   
   def render_stills(self): 
     print("Rendering selected json files ..")
-    state_files=glob.glob(self.settings['selected_dir']+'/*.json')
+    state_files=glob.glob(self.selected_dir+'/*.json')
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
@@ -315,7 +376,7 @@ class KaleidoScope:
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
-    scene.render.filepath = self.settings['output_dir'] + '/' + basename
+    scene.render.filepath = self.output_dir + '/' + basename
     print("Rendering",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
@@ -329,7 +390,7 @@ class KaleidoScope:
     self.state.randomize()
     self.state.apply(scene)
     if self.state.rendering:
-      scene.render.filepath = self.settings['output_dir']+ '/'
+      scene.render.filepath = self.output_dir+ '/'
       print("Generating",scene.render.filepath)
       # TODO scale settings
       # scene.render.resolution_percentage=10
