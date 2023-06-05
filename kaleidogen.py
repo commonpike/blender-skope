@@ -162,7 +162,6 @@ class KaleidoScopeState:
     
     for n in range(self.num_mirrors):
         mirror = self.mirrors[n]
-        print(n,mirror)
         a=self.default_mirror_angle(n)
         x,z=self.default_mirror_center(n)
         print('show mirror ',mirror,a,x,z)
