@@ -23,7 +23,7 @@ bpy.types.Scene.scope = scope
 def main():
   
   print("Kaleidogen Runner",args)
-  scope.settings.set({
+  scope.set({
     'output_dir': args.output_dir,
     'selected_dir': args.selected_dir
   })
@@ -31,14 +31,14 @@ def main():
   if args.mode == "edit-stills":
     # call init_frame on every frame
     bpy.app.handlers.frame_change_pre.clear()
-    bpy.app.handlers.frame_change_pre.append(scope.init_frame)
+    bpy.app.handlers.frame_change_pre.append(scope.apply_random_state)
 
   elif args.mode == "generate-thumbs":
     # the command line specified --background --render-anim,
     # which will render the whole animation
     # call init_frame on every frame
     bpy.app.handlers.frame_change_pre.clear()
-    bpy.app.handlers.frame_change_pre.append(scope.init_frame)
+    bpy.app.handlers.frame_change_pre.append(scope.apply_random_state)
     # call render_* on render events
     bpy.app.handlers.render_init.append(scope.render_init)
     bpy.app.handlers.render_cancel.append(scope.render_cancel)

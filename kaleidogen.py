@@ -5,24 +5,25 @@ import json
 import glob
 import os
 
+PI=math.pi
 TWO_PI=2*math.pi
 
-class KaleidoScopeSettings:
-  mirror_wiggle=1/5 # 1 = 100%
-  max_mirrors=8
-  num_frames=360
-  source_dir = ""
-  output_dir = ""
-  selected_dir = ""
-  
-  def __init__(self,settings):
-    self.set(settings)
-
-  def set(self, settings = {}):
-    for attr in settings:
-      if attr == 'source_dir' : self.source_dir = settings[attr]
-      elif attr == 'output_dir' : self.output_dir = settings[attr]
-      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
+#class KaleidoScopeSettings:
+#  mirror_wiggle=1/5 # 1 = 100%
+#  max_mirrors=8
+#  num_frames=360
+#  source_dir = ""
+#  output_dir = ""
+#  selected_dir = ""
+#  
+#  def __init__(self,settings):
+#    self.set(settings)#
+#
+#  def set(self, settings = {}):
+#    for attr in settings:
+#      if attr == 'source_dir' : self.source_dir = settings[attr]
+#      elif attr == 'output_dir' : self.output_dir = settings[attr]
+#      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
     
 
 class KaleidoScopeMirror:
@@ -45,10 +46,18 @@ class KaleidoScopeScreen:
     self.mix = .5
     
 class KaleidoScopeState:
+
   rendering = False;
   frame_num=0
-  
-  def __init__(self):
+
+  mirror_wiggle=1/5 # 1 = 100%
+  max_mirrors=8
+  num_frames=360
+
+  def __init__(self,source_dir):
+    self.source_dir=source_dir
+    # TODO glob settings
+    self.images=glob.glob(source_dir+'/*.JPG')
     self.num_mirrors=5
     self.inner_radius=4
     self.mirror_shift=.5
@@ -56,7 +65,6 @@ class KaleidoScopeState:
     self.screen = KaleidoScopeScreen()
     self.mirrors = []
     
-  
   def readScene(self,scene):
     print("Read state")
     
@@ -85,8 +93,94 @@ class KaleidoScopeState:
       self.mirrors[n].rotation["y"] = mirror.rotation_euler.y
       self.mirrors[n].rotation["z"] = mirror.rotation_euler.z
       self.mirrors[n].hide = mirror.hide_viewport
+
+  def default_mirror_angle(self,n):
+    global TWO_PI
+    return (n+self.mirror_shift)*TWO_PI/self.num_mirrors - PI
+
+  def default_mirror_center(self,n):
+    a = self.default_mirror_angle(n)
+    x = self.inner_radius*math.sin(a)
+    y = self.inner_radius*math.cos(a)
+    return x,y
     
+  def reset(self,num_mirrors=3):
+    self.reset_screen()
+    self.reset_camera()
+    self.reset_mirrors(num_mirrors,0)
     
+  def randomize(self):
+    self.random_screen()
+    self.random_camera()
+    self.random_mirrors()
+
+  def reset_screen(self):
+    print("Reset screen")
+    self.screen.location["y"] = 0
+    self.screen.image1 = random.choice(self.images)
+    self.screen.image2 = random.choice(self.images)
+    self.screen.mix = .5
+
+  def random_screen(self):
+    global TWO_PI
+    print("Prepare screen")
+    self.reset_screen()
+    # TODO self
+    self.screen.location["y"] = TWO_PI*KaleidoScopeState.frame_num/self.num_frames
+    self.screen.image1 = random.choice(self.images)
+    self.screen.image2 = random.choice(self.images)
+    self.screen.mix =random.random()
+    
+  def reset_camera(self):
+    print("Reset camera")
+    self.camera.location["x"] = 0
+    self.camera.location["z"] = 0
+
+  def random_camera(self):
+    print("Prepare camera")
+    self.reset_camera()
+    self.camera.location["x"] = (random.random()-.5)*self.inner_radius
+    self.camera.location["z"] = (random.random()-.5)*self.inner_radius
+    
+  def reset_mirrors(self, num_mirrors=3, mirror_shift=0):
+    print("Reset mirrors", num_mirrors, mirror_shift)
+    
+    self.num_mirrors = num_mirrors
+    self.mirror_shift= mirror_shift
+    
+    for n in range(self.num_mirrors):
+        mirror = self.mirrors[n]
+        a=self.default_mirror_angle(n)
+        x,z=self.default_mirror_center(n)
+        print('show mirror ',mirror,a,x,z)
+        mirror.rotation["y"]=a
+        mirror.location["x"]=x
+        mirror.location["y"]=0
+        mirror.location["z"]=z
+        mirror.hide=False
+        
+    for n in range(self.num_mirrors,self.max_mirrors):
+        print('hide mirror ',mirror)
+        mirror = self.mirrors[n]
+        mirror.hide=True
+
+  def random_mirrors(self):
+    global TWO_PI
+    
+    print("Prepare mirrors")
+
+    # TODO self.state
+    self.reset_mirrors(
+      random.randint(3, self.max_mirrors),
+      KaleidoScopeState.frame_num/self.num_frames
+    )
+    for n in range(self.num_mirrors):
+        print('wiggle ',n)
+        mirror = self.mirrors[n]
+        mirror.rotation["y"] += random.random()*TWO_PI*self.mirror_wiggle
+  
+  
+
   def apply(self,scene):
     print("Apply state")
     
@@ -106,8 +200,9 @@ class KaleidoScopeState:
     camera.location.z = self.camera.location["z"]
     
     # mirrors
-    for n in range(self.num_mirrors):
+    for n in range(self.max_mirrors):
       mirror = scene.objects["mirror"+str(n+1)]
+      print(mirror,self.mirrors[n])
       mirror.location.x = self.mirrors[n].location["x"]
       mirror.location.y = self.mirrors[n].location["y"]
       mirror.location.z = self.mirrors[n].location["z"]
@@ -115,7 +210,7 @@ class KaleidoScopeState:
       mirror.rotation_euler.y = self.mirrors[n].rotation["y"]
       mirror.rotation_euler.z = self.mirrors[n].rotation["z"]
       mirror.hide_viewport = self.mirrors[n].hide
-    
+
     # render
     # https://docs.blender.org/api/blender2.8/bpy.ops.render.html#bpy.ops.render.render
     
@@ -162,16 +257,13 @@ class KaleidoScopeState:
       
       #print(json.dumps(self,default=vars,indent=4))
       
-  def default_mirror_angle(self,n):
-    global TWO_PI
-    return (n+self.mirror_shift)*TWO_PI/self.num_mirrors
 
-  def default_mirror_center(self,n):
-    a = self.default_mirror_angle(n)
-    x = self.inner_radius*math.sin(a)
-    y = self.inner_radius*math.cos(a)
-    return x,y
-
+class KaleidoScopeClip:
+  
+  interpolation = 'BEZIER'
+  def __init__(self):
+    self.src = KaleidoScopeState()
+    self.dst = KaleidoScopeState()
     
 class KaleidoScope:
   """A kaleidoscope for use in blender"""
@@ -181,25 +273,31 @@ class KaleidoScope:
   
     print("Kaleidoscope init",source_dir)
     
-    # TODO glob settings
-    self.images=glob.glob(source_dir+'/*.JPG')
-    self.settings= KaleidoScopeSettings({
-      source_dir: source_dir
-    })
+    self.settings= {
+      'source_dir': source_dir,
+      'output_dir': '',
+      'selected_dir': ''
+    }
     
-    self.state = KaleidoScopeState()
+    self.state = KaleidoScopeState(source_dir)
     
     # TODO move to state
     KaleidoScopeState.frame_num = bpy.context.scene.frame_current
-    for n in range(self.settings.max_mirrors):
+    for n in range(self.state.max_mirrors):
       self.state.mirrors.append(KaleidoScopeMirror())
     self.state.readScene(bpy.context.scene);
     
+  def set(self, settings = {}):
+    for attr in settings:
+      if attr == 'source_dir' : self.settings['source_dir'] = settings[attr]
+      elif attr == 'output_dir' : self.settings['output_dir'] = settings[attr]
+      elif attr == 'selected_dir' : self.settings['selected_dir'] = settings[attr]
+
   # render mode 
   
   def render_stills(self): 
     print("Rendering selected json files ..")
-    state_files=glob.glob(self.settings.selected_dir+'/*.json')
+    state_files=glob.glob(self.settings['selected_dir']+'/*.json')
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
@@ -217,98 +315,21 @@ class KaleidoScope:
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
-    scene.render.filepath = self.settings.output_dir + '/' + basename
+    scene.render.filepath = self.settings['output_dir'] + '/' + basename
     print("Rendering",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
     
   # generate mode
   
-  def reset_screen(self):
-    print("Reset screen")
-    self.state.screen.location["y"] = 0
-    self.state.screen.image1 = random.choice(self.images)
-    self.state.screen.image2 = random.choice(self.images)
-    self.state.screen.mix = .5
-
-  def prepare_screen(self):
-    print("Prepare screen")
-    self.state.screen.location["y"] = TWO_PI*KaleidoScopeState.frame_num/self.settings.num_frames
-    self.state.screen.image1 = random.choice(self.images)
-    self.state.screen.image2 = random.choice(self.images)
-    self.state.screen.mix =random.random()
-    
-  def reset_camera(self):
-    print("Reset camera")
-    self.state.camera.location["x"] = 0
-    self.state.camera.location["z"] = 0
-
-  def prepare_camera(self):
-    print("Prepare camera")
-    self.state.camera.location["x"] = (random.random()-.5)*self.state.inner_radius
-    self.state.camera.location["z"] = (random.random()-.5)*self.state.inner_radius
-    
-  def reset_mirrors(self):
-    print("Reset mirrors")
-    
-    self.state.num_mirrors = random.randint(3, self.settings.max_mirrors)
-    self.state.mirror_shift=KaleidoScopeState.frame_num/self.settings.num_frames
-    
-    for n in range(self.state.num_mirrors):
-        print('show ',n)
-        mirror = self.state.mirrors[n]
-        a=self.state.default_mirror_angle(n)
-        x,z=self.state.default_mirror_center(n)
-        mirror.rotation["y"]=a
-        mirror.location["x"]=x
-        mirror.location["y"]=0
-        mirror.location["z"]=z
-        mirror.hide = False
-        
-    for n in range(self.state.num_mirrors,self.settings.max_mirrors):
-        print('hide ',n)
-        mirror = self.state.mirrors[n]
-        mirror.hide = True
-
-  def prepare_mirrors(self):
-    print("Prepare mirrors")
-    
-    self.state.num_mirrors = random.randint(3, self.settings.max_mirrors)
-    self.state.mirror_shift=KaleidoScopeState.frame_num/self.settings.num_frames
-    
-    for n in range(self.state.num_mirrors):
-        print('show ',n)
-        mirror = self.state.mirrors[n]
-        a=self.state.default_mirror_angle(n)
-        x,z=self.state.default_mirror_center(n)
-        mirror.rotation["y"]=a
-        mirror.location["x"]=x
-        mirror.location["y"]=0
-        mirror.location["z"]=z
-        mirror.hide = False
-        
-    for n in range(self.state.num_mirrors,self.settings.max_mirrors):
-        print('hide ',n)
-        mirror = self.state.mirrors[n]
-        mirror.hide = True
-
-    for n in range(self.state.num_mirrors):
-        print('wiggle ',n)
-        mirror = self.state.mirrors[n]
-        mirror.rotation["y"] += random.random()*TWO_PI*self.settings.mirror_wiggle
-  
-  def init_frame(self,scene,x):
-    global TWO_PI
+  def apply_random_state(self,scene,x=0):
     
     # TODO self.state
     KaleidoScopeState.frame_num = scene.frame_current
-  
-    self.prepare_screen()
-    self.prepare_camera()
-    self.prepare_mirrors()
+    self.state.randomize()
     self.state.apply(scene)
     if self.state.rendering:
-      scene.render.filepath = self.settings.output_dir+ '/'
+      scene.render.filepath = self.settings['output_dir']+ '/'
       print("Generating",scene.render.filepath)
       # TODO scale settings
       # scene.render.resolution_percentage=10
