@@ -9,24 +9,6 @@ import os
 PI=math.pi
 TWO_PI=2*math.pi
 
-#class KaleidoScopeSettings:
-#  mirror_wiggle=1/5 # 1 = 100%
-#  max_mirrors=8
-#  num_frames=360
-#  source_dir = ""
-#  output_dir = ""
-#  selected_dir = ""
-#  
-#  def __init__(self,settings):
-#    self.set(settings)#
-#
-#  def set(self, settings = {}):
-#    for attr in settings:
-#      if attr == 'source_dir' : self.source_dir = settings[attr]
-#      elif attr == 'output_dir' : self.output_dir = settings[attr]
-#      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
-    
-
 class KaleidoScopeMirror:
   def __init__(self):
     self.location = {"x":0, "y":0, "z":0 }
@@ -50,7 +32,7 @@ class KaleidoScopeScreen:
 class KaleidoScopeState:
 
   frame_num=0
-  max_mirrors=8
+  max_mirros=8
   num_frames=360
   src_globs=['*.JPG','*.PNG']
 
@@ -71,7 +53,8 @@ class KaleidoScopeState:
     self.mirrors = []
 
     KaleidoScopeState.frame_num = bpy.context.scene.frame_current
-    for n in range(self.max_mirrors):
+    
+    for n in range(KaleidoScopeState.max_mirrors):
       self.mirrors.append(KaleidoScopeMirror())
     self.readScene(bpy.context.scene)
   
@@ -114,7 +97,6 @@ class KaleidoScopeState:
       self.mirrors[n].rotation["y"] = mirror.rotation_euler.y
       self.mirrors[n].rotation["z"] = mirror.rotation_euler.z
       self.mirrors[n].hide = mirror.hide_viewport
-
 
   def default_mirror_angle(self,n):
     global TWO_PI
@@ -185,7 +167,7 @@ class KaleidoScopeState:
         mirror.location["z"]=z
         mirror.hide=False
         
-    for n in range(self.num_mirrors,self.max_mirrors):
+    for n in range(self.num_mirrors,len(self.mirrors)):
         print('hide mirror ',mirror)
         mirror = self.mirrors[n]
         mirror.hide=True
@@ -196,7 +178,7 @@ class KaleidoScopeState:
     print("Prepare mirrors")
 
     self.reset_mirrors(
-      random.randint(3, KaleidoScopeState.max_mirrors),
+      random.randint(3, len(self.mirrors)),
       KaleidoScopeState.frame_num/KaleidoScopeState.num_frames
     )
     for n in range(self.num_mirrors):
@@ -265,8 +247,8 @@ class KaleidoScopeState:
     camera.keyframe_insert(data_path="location",index=-1, frame=frame)
     
     # mirrors
-    for n in range(self.max_mirrors):
-      mirror = scene.objects["mirror"+str(n+1)]
+    mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
+    for mirror in mirrors:
       mirror.keyframe_insert(data_path="location",index=-1, frame=frame)
       mirror.keyframe_insert(data_path="rotation_euler",index=-1, frame=frame)
       mirror.keyframe_insert(data_path="hide_viewport",index=-1, frame=frame)
@@ -380,13 +362,14 @@ class KaleidoScope:
     KaleidoScopeState.num_frames = scene.frame_end - scene.frame_start
     mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
     KaleidoScopeState.max_mirrors = len(mirrors)
-    
+
     # current state
     self.state = KaleidoScopeState(source_dir)
 
     # current clip
     self.clip = KaleidoScopeClip(source_dir)
 
+    self.init_scene(scene)
 
   def set(self, settings = {}):
     for attr in settings:
@@ -397,6 +380,26 @@ class KaleidoScope:
       elif attr == 'thumb_scale' : self.thumb_scale = settings[attr]
       elif attr == 'large_scale' : self.large_scale = settings[attr]
       elif attr == 'image_format' : self.image_format = settings[attr]
+
+  def init_scene(self, scene):
+
+    # screen
+    screen = scene.objects["screen1"]
+    screen.location.y = 10
+    
+    #mirrors
+    mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
+    for mirror in mirrors:
+      mirror.location.y = 0
+      mirror.scale.y = 10
+    
+    # radius
+    radius = scene.objects["radius"]
+    radius.location.y = -10
+    radius.scale.x = self.state.inner_radius
+    radius.scale.y = self.state.inner_radius
+
+
 
   # render mode 
   
