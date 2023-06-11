@@ -1,6 +1,7 @@
 import bpy
 import math
 import random
+import fnmatch
 import json
 import glob
 import os
@@ -41,27 +42,30 @@ class KaleidoScopeScreen:
   def __init__(self):
     self.rotation = {"x":0, "y":0, "z":0 }
     self.location = {"x":0, "y":0, "z":0 }
+    self.scale = {"x":0, "y":0 }
     self.image1 = ""
     self.image2 = ""
     self.mix = .5
     
 class KaleidoScopeState:
 
-  rendering = False;
   frame_num=0
   max_mirrors=8
   num_frames=360
-
-  # settings
-  mirror_wiggle=1/5 # 1 = 100%
+  src_globs=['*.JPG','*.PNG']
 
   def __init__(self,source_dir):
     self.source_dir=source_dir
-    # TODO glob settings
-    self.images=glob.glob(source_dir+'/*.JPG')
+    self.images = []
+    for pattern in self.src_globs:
+      self.images.extend(glob.glob(source_dir+'/'+pattern.upper()))
+      self.images.extend(glob.glob(source_dir+'/'+pattern.lower()))
+    #print(self.images)
     self.num_mirrors=5
     self.inner_radius=4
     self.mirror_shift=.5
+    self.mirror_wiggle=1/5 # 1 = 100%
+    self.screen_scale=60
     self.camera = KaleidoScopeCamera()
     self.screen = KaleidoScopeScreen()
     self.mirrors = []
@@ -74,7 +78,11 @@ class KaleidoScopeState:
     
   def set(self, settings = {}):
     for attr in settings:
-      if attr == 'mirror_wiggle' : KaleidoScopeState.mirror_wiggle = settings[attr]
+      if attr == 'num_mirrors' : self.num_mirrors = settings[attr]
+      if attr == 'inner_radius' : self.inner_radius = settings[attr]
+      if attr == 'mirror_shift' : self.mirror_shift = settings[attr]
+      if attr == 'mirror_wiggle' : self.mirror_wiggle = settings[attr]
+      if attr == 'screen_scale' : self.screen_scale = settings[attr]
 
   def readScene(self,scene):
     print("Read state")
@@ -87,6 +95,8 @@ class KaleidoScopeState:
     self.screen.rotation["x"] = screen.rotation_euler.x
     self.screen.rotation["y"] = screen.rotation_euler.y
     self.screen.rotation["z"] = screen.rotation_euler.z
+    self.screen.scale["x"] = screen.scale[0]
+    self.screen.scale["y"] = screen.scale[1]
     
     # camera
     camera = scene.objects["camera"]
@@ -128,7 +138,9 @@ class KaleidoScopeState:
 
   def reset_screen(self):
     print("Reset screen")
-    self.screen.location["y"] = 0
+    self.screen.rotation["y"] = 0
+    self.screen.scale["x"] = self.screen_scale / 2
+    self.screen.scale["y"] = self.screen_scale / 2
     self.screen.image1 = random.choice(self.images)
     self.screen.image2 = random.choice(self.images)
     self.screen.mix = .5
@@ -137,8 +149,10 @@ class KaleidoScopeState:
     global TWO_PI
     print("Prepare screen")
     self.reset_screen()
-    # TODO self
-    self.screen.location["y"] = TWO_PI*KaleidoScopeState.frame_num/self.num_frames
+    self.screen.rotation["y"] = TWO_PI*KaleidoScopeState.frame_num/KaleidoScopeState.num_frames
+    scale = 2 * self.inner_radius + random.random() * self.screen_scale
+    self.screen.scale["x"] = scale
+    self.screen.scale["y"] = scale
     self.screen.image1 = random.choice(self.images)
     self.screen.image2 = random.choice(self.images)
     self.screen.mix =random.random()
@@ -164,7 +178,7 @@ class KaleidoScopeState:
         mirror = self.mirrors[n]
         a=self.default_mirror_angle(n)
         x,z=self.default_mirror_center(n)
-        print('show mirror ',mirror,a,x,z)
+        #print('show mirror ',mirror,a,x,z)
         mirror.rotation["y"]=a
         mirror.location["x"]=x
         mirror.location["y"]=0
@@ -181,10 +195,9 @@ class KaleidoScopeState:
     
     print("Prepare mirrors")
 
-    # TODO self.state
     self.reset_mirrors(
-      random.randint(3, self.max_mirrors),
-      KaleidoScopeState.frame_num/self.num_frames
+      random.randint(3, KaleidoScopeState.max_mirrors),
+      KaleidoScopeState.frame_num/KaleidoScopeState.num_frames
     )
     for n in range(self.num_mirrors):
         print('wiggle ',n)
@@ -201,6 +214,11 @@ class KaleidoScopeState:
     screen.rotation_euler.x = self.screen.rotation["x"]
     screen.rotation_euler.y = self.screen.rotation["y"]
     screen.rotation_euler.z = self.screen.rotation["z"]
+    screen.location.x = self.screen.location["x"]
+    screen.location.y = self.screen.location["y"]
+    screen.location.z = self.screen.location["z"]
+    screen.scale[0] = self.screen.scale["x"]
+    screen.scale[1] = self.screen.scale["y"]
     bpy.data.images['source1'].filepath = self.screen.image1
     bpy.data.images['source2'].filepath = self.screen.image2
     bpy.data.materials['image'].node_tree.nodes["Mix Shader"].inputs[0].default_value=self.screen.mix
@@ -214,7 +232,7 @@ class KaleidoScopeState:
     # mirrors
     for n in range(self.max_mirrors):
       mirror = scene.objects["mirror"+str(n+1)]
-      print(mirror,self.mirrors[n])
+      #print(mirror,self.mirrors[n])
       mirror.location.x = self.mirrors[n].location["x"]
       mirror.location.y = self.mirrors[n].location["y"]
       mirror.location.z = self.mirrors[n].location["z"]
@@ -232,7 +250,11 @@ class KaleidoScopeState:
     
     # screen
     screen = scene.objects["screen1"]
-    screen.keyframe_insert(data_path="rotation_euler",index= 1, frame=frame)
+    screen.keyframe_insert(data_path="rotation_euler",index=-1, frame=frame)
+    screen.keyframe_insert(data_path="location",index= -1, frame=frame)
+    screen.keyframe_insert(data_path="scale",index= -1, frame=frame)
+    
+    # TODO images
     # ...
     # bpy.data.images['source1'].filepath = self.screen.image1
     # bpy.data.images['source2'].filepath = self.screen.image2
@@ -250,9 +272,10 @@ class KaleidoScopeState:
       mirror.keyframe_insert(data_path="hide_viewport",index=-1, frame=frame)
       mirror.keyframe_insert(data_path="hide_render",index=-1, frame=frame)
           
-    # easing, interpolation ...
+    # TODO easing, interpolation ...
     # https://blender.stackexchange.com/questions/260149/set-keyframe-interpolation-constant-while-setting-a-keyframe-in-blender-python
     # https://docs.blender.org/api/current/bpy.types.Keyframe.html
+
 
   def writeJSON(self,file):
     print("Write json", file)
@@ -305,7 +328,6 @@ class KaleidoScopeState:
       
 class KaleidoScopeClip:
   
-  # settings 
   interpolation = 'BEZIER'
   
   def __init__(self,source_dir):
@@ -319,16 +341,22 @@ class KaleidoScopeClip:
   def randomizeStart(self,scene):
     self.start.randomize()
     self.start.apply(scene)
-    self.start.setKeyFrame(scene,1)
+    self.start.setKeyFrame(scene,scene.frame_start)
 
   def randomizeEnd(self,scene):
     self.end.randomize()
     self.end.apply(scene)
-    self.end.setKeyFrame(scene,361)
+    self.end.setKeyFrame(scene,scene.frame_end)
 
   def randomize(self,scene):
     self.randomizeStart(scene)
     self.randomizeEnd(scene)
+
+  def reset(self,scene):
+    self.start.readScene(scene)
+    self.start.setKeyFrame(scene,scene.frame_start)
+    self.start.readScene(scene)
+    self.start.setKeyFrame(scene,scene.frame_end)
     
 class KaleidoScope:
   """A kaleidoscope for use in blender"""
@@ -342,16 +370,33 @@ class KaleidoScope:
     self.source_dir = source_dir
     self.output_dir = ''
     self.selected_dir = ''
+    self.rendering = False
+    self.thumb_scale = 10
+    self.large_scale = 200
+    self.image_format = 'PNG'
+
+    # init state class vars
+    scene = bpy.context.scene
+    KaleidoScopeState.num_frames = scene.frame_end - scene.frame_start
+    mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
+    KaleidoScopeState.max_mirrors = len(mirrors)
     
-    
+    # current state
     self.state = KaleidoScopeState(source_dir)
+
+    # current clip
     self.clip = KaleidoScopeClip(source_dir)
+
 
   def set(self, settings = {}):
     for attr in settings:
       if attr == 'source_dir' : self.source_dir = settings[attr]
       elif attr == 'output_dir' : self.output_dir = settings[attr]
       elif attr == 'selected_dir' : self.selected_dir = settings[attr]
+      elif attr == 'rendering' : self.rendering = settings[attr]
+      elif attr == 'thumb_scale' : self.thumb_scale = settings[attr]
+      elif attr == 'large_scale' : self.large_scale = settings[attr]
+      elif attr == 'image_format' : self.image_format = settings[attr]
 
   # render mode 
   
@@ -361,10 +406,8 @@ class KaleidoScope:
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
-    # TODO scale settings
-    scene.render.resolution_percentage=200
-    # TODO format settings
-    #scene.render.image_settings.file_format = 'PNG' # set output format to .png
+    scene.render.resolution_percentage = self.large_scale
+    scene.render.image_settings.file_format = self.image_format
     for state_file in state_files:
       self.render_still(state_file,scene)
     scene.render.filepath = ofp
@@ -384,27 +427,25 @@ class KaleidoScope:
   
   def apply_random_state(self,scene,x=0):
     
-    # TODO self.state
     KaleidoScopeState.frame_num = scene.frame_current
     self.state.randomize()
     self.state.apply(scene)
-    if self.state.rendering:
+    if self.rendering:
       scene.render.filepath = self.output_dir+ '/'
       print("Generating",scene.render.filepath)
-      # TODO scale settings
-      # scene.render.resolution_percentage=10
+      scene.render.resolution_percentage = self.thumb_scale
       filename = str(scene.frame_current).zfill(4);
       self.state.writeJSON(scene.render.filepath+filename +'.json')
         
   def render_init(self,scene,x):
     print('Rendering started');
-    self.state.rendering = True
+    self.rendering = True
 
   def render_cancel(self,scene,x):
     print('Rendering canceled');
-    self.state.rendering = False
+    self.rendering = False
       
   def render_complete(self,scene,x):
     print('Rendering complete');
-    self.state.rendering = False
+    self.rendering = False
   
