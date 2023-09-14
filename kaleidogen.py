@@ -285,6 +285,8 @@ class KaleidoScopeState:
     self.screen.location["z"] = data["screen"]["location"]["z"]
     self.screen.rotation["x"] = data["screen"]["rotation"]["x"]
     self.screen.rotation["y"] = data["screen"]["rotation"]["y"]
+    self.screen.scale["x"] = data["screen"]["scale"]["x"]
+    self.screen.scale["y"] = data["screen"]["scale"]["y"]
     self.screen.rotation["z"] = data["screen"]["rotation"]["z"]
     self.screen.image1 = data["screen"]["image1"]
     self.screen.image2 = data["screen"]["image2"]
