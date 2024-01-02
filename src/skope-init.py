@@ -7,22 +7,22 @@ blend_dir = os.path.dirname(bpy.data.filepath)
 if blend_dir not in sys.path:
    sys.path.append(blend_dir)
 
-import kaleidogen
+import skope
 
-parser = argparse.ArgumentParser(description='Kaleidoscope runner')
+parser = argparse.ArgumentParser(description='Skope runner')
 parser.add_argument('--mode', default='edit')
-parser.add_argument('--source-dir', default=os.path.dirname(bpy.data.filepath)+'/source')
-parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/output')
-parser.add_argument('--selected-dir', default=os.path.dirname(bpy.data.filepath)+'/output/selected')
+parser.add_argument('--source-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/images')
+parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/output')
+parser.add_argument('--selected-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/states')
 
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
-scope = kaleidogen.KaleidoScope(args.source_dir)
+scope = skope.KaleidoScope(args.source_dir)
 bpy.types.Scene.scope = scope
 
 def main():
   
-  print("Kaleidogen Runner",args)
+  print("Skope Runner",args)
   scope.set({
     'output_dir': args.output_dir,
     'selected_dir': args.selected_dir
