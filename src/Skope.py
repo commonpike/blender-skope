@@ -5,6 +5,7 @@ import os
 
 
 from SkopeState import SkopeState
+from SkopeMirrors import SkopeMirrors
 from SkopeClip import SkopeClip
 
 
@@ -29,13 +30,13 @@ class Skope:
     scene = bpy.context.scene
     SkopeState.num_frames = scene.frame_end - scene.frame_start
     mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
-    SkopeState.max_mirrors = len(mirrors)
+    SkopeMirrors.max_mirrors = len(mirrors)
 
     # current state
     self.state = SkopeState(source_dir)
 
     # current clip
-    self.clip = SkopeClip(source_dir)
+    # self.clip = SkopeClip(source_dir)
 
     self.init_scene(scene)
 
@@ -64,8 +65,8 @@ class Skope:
     # radius
     radius = scene.objects["radius"]
     radius.location.y = -10
-    radius.scale.x = self.state.inner_radius
-    radius.scale.y = self.state.inner_radius
+    radius.scale.x = self.state.mirrors.inner_radius
+    radius.scale.y = self.state.mirrors.inner_radius
 
 
 
@@ -99,7 +100,7 @@ class Skope:
   def apply_random_state(self,scene,x=0):
     
     SkopeState.frame_num = scene.frame_current
-    self.state.randomize()
+    self.state.random()
     self.state.apply(scene)
     if self.rendering:
       scene.render.filepath = self.output_dir+ '/'
