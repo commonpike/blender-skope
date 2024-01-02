@@ -1,16 +1,16 @@
-from KaleidoScopeState import KaleidoScopeState
+from SkopeState import SkopeState
 
-class KaleidoScopeClip:
+class SkopeClip:
   
   interpolation = 'BEZIER'
   
   def __init__(self,source_dir):
-    self.start = KaleidoScopeState(source_dir)
-    self.end = KaleidoScopeState(source_dir)
+    self.start = SkopeState(source_dir)
+    self.end = SkopeState(source_dir)
     
   def set(self, settings = {}):
     for attr in settings:
-      if attr == 'interpolation' : KaleidoScopeClip.interpolation = settings[attr]
+      if attr == 'interpolation' : SkopeClip.interpolation = settings[attr]
 
   def randomizeStart(self,scene):
     self.start.randomize()

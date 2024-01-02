@@ -5,14 +5,14 @@ import fnmatch
 import json
 import glob
 
-from KaleidoScopeMirror import KaleidoScopeMirror 
-from KaleidoScopeCamera import KaleidoScopeCamera 
-from KaleidoScopeScreen import KaleidoScopeScreen 
+from SkopeMirror import SkopeMirror 
+from SkopeCamera import SkopeCamera 
+from SkopeScreen import SkopeScreen 
 
 PI=math.pi
 TWO_PI=2*math.pi
 
-class KaleidoScopeState:
+class SkopeState:
 
   frame_num=0
   max_mirros=8
@@ -31,14 +31,14 @@ class KaleidoScopeState:
     self.mirror_shift=.5
     self.mirror_wiggle=1/5 # 1 = 100%
     self.screen_scale=60
-    self.camera = KaleidoScopeCamera()
-    self.screen = KaleidoScopeScreen()
+    self.camera = SkopeCamera()
+    self.screen = SkopeScreen()
     self.mirrors = []
 
-    KaleidoScopeState.frame_num = bpy.context.scene.frame_current
+    SkopeState.frame_num = bpy.context.scene.frame_current
     
-    for n in range(KaleidoScopeState.max_mirrors):
-      self.mirrors.append(KaleidoScopeMirror())
+    for n in range(SkopeState.max_mirrors):
+      self.mirrors.append(SkopeMirror())
     self.readScene(bpy.context.scene)
   
     
@@ -114,7 +114,7 @@ class KaleidoScopeState:
     global TWO_PI
     print("Prepare screen")
     self.reset_screen()
-    self.screen.rotation["y"] = TWO_PI*KaleidoScopeState.frame_num/KaleidoScopeState.num_frames
+    self.screen.rotation["y"] = TWO_PI*SkopeState.frame_num/SkopeState.num_frames
     scale = 2 * self.inner_radius + random.random() * self.screen_scale
     self.screen.scale["x"] = scale
     self.screen.scale["y"] = scale
@@ -162,7 +162,7 @@ class KaleidoScopeState:
 
     self.reset_mirrors(
       random.randint(3, len(self.mirrors)),
-      KaleidoScopeState.frame_num/KaleidoScopeState.num_frames
+      SkopeState.frame_num/SkopeState.num_frames
     )
     for n in range(self.num_mirrors):
         print('wiggle ',n)

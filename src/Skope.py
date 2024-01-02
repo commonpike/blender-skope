@@ -1,19 +1,14 @@
 import bpy
-import math
-import random
 import fnmatch
-import json
 import glob
 import os
 
-from KaleidoScopeMirror import KaleidoScopeMirror 
-from KaleidoScopeCamera import KaleidoScopeCamera 
-from KaleidoScopeScreen import KaleidoScopeScreen 
-from KaleidoScopeState import KaleidoScopeState
-from KaleidoScopeClip import KaleidoScopeClip
+
+from SkopeState import SkopeState
+from SkopeClip import SkopeClip
 
 
-class KaleidoScope:
+class Skope:
   """A kaleidoscope for use in blender"""
   
 
@@ -32,15 +27,15 @@ class KaleidoScope:
 
     # init state class vars
     scene = bpy.context.scene
-    KaleidoScopeState.num_frames = scene.frame_end - scene.frame_start
+    SkopeState.num_frames = scene.frame_end - scene.frame_start
     mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
-    KaleidoScopeState.max_mirrors = len(mirrors)
+    SkopeState.max_mirrors = len(mirrors)
 
     # current state
-    self.state = KaleidoScopeState(source_dir)
+    self.state = SkopeState(source_dir)
 
     # current clip
-    self.clip = KaleidoScopeClip(source_dir)
+    self.clip = SkopeClip(source_dir)
 
     self.init_scene(scene)
 
@@ -103,7 +98,7 @@ class KaleidoScope:
   
   def apply_random_state(self,scene,x=0):
     
-    KaleidoScopeState.frame_num = scene.frame_current
+    SkopeState.frame_num = scene.frame_current
     self.state.randomize()
     self.state.apply(scene)
     if self.rendering:

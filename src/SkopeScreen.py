@@ -1,4 +1,4 @@
-class KaleidoScopeScreen:
+class SkopeScreen:
   def __init__(self):
     self.rotation = {"x":0, "y":0, "z":0 }
     self.location = {"x":0, "y":0, "z":0 }
