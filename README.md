@@ -1,7 +1,8 @@
-# Kaleidogen
+# Blender - Skope
 
 dont open the .blend file.
-instead, run `runner.sh`
+instead, run `skope.sh`. This starts
+`src/skope.blend` with `src/skope-init.py`
 
 there are several modes of running the project:
  - 'edit' (edit the blend file)
