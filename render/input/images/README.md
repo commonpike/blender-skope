@@ -1,0 +1,1 @@
+A place to store input images for the screen

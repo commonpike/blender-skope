@@ -1,0 +1,1 @@
+A place to store output images from the skope
