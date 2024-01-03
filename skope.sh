@@ -8,6 +8,7 @@ cd `dirname $0`;
 COMMAND=${1:-edit} # edit,test,render,regenerate
 TYPE=stills # stills, clips
 SCALE=10 # percentage
+AMOUNT=10 #number
 FORMAT=PNG # JPG,PNG
 INPUTDIR=render/input/images
 OUTPUTDIR=render/output/images
@@ -19,6 +20,11 @@ POSITIONAL_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -a|--amount)
+      AMOUNT="$2"
+      shift # past argument
+      shift # past value
+      ;;
     -t|--type)
       TYPE="$2"
       shift # past argument
@@ -110,7 +116,8 @@ case $COMMAND in
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
             --format $FORMAT \
-            --scale $SCALE
+            --scale $SCALE \
+            --amount $AMOUNT
         elif [ $TYPE = "clips" ]; then
           echo "Render clips: unimplemented" >&2
           exit 1

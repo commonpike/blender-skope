@@ -1,6 +1,7 @@
 import bpy
 import json
 
+from JSONEncoder import JSONEncoder 
 from SkopeMirrors import SkopeMirrors 
 from SkopeCamera import SkopeCamera 
 from SkopeScreen import SkopeScreen 
@@ -43,7 +44,7 @@ class SkopeState:
   def writeJSON(self,file):
     print("Write json", file)
     with open(file, "w") as outfile:
-      outfile.write(json.dumps(self,default=vars,indent=4))
+      outfile.write(json.dumps(self,cls=JSONEncoder,indent=4))
     
   def readJSON(self,file):
     print("Read json", file)
@@ -52,8 +53,8 @@ class SkopeState:
       self.fromJSON(data)
 
   def toJSON(self):
-    return json.dumps(self,default=vars,indent=4)
-
+    return vars(self)
+  
   def fromJSON(self,data):
     self.screen.fromJSON(data['screen'])
     self.camera.fromJSON(data['camera'])

@@ -14,6 +14,7 @@ parser.add_argument('--mode', default='edit')
 #parser.add_argument('--type', default='stills')
 parser.add_argument('--scale', default='10')
 parser.add_argument('--format', default='PNG')
+parser.add_argument('--amount', default='10')
 parser.add_argument('--input-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/images')
 parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/output')
 parser.add_argument('--import-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/states')
@@ -40,7 +41,7 @@ def main():
     bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
 
   elif args.mode == "render":
-    skope.render_stills(10)
+    skope.render_stills(int(args.amount))
     
   elif args.mode == "regenerate":
     # this will manually regenerate stills based on

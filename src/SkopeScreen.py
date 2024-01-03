@@ -60,7 +60,7 @@ class SkopeScreen:
     self.mix =random.random()
 
   def toJSON(self):
-    return json.dumps(self,default=vars,indent=4)
+    return vars(self)
   
   def fromJSON(self,data):
     self.location["x"] = data["location"]["x"]

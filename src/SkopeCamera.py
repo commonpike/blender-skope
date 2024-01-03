@@ -1,11 +1,35 @@
+import bpy
 import random
 import json
+import math
 
 class SkopeCamera:
   def __init__(self):
+    scene = bpy.context.scene
+    camera = scene.objects.get("camera")
+    if camera:
+      self.object = camera
+    else:
+      self.create(scene)
     self.location = {"x":0, "y":0, "z":0 }
-    #self.rotation: {"x":0, "y":0, "z":0 }
+    self.readScene(scene)
 
+  def create(self,scene):
+    print("SkopeCamera creating camera")
+    camera_data = bpy.data.cameras.new(name='camera')
+    self.object = bpy.data.objects.new('camera', camera_data)
+    self.object.data.lens = 20
+    self.object.data.type = 'PERSP'
+    self.object.data.shift_x = 0
+    self.object.data.shift_y = 0
+    self.object.data.clip_start = .1
+    self.object.data.clip_end = 100
+    self.object.rotation_euler[0] = math.pi / 2.0
+    self.object.rotation_euler[1] = 0
+    self.object.rotation_euler[2] = 0
+    scene.collection.objects.link(self.object)
+    scene.camera = self.object
+  
   def readScene(self,scene):
     print("SkopeCamera Read state")
 
@@ -34,8 +58,8 @@ class SkopeCamera:
     camera.location.z = self.location["z"]
 
   def toJSON(self):
-    return json.dumps(self,default=vars,indent=4)
-
+    return { k:v for (k,v) in vars(self).items() if not k == 'object' }
+  
   def fromJSON(self,data):
     self.location["x"] = data["location"]["x"]
     self.location["y"] = data["location"]["y"]

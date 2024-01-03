@@ -106,7 +106,7 @@ class SkopeMirrors:
       mirror.hide_render = self.mirrors[n].hide
 
   def toJSON(self):
-    return json.dumps(self,default=vars,indent=4)
+    return vars(self)
 
   def fromJSON(self,data):
     # self
