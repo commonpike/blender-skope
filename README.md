@@ -2,7 +2,9 @@
 
 dont open the .blend file.
 instead, run `skope.sh [command]`. This starts
-`src/skope.blend` with `src/skope-init.py`
+`src/skope.blend` with `src/skope-init.py`,
+sometimes just in the background to generate
+stills or clips.
 
 There are several `command`s available:
  - 'edit' (edit the blend file)
@@ -14,6 +16,7 @@ There are also some command line options:
 
 ```
 --type (stills|clips)
+--amount (number)
 --scale (percentage)
 --format (JPG|PNG)
 --input-dir (path to source images)

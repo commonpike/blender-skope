@@ -104,8 +104,7 @@ case $COMMAND in
     render)
         if [ "$TYPE" = "stills" ]; then
           $BLENDER ./src/skope.blend --background \
-            --python ./src/skope-init.py \
-            --render-anim -- \
+            --python ./src/skope-init.py -- \
             --mode=render \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \

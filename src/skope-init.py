@@ -40,20 +40,12 @@ def main():
     bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
 
   elif args.mode == "render":
-    # the command line specified --background --render-anim,
-    # which will render the whole animation
-    # call init_frame on every frame
-    bpy.app.handlers.frame_change_pre.clear()
-    bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
-    # call render_* on render events
-    bpy.app.handlers.render_init.append(skope.render_init)
-    bpy.app.handlers.render_cancel.append(skope.render_cancel)
-    bpy.app.handlers.render_complete.append(skope.render_complete)
+    skope.render_stills(10)
     
   elif args.mode == "regenerate":
-    # this will manually render the files from 
-    # the selected dir
-    skope.render_stills()
+    # this will manually regenerate stills based on
+    # the state files from  the import dir
+    skope.regenerate_stills()
 
   else:
     # just open the file

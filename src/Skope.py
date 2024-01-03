@@ -67,11 +67,37 @@ class Skope:
     radius.scale.y = self.state.mirrors.inner_radius
 
 
+  # render mode 
+  
+  def render_stills(self, amount): 
+    print("Rendering random stills ..")
+    scene = bpy.context.scene
+    ofp = scene.render.filepath
+    orp = scene.render.resolution_percentage
+    oif = scene.render.image_settings.file_format
+    scene.render.resolution_percentage = self.scale
+    scene.render.image_settings.file_format = self.image_format
+    for frame in range(0,amount):
+      self.render_still(frame,scene)
+    scene.render.filepath = ofp
+    scene.render.resolution_percentage = orp
+    scene.render.image_settings.file_format = oif
+    print("Rendering done.")
+
+  def render_still(self,frame,scene): 
+    SkopeState.frame_num = frame
+    self.state.random()
+    self.state.apply(scene)
+    filename = str(frame).zfill(4);
+    scene.render.filepath = self.output_dir+ '/' + filename
+    print("Rendering",scene.render.filepath)
+    bpy.ops.render.render(write_still=True) # render still
+    self.state.writeJSON(scene.render.filepath +'.json')
 
   # regenerate mode 
   
-  def render_stills(self): 
-    print("Rendering selected json files ..")
+  def regenerate_stills(self): 
+    print("Regenerating selected json files ..")
     state_files=glob.glob(self.import_dir+'/*.json')
     scene = bpy.context.scene
     ofp = scene.render.filepath
@@ -79,43 +105,24 @@ class Skope:
     scene.render.resolution_percentage = self.scale
     scene.render.image_settings.file_format = self.image_format
     for state_file in state_files:
-      self.render_still(state_file,scene)
+      self.regenerate_still(state_file,scene)
     scene.render.filepath = ofp
     scene.render.resolution_percentage = orp
-    print("Rendering done.")
+    print("Regenerating done.")
     
-  def render_still(self,file,scene): 
+  def regenerate_still(self,file,scene): 
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
     scene.render.filepath = self.output_dir + '/' + basename
-    print("Rendering",file)
+    print("Regenerating",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
     
-  # render mode
+  # test mode frame_change_pre handler
   
   def apply_random_state(self,scene,x=0):
-    
     SkopeState.frame_num = scene.frame_current
     self.state.random()
     self.state.apply(scene)
-    if self.rendering:
-      scene.render.filepath = self.output_dir+ '/'
-      print("Generating",scene.render.filepath)
-      scene.render.resolution_percentage = self.scale
-      filename = str(scene.frame_current).zfill(4);
-      self.state.writeJSON(scene.render.filepath+filename +'.json')
-        
-  def render_init(self,scene,x):
-    print('Rendering started');
-    self.rendering = True
-
-  def render_cancel(self,scene,x):
-    print('Rendering canceled');
-    self.rendering = False
       
-  def render_complete(self,scene,x):
-    print('Rendering complete');
-    self.rendering = False
-  
