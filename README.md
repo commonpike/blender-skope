@@ -1,33 +1,22 @@
 # Blender - Skope
 
 dont open the .blend file.
-instead, run `skope.sh`. This starts
+instead, run `skope.sh [command]`. This starts
 `src/skope.blend` with `src/skope-init.py`
 
-there are several modes of running the project:
+There are several `command`s available:
  - 'edit' (edit the blend file)
- - 'edit-stills' (edit the blend file, but each frame is a random state)
- - 'generate-thumbs' (generate random thumbs) 
- - 'render-stills' (render selected jsons)
+ - 'test' (edit the blend file with frame change handlers enabled)
+ - 'render' (generate images or clips from scratch) 
+ - 'regenerate' (regenerate images or clips from saved state files) 
 
-## edit
-simply opens the blend file
+There are also some command line options:
 
-## edit-still
-opens the blend file, but on every frame,
-the `state` is randomized
-
-## generate-thumbs
-for all frames, where each frame is randomized,
-exports small thumbs and their adjacent json 
-describing the `state` of each frame, 
-
-## select (manually)
-after 'generating thumbs', you can manually select 
-the best ones and copy their json files into the 
-'selected' dir
-
-## render-stills
-for each json file in the selecteddir, renders a large
-version in the 'stills' dir, with adjacent json files
-describing the `state` of each still
+```
+--type (stills|clips)
+--scale (percentage)
+--format (JPG|PNG)
+--input-dir (path to source images)
+--output-dir (path to output dir)
+--import-dir (path to dir with prerendered state files to regenerate)
+```

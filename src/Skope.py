@@ -13,17 +13,16 @@ class Skope:
   """A kaleidoscope for use in blender"""
   
 
-  def __init__(self, source_dir):
+  def __init__(self, input_dir):
   
-    print("Kaleidoscope init",source_dir)
+    print("Kaleidoscope init",input_dir)
     
     # settings 
-    self.source_dir = source_dir
+    self.input_dir = input_dir
     self.output_dir = ''
-    self.selected_dir = ''
+    self.import_dir = ''
     self.rendering = False
-    self.thumb_scale = 10
-    self.large_scale = 200
+    self.scale = 10
     self.image_format = 'PNG'
 
     # init state class vars
@@ -33,21 +32,20 @@ class Skope:
     SkopeMirrors.max_mirrors = len(mirrors)
 
     # current state
-    self.state = SkopeState(source_dir)
+    self.state = SkopeState(input_dir)
 
     # current clip
-    # self.clip = SkopeClip(source_dir)
+    # self.clip = SkopeClip(input_dir)
 
     self.init_scene(scene)
 
   def set(self, settings = {}):
     for attr in settings:
-      if attr == 'source_dir' : self.source_dir = settings[attr]
+      if attr == 'input_dir' : self.input_dir = settings[attr]
       elif attr == 'output_dir' : self.output_dir = settings[attr]
-      elif attr == 'selected_dir' : self.selected_dir = settings[attr]
+      elif attr == 'import_dir' : self.import_dir = settings[attr]
       elif attr == 'rendering' : self.rendering = settings[attr]
-      elif attr == 'thumb_scale' : self.thumb_scale = settings[attr]
-      elif attr == 'large_scale' : self.large_scale = settings[attr]
+      elif attr == 'scale' : self.scale = int(settings[attr])
       elif attr == 'image_format' : self.image_format = settings[attr]
 
   def init_scene(self, scene):
@@ -70,15 +68,15 @@ class Skope:
 
 
 
-  # render mode 
+  # regenerate mode 
   
   def render_stills(self): 
     print("Rendering selected json files ..")
-    state_files=glob.glob(self.selected_dir+'/*.json')
+    state_files=glob.glob(self.import_dir+'/*.json')
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
-    scene.render.resolution_percentage = self.large_scale
+    scene.render.resolution_percentage = self.scale
     scene.render.image_settings.file_format = self.image_format
     for state_file in state_files:
       self.render_still(state_file,scene)
@@ -95,7 +93,7 @@ class Skope:
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
     
-  # generate mode
+  # render mode
   
   def apply_random_state(self,scene,x=0):
     
@@ -105,7 +103,7 @@ class Skope:
     if self.rendering:
       scene.render.filepath = self.output_dir+ '/'
       print("Generating",scene.render.filepath)
-      scene.render.resolution_percentage = self.thumb_scale
+      scene.render.resolution_percentage = self.scale
       filename = str(scene.frame_current).zfill(4);
       self.state.writeJSON(scene.render.filepath+filename +'.json')
         
