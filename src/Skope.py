@@ -51,8 +51,8 @@ class Skope:
   def init_scene(self, scene):
 
     # screen
-    screen = scene.objects["screen1"]
-    screen.location.y = 10
+    # screen = scene.objects["screen"]
+    # screen.location.y = 10
     
     #mirrors
     mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];

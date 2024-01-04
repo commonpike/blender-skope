@@ -1,6 +1,5 @@
 import bpy
 import random
-import json
 import math
 
 class SkopeCamera:

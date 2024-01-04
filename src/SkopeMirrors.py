@@ -1,6 +1,5 @@
 import math
 import random
-import json
 
 PI=math.pi
 TWO_PI=2*math.pi
