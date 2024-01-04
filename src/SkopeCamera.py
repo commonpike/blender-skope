@@ -50,11 +50,9 @@ class SkopeCamera:
 
   def apply(self,scene):
     print("SkopeCamera Apply state")
-
-    camera = scene.objects["camera"]
-    camera.location.x = self.location["x"]
-    camera.location.y = self.location["y"]
-    camera.location.z = self.location["z"]
+    self.object.location.x = self.location["x"]
+    self.object.location.y = self.location["y"]
+    self.object.location.z = self.location["z"]
 
   def toJSON(self):
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
