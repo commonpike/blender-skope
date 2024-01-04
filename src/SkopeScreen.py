@@ -24,6 +24,12 @@ class SkopeScreen:
     screen = scene.objects.get("screen")
     if screen:
       self.object = screen
+      self.material = bpy.data.materials['ScreenMaterial']
+      self.mixer = self.material.node_tree.nodes["Mix Shader"]
+      self.sources = [
+        bpy.data.images['ScreenSource1'],
+        bpy.data.images['ScreenSource2']
+      ]
     else:
       self.create(scene)
     
@@ -51,50 +57,54 @@ class SkopeScreen:
     screen_data.uv_layers.new(name='ScreenUVMap')
     self.object = bpy.data.objects.new("screen", screen_data)
 
-    screen_material = bpy.data.materials.new(name = "ScreenMaterial")
-    screen_material.roughness = 0
-    screen_material.use_nodes = True
-    screen_material.node_tree.nodes.clear()
+    self.material = bpy.data.materials.new(name = "ScreenMaterial")
+    self.material.roughness = 0
+    self.material.use_nodes = True
+    self.material.node_tree.nodes.clear()
     
-    material = screen_material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+    material = self.material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
     material.location.x = 600
     material.location.y = 200
     
-    mix = screen_material.node_tree.nodes.new(type="ShaderNodeMixShader")
-    mix.location.x = 400
-    mix.location.y = 200
+    self.mixer = self.material.node_tree.nodes.new(type="ShaderNodeMixShader")
+    self.mixer.location.x = 400
+    self.mixer.location.y = 200
     
-    image1 = screen_material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    self.sources = []
+
+    image1 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
     image1.location.x = 0
     image1.location.y = 200
 
-    bpy.ops.image.new(name='source1')
-    source1 = bpy.data.images['source1']
+    bpy.ops.image.new(name='ScreenSource1')
+    source1 = bpy.data.images['ScreenSource1']
     source1.filepath =random.choice(self.images)
     image1.image = source1
+    #self.sources.append(source1)
 
-    image2 = screen_material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    image2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
     image2.location.x = 0
     image2.location.y = 0
 
-    bpy.ops.image.new(name='source2')
-    source2 = bpy.data.images['source2']
+    bpy.ops.image.new(name='ScreenSource2')
+    source2 = bpy.data.images['ScreenSource2']
     source2.filepath =random.choice(self.images)
     image2.image = source2
+    #self.sources.append(source2)
     
-    screen_material.node_tree.links.new(
+    self.material.node_tree.links.new(
       material.inputs['Surface'], 
-      mix.outputs[0]
+      self.mixer.outputs[0]
     )
-    screen_material.node_tree.links.new(
-      mix.inputs[1], 
+    self.material.node_tree.links.new(
+      self.mixer.inputs[1], 
       image1.outputs['Color']
     )
-    screen_material.node_tree.links.new(
-      mix.inputs[2], 
+    self.material.node_tree.links.new(
+      self.mixer.inputs[2], 
       image2.outputs['Color']
     )
-    self.object.data.materials.append(screen_material)
+    self.object.data.materials.append(self.material)
     scene.collection.objects.link(self.object)
 
 
@@ -135,7 +145,10 @@ class SkopeScreen:
     self.mix =random.random()
 
   def toJSON(self):
-    return { k:v for (k,v) in vars(self).items() if not k == 'object' }
+    return { 
+      k:v for (k,v) in vars(self).items() 
+      if not k in ['object','material','mixer','sources'] 
+    }
   
   def fromJSON(self,data):
     self.location["x"] = data["location"]["x"]
@@ -153,16 +166,14 @@ class SkopeScreen:
   def apply(self,scene):
     print("Skopescreen apply")
     
-    # screen
-    screen = scene.objects["screen"]
-    screen.rotation_euler.x = self.rotation["x"]
-    screen.rotation_euler.y = self.rotation["y"]
-    screen.rotation_euler.z = self.rotation["z"]
-    screen.location.x = self.location["x"]
-    screen.location.y = self.location["y"]
-    screen.location.z = self.location["z"]
-    screen.scale[0] = self.scale["x"]
-    screen.scale[2] = self.scale["y"]
-    bpy.data.images['source1'].filepath = self.image1
-    bpy.data.images['source2'].filepath = self.image2
-    bpy.data.materials['image'].node_tree.nodes["Mix Shader"].inputs[0].default_value=self.mix
+    self.object.rotation_euler.x = self.rotation["x"]
+    self.object.rotation_euler.y = self.rotation["y"]
+    self.object.rotation_euler.z = self.rotation["z"]
+    self.object.location.x = self.location["x"]
+    self.object.location.y = self.location["y"]
+    self.object.location.z = self.location["z"]
+    self.object.scale[0] = self.scale["x"]
+    self.object.scale[2] = self.scale["y"]
+    bpy.data.images['ScreenSource1'].filepath = self.image1
+    bpy.data.images['ScreenSource2'].filepath = self.image2
+    self.mixer.inputs[0].default_value=self.mix
