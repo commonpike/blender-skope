@@ -42,7 +42,7 @@ class SkopeCamera:
     self.location["x"] = 0
     self.location["z"] = 0
 
-  def random(self, maxloc):
+  def random(self, maxloc = 10):
     print("SkopeCamera random")
     self.reset()
     self.location["x"] = (random.random()-.5)*maxloc

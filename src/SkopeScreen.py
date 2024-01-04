@@ -133,9 +133,11 @@ class SkopeScreen:
     self.image2 = random.choice(self.images)
     self.mix = .5
 
-  def random(self,minsize):
+  def random(self,minsize = 0):
     global TWO_PI
     print("Skopescreen random")
+    if minsize == 0:
+      minsize = self.width / 2
     self.reset()
     self.rotation["y"] = TWO_PI*random.random()
     minscale = minsize / self.width # assuming square
