@@ -78,9 +78,10 @@ class SkopeScreen:
 
     bpy.ops.image.new(name='ScreenSource1')
     source1 = bpy.data.images['ScreenSource1']
+    source1.source = 'FILE'
     source1.filepath =random.choice(self.images)
     image1.image = source1
-    #self.sources.append(source1)
+    self.sources.append(source1)
 
     image2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
     image2.location.x = 0
@@ -88,9 +89,10 @@ class SkopeScreen:
 
     bpy.ops.image.new(name='ScreenSource2')
     source2 = bpy.data.images['ScreenSource2']
+    source2.source = 'FILE'
     source2.filepath =random.choice(self.images)
     image2.image = source2
-    #self.sources.append(source2)
+    self.sources.append(source2)
     
     self.material.node_tree.links.new(
       material.inputs['Surface'], 
