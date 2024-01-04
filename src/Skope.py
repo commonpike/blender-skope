@@ -49,25 +49,8 @@ class Skope:
       elif attr == 'image_format' : self.image_format = settings[attr]
 
   def init_scene(self, scene):
+    print("Skope init_scene")
 
-    # screen
-    # screen = scene.objects["screen"]
-    # screen.location.y = 10
-    
-    #mirrors
-    mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
-    for mirror in mirrors:
-      mirror.location.y = 0
-      mirror.scale.y = 10
-    
-    # radius
-    radius = scene.objects["radius"]
-    radius.location.y = -10
-    radius.scale.x = self.state.mirrors.inner_radius
-    radius.scale.y = self.state.mirrors.inner_radius
-
-
-  # render mode 
   
   def render_stills(self, amount): 
     print("Rendering random stills ..")

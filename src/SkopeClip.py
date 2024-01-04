@@ -27,7 +27,7 @@ class SkopeClip:
     self.randomizeEnd(scene)
 
   def reset(self,scene):
-    self.start.readScene(scene)
+    #self.start.readScene(scene)
     self.start.setKeyFrame(scene,scene.frame_start)
-    self.start.readScene(scene)
+    #self.start.readScene(scene)
     self.start.setKeyFrame(scene,scene.frame_end)

@@ -18,7 +18,7 @@ class SkopeScreen:
       self.images.extend(glob.glob(source_dir+'/'+pattern.lower()))
     self.width = 30.0
     self.height = 30.0
-    self.dist = 10.0
+    self.dist = 0
 
     scene = bpy.context.scene
     screen = scene.objects.get("screen")
@@ -40,16 +40,15 @@ class SkopeScreen:
     self.image1 = ""
     self.image2 = ""
     self.mix = .5
-    self.readScene(scene)
 
   def create(self,scene):
     print("SkopeScreen create")
 
     vert = [
-        (-self.width/2, self.dist, -self.height/2), 
-        (self.width/2, self.dist, -self.height/2), 
-        (-self.width/2, self.dist, self.height/2), 
-        (self.width/2, self.dist, self.height/2)
+        (-self.width/2, -self.height/2, self.dist), 
+        (self.width/2, -self.height/2, self.dist), 
+        (-self.width/2, self.height/2, self.dist), 
+        (self.width/2, self.height/2, self.dist)
     ]
     fac = [(0, 1, 3, 2)]
     screen_data = bpy.data.meshes.new("screen")
@@ -109,21 +108,6 @@ class SkopeScreen:
     self.object.data.materials.append(self.material)
     scene.collection.objects.link(self.object)
 
-
-  def readScene(self,scene):
-    print("Skopescreen Read scene")
-    
-    # screen
-    screen = scene.objects["screen"]
-    self.location["x"] = screen.location.x
-    self.location["y"] = screen.location.y
-    self.location["z"] = screen.location.z
-    self.rotation["x"] = screen.rotation_euler.x
-    self.rotation["y"] = screen.rotation_euler.y
-    self.rotation["z"] = screen.rotation_euler.z
-    self.scale["x"] = screen.scale[0]
-    self.scale["y"] = screen.scale[1]
-
   def reset(self):
     print("Skopescreen reset")
     self.rotation["y"] = 0
@@ -139,7 +123,7 @@ class SkopeScreen:
     if minsize == 0:
       minsize = self.width / 2
     self.reset()
-    self.rotation["y"] = TWO_PI*random.random()
+    self.rotation["z"] = TWO_PI*random.random()
     minscale = minsize / self.width # assuming square
     scale = minscale + random.random() * (self.maxscale - minscale)
     self.scale["x"] = scale

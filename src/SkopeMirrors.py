@@ -30,19 +30,6 @@ class SkopeMirrors:
       if attr == 'mirror_shift' : self.mirror_shift = settings[attr]
       if attr == 'mirror_wiggle' : self.mirror_wiggle = settings[attr]
 
-  def readScene(self,scene):
-    print("SkopeMirrors Read scene")
-
-    for n in range(self.num_mirrors):
-      mirror = scene.objects["mirror"+str(n+1)]
-      self.mirrors[n].location["x"] = mirror.location.x
-      self.mirrors[n].location["y"] = mirror.location.y
-      self.mirrors[n].location["z"] = mirror.location.z
-      self.mirrors[n].rotation["x"] = mirror.rotation_euler.x
-      self.mirrors[n].rotation["y"] = mirror.rotation_euler.y
-      self.mirrors[n].rotation["z"] = mirror.rotation_euler.z
-      self.mirrors[n].hide = mirror.hide_viewport
-
   def default_mirror_angle(self,n):
     global TWO_PI
     return (n+self.mirror_shift)*TWO_PI/self.num_mirrors - PI

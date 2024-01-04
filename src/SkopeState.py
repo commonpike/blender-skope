@@ -2,9 +2,9 @@ import bpy
 import json
 
 from JSONEncoder import JSONEncoder 
-from SkopeMirrors import SkopeMirrors 
 from SkopeCamera import SkopeCamera 
 from SkopeScreen import SkopeScreen 
+from SkopeCone import SkopeCone 
 
 class SkopeState:
 
@@ -14,31 +14,26 @@ class SkopeState:
   def __init__(self,source_dir):
     self.camera = SkopeCamera()
     self.screen = SkopeScreen(source_dir)
-    self.mirrors = SkopeMirrors()
+    self.cone = SkopeCone()
     SkopeState.frame_num = bpy.context.scene.frame_current
-    self.readScene(bpy.context.scene)
 
-  def readScene(self,scene):
-    print("SkopeState Read scene")
-    self.screen.readScene(scene)
-    self.camera.readScene(scene)
-    self.mirrors.readScene(scene)
-
-  def reset(self,num_mirrors=3):
+  def reset(self,numsides=3):
+    print("Skopestate reset")
     self.screen.reset()
     self.camera.reset()
-    self.mirrors.reset(num_mirrors,0)
+    self.cone.reset(numsides)
     
   def random(self):
-    self.screen.random(2 * self.mirrors.inner_radius)
-    self.camera.random(self.mirrors.inner_radius)
-    self.mirrors.random()
+    print("Skopestate random")
+    self.cone.random()
+    self.screen.random(2 * self.cone.radius)
+    self.camera.random(self.cone.radius)
 
   def apply(self,scene):
     print("Skopestate apply")
     self.screen.apply(scene)
     self.camera.apply(scene)
-    self.mirrors.apply(scene)
+    self.cone.apply(scene)
     
 
   def writeJSON(self,file):
@@ -58,5 +53,5 @@ class SkopeState:
   def fromJSON(self,data):
     self.screen.fromJSON(data['screen'])
     self.camera.fromJSON(data['camera'])
-    self.mirrors.fromJSON(data['mirrors'])
+    self.cone.fromJSON(data['cone'])
     
