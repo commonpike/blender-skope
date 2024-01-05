@@ -12,7 +12,8 @@ class SkopeCone:
   minsides=3
   maxsides=16
   maxwiggle=1/5 # 1 = 100%
-  smooth= True
+  smooth= True # removed in blender4
+  autoSmooth=15 # removed in blender4
 
   def __init__(self):
     self.numsides=5
@@ -40,6 +41,9 @@ class SkopeCone:
     self.mesh = bpy.data.meshes.new("SkopeConeMesh")
     self.object = bpy.data.objects.new("cone",self.mesh)
     
+    self.mesh.use_auto_smooth=(SkopeCone.autoSmooth>0)
+    self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
+
     # insert bmesh into object
     self.createBMesh()
     self.bmesh.to_mesh(self.mesh)
