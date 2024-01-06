@@ -32,7 +32,7 @@ class Skope:
     SkopeMirrors.max_mirrors = len(mirrors)
 
     # current state
-    self.state = SkopeState(input_dir)
+    self.state = SkopeState(scene,input_dir)
 
     # current clip
     # self.clip = SkopeClip(input_dir)

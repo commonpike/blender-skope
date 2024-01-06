@@ -11,10 +11,10 @@ class SkopeState:
   frame_num=0
   num_frames=360
 
-  def __init__(self,source_dir):
-    self.camera = SkopeCamera()
-    self.screen = SkopeScreen(source_dir)
-    self.cone = SkopeCone()
+  def __init__(self,scene=None,inputdir=None):
+    self.camera = SkopeCamera(scene)
+    self.screen = SkopeScreen(scene,inputdir)
+    self.cone = SkopeCone(scene)
     SkopeState.frame_num = bpy.context.scene.frame_current
 
   def reset(self,numsides=3):
@@ -35,6 +35,16 @@ class SkopeState:
     self.camera.apply(scene)
     self.cone.apply(scene)
     
+  def clone(self):
+    clone = SkopeState() # dont make a scene
+    data = json.loads(json.dumps(self,cls=JSONEncoder))
+    clone.fromJSON(data)
+    return clone
+  
+  #def mix(self,src,dst,pct,easing):
+  #  self.screen.mix(src,dst,pct,easing)
+  #  self.camera.mix(src,dst,pct,easing)
+  #  self.cone.mix(src,dst,pct,easing)
 
   def writeJSON(self,file):
     print("Write json", file)

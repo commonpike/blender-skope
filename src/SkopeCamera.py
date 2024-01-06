@@ -5,13 +5,15 @@ import math
 class SkopeCamera:
 
   dist = 10
-  def __init__(self):
-    scene = bpy.context.scene
-    camera = scene.objects.get("camera")
-    if camera:
-      self.object = camera
+  def __init__(self,scene=None):
+    if (scene):
+      camera = scene.objects.get("camera")
+      if camera:
+        raise Exception("Sorry, only one SkopeCamera per scene")
+      else:
+        self.create(scene)
     else:
-      self.create(scene)
+        self.object = None
     self.location = {"x":0, "y":0, "z":0 }
 
   def create(self,scene):
@@ -31,7 +33,7 @@ class SkopeCamera:
     self.object.rotation_euler[1] = 0
     self.object.rotation_euler[2] = 0
     scene.collection.objects.link(self.object)
-    scene.camera = self.object
+    scene.camera = self.object ## ??
 
   def reset(self):
     print("SkopeCamera Reset")
@@ -46,6 +48,8 @@ class SkopeCamera:
     self.location["y"] = (random.random()-.5)*maxloc
 
   def apply(self,scene):
+    if not self.object:
+        raise Exception("SkopeCamera can not be applied")
     print("SkopeCamera Apply state")
     self.object.location.x = self.location["x"]
     self.object.location.y = self.location["y"]

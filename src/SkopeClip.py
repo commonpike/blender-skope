@@ -2,32 +2,37 @@ from SkopeState import SkopeState
 
 class SkopeClip:
   
-  interpolation = 'BEZIER'
-  
-  def __init__(self,source_dir):
-    self.start = SkopeState(source_dir)
-    self.end = SkopeState(source_dir)
+  def __init__(self,scene,length):
+    self.state = scene.skope.state
+    self.start = self.state.clone()
+    self.end = self.state.clone()
+    self.length = length
+    self.current = 0
+    self.easing = 'LINEAR'
+
+  def random(self):
+    self.start.random()
+    self.end.random()
     
-  def set(self, settings = {}):
-    for attr in settings:
-      if attr == 'interpolation' : SkopeClip.interpolation = settings[attr]
+  def start(self):
+    return self.go(0)
+  
+  def end(self):
+    return self.go(self.length-1)
 
-  def randomizeStart(self,scene):
-    self.start.randomize()
-    self.start.apply(scene)
-    self.start.setKeyFrame(scene,scene.frame_start)
+  def back(self):
+    return self.go(self.current-1)
 
-  def randomizeEnd(self,scene):
-    self.end.randomize()
-    self.end.apply(scene)
-    self.end.setKeyFrame(scene,scene.frame_end)
+  def step(self):
+    return self.go(self.current+1)
+  
+  def go(self,frame):
+    if frame < self.length:
+      if frame >= 0:
+        self.current = frame
+    return self.current < self.length and self.current > 0
 
-  def randomize(self,scene):
-    self.randomizeStart(scene)
-    self.randomizeEnd(scene)
-
-  def reset(self,scene):
-    #self.start.readScene(scene)
-    self.start.setKeyFrame(scene,scene.frame_start)
-    #self.start.readScene(scene)
-    self.start.setKeyFrame(scene,scene.frame_end)
+  def apply(self):
+    pct = self.current * 100 / ( self.length - 1) # think twice
+    self.state.mix(self.start,self.end,pct,self.easing)
+    self.state.apply()

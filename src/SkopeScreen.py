@@ -10,28 +10,28 @@ class SkopeScreen:
 
   src_globs=['*.JPG','*.PNG']
 
-  def __init__(self,source_dir):
+  def __init__(self,scene=None,inputdir=None):
 
     self.images = []
-    for pattern in self.src_globs:
-      self.images.extend(glob.glob(source_dir+'/'+pattern.upper()))
-      self.images.extend(glob.glob(source_dir+'/'+pattern.lower()))
+    if inputdir:
+      for pattern in self.src_globs:
+        self.images.extend(glob.glob(inputdir+'/'+pattern.upper()))
+        self.images.extend(glob.glob(inputdir+'/'+pattern.lower()))
     self.width = 30.0
     self.height = 30.0
     self.dist = 0
 
-    scene = bpy.context.scene
-    screen = scene.objects.get("screen")
-    if screen:
-      self.object = screen
-      self.material = bpy.data.materials['ScreenMaterial']
-      self.mixer = self.material.node_tree.nodes["Mix Shader"]
-      self.sources = [
-        bpy.data.images['ScreenSource1'],
-        bpy.data.images['ScreenSource2']
-      ]
+    if scene:
+      screen = scene.objects.get("screen")
+      if screen:
+        raise Exception("Sorry, only one SkopeScreen per scene")
+      else:
+        self.create(scene)
     else:
-      self.create(scene)
+      self.object = None
+      self.material = None
+      self.mixer = None
+      self.sources = []
     
     self.maxscale=2
     self.rotation = {"x":0, "y":0, "z":0 }
@@ -147,13 +147,15 @@ class SkopeScreen:
     self.scale["x"] = data["scale"]["x"]
     self.scale["y"] = data["scale"]["y"]
     self.rotation["z"] = data["rotation"]["z"]
+    self.images = data["images"]
     self.image1 = data["image1"]
     self.image2 = data["image2"]
     self.mix = data["mix"]
 
   def apply(self,scene):
+    if not self.object or not self.mixer:
+        raise Exception("SkopeScreen can not be applied")
     print("Skopescreen apply")
-    
     self.object.rotation_euler.x = self.rotation["x"]
     self.object.rotation_euler.y = self.rotation["y"]
     self.object.rotation_euler.z = self.rotation["z"]

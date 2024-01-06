@@ -14,24 +14,26 @@ class SkopeCone:
   maxwiggle=1/5 # 1 = 100%
   smooth= True # removed in blender4
   autoSmooth=15 # removed in blender4
-
-  def __init__(self):
+  allowSlant=True
+  def __init__(self,scene=None):
     self.numsides=5
     self.radius=4
     self.height=10
     self.rotation=.5
 
-    scene = bpy.context.scene
-    cone = scene.objects.get("cone")
-    if cone:
-      self.object = cone
-      # self.beams = ..
-      # self.mesh = ..
-      # self.bmesh = ..
-      # self.material = bpy.data.materials['MirrorMaterial']
-      
+    if scene:
+      cone = scene.objects.get("cone")
+      if cone:
+        raise Exception("Sorry, only one SkopeCone per scene")
+      else:
+        self.create(scene)
     else:
-      self.create(scene)
+       self.mesh = None
+       self.object = None
+       self.bmesh = None
+       self.beams = []
+       self.material = None
+  
     
 
   def create(self,scene):
@@ -140,19 +142,26 @@ class SkopeCone:
     )
     maxwiggle = SkopeCone.maxwiggle*TWO_PI*self.radius/self.numsides
     for index in range(0,len(self.beams)):
-       random_angle = random.random()*360
-       random_wiggle = random.random()*maxwiggle
-       self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
-       self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
-       random_angle = random.random()*360
-       random_wiggle = random.random()*maxwiggle
-       self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
-       self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
+      random_angle = random.random()*360
+      random_wiggle = random.random()*maxwiggle
+      self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
+      self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
+      random_angle = random.random()*360
+      if SkopeCone.allowSlant:
+        random_wiggle = random.random()*maxwiggle
+        self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
+        self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
+      else:
+        self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
+        self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
+
     self.rotation = random.random()*360
     # radius
     # rotation
 
   def apply(self,scene):
+    if not self.bmesh or not self.mesh or not self.object:
+        raise Exception("SkopeCamera can not be applied")
     print("SkopeCone Apply")
     for index in range(0,len(self.beams)):
        self.bmesh.verts[index*2].co = self.beams[index]['bottom']
