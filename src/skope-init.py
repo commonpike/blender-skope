@@ -32,7 +32,7 @@ def main():
   skope.output_dir = args.output_dir
   skope.import_dir = args.import_dir
   skope.image_format = args.format
-  skope.scale = args.scale
+  skope.scale = int(args.scale)
 
   if args.mode == "test":
     if args.type == "stills":
@@ -48,7 +48,12 @@ def main():
       raise Exception("Type "+args.type+" not supported")
     
   elif args.mode == "render":
-    skope.render_stills(int(args.amount))
+    if args.type == "stills":
+      skope.render_stills(int(args.amount))
+    elif args.type == "clip":
+      skope.render_clip(int(args.length))
+    else:
+      raise Exception("Type "+args.type+" not supported")
     
   elif args.mode == "regenerate":
     # this will manually regenerate stills based on

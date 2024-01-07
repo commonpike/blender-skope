@@ -1,5 +1,5 @@
 import bpy
-import fnmatch
+import uuid
 import glob
 import os
 
@@ -67,6 +67,34 @@ class Skope:
     print("Rendering",scene.render.filepath)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath +'.json')
+
+  def render_clip(self,length):
+    # create a random clip and step it every frame
+    self.create_random_clip(int(length))
+    scene = bpy.context.scene
+    ofp = scene.render.filepath
+    orp = scene.render.resolution_percentage
+    oif = scene.render.image_settings.file_format
+    scene.render.resolution_percentage = self.scale
+    scene.render.image_settings.file_format = 'FFMPEG'
+    scene.render.ffmpeg.format='MPEG4'
+    # scene.render.ffmpeg.codec
+    # scene.render.ffmpeg.ffmpeg_preset
+    # ...
+    
+    bpy.app.handlers.frame_change_pre.clear()
+    bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
+    filename = str(uuid.uuid4()).zfill(4);
+    scene.render.filepath = self.output_dir+ '/' + filename
+    
+    print("Rendering",scene.render.filepath)
+    bpy.ops.render.render(animation=True) # render animation
+    #self.clip.writeJSON(scene.render.filepath +'.json')
+
+    scene.render.filepath = ofp
+    scene.render.resolution_percentage = orp
+    scene.render.image_settings.file_format = oif
+    print("Rendering done.")
 
   # regenerate mode 
   

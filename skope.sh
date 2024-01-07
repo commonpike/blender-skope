@@ -119,15 +119,24 @@ case $COMMAND in
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
             --mode render \
+            --type stills \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE \
             --amount $AMOUNT
-        elif [ $TYPE = "clips" ]; then
-          echo "Render clips: unimplemented" >&2
-          exit 1
+        elif [ $TYPE = "clip" ]; then
+          $BLENDER ./src/skope.blend --background \
+            --python ./src/skope-init.py -- \
+            --mode render \
+            --type clip \
+            --input-dir $INPUTDIR \
+            --output-dir $OUTPUTDIR \
+            --import-dir $IMPORTDIR \
+            --format $FORMAT \
+            --scale $SCALE \
+            --length $LENGTH
         else
           echo "Render: unknown type $type" >&2
           exit 1
@@ -144,8 +153,8 @@ case $COMMAND in
             --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE
-        elif [ $TYPE = "clips" ]; then
-          echo "Render clips: unimplemented" >&2
+        elif [ $TYPE = "clip" ]; then
+          echo "Render clip: unimplemented" >&2
           exit 1
         else
           echo "Render: unknown type $type" >&2
