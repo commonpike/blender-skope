@@ -8,7 +8,8 @@ cd `dirname $0`;
 COMMAND=${1:-edit} # edit,test,render,regenerate
 TYPE=stills # stills, clips
 SCALE=10 # percentage
-AMOUNT=10 #number
+AMOUNT=10 #number of stills
+LENGTH=360 #number of frames in clip
 FORMAT=PNG # JPG,PNG
 INPUTDIR=render/input/images
 OUTPUTDIR=render/output/images
@@ -42,6 +43,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -i|--input-dir)
       INPUTDIR="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -l|--length)
+      LENGTH="$2"
       shift # past argument
       shift # past value
       ;;
@@ -88,7 +94,7 @@ case $COMMAND in
     edit)
        $BLENDER ./src/skope.blend \
           --python ./src/skope-init.py -- \
-          --mode=edit \
+          --mode edit \
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
           --import-dir $IMPORTDIR \
@@ -99,7 +105,8 @@ case $COMMAND in
     test)
         $BLENDER ./src/skope.blend \
           --python ./src/skope-init.py -- \
-          --mode=test\
+          --mode test\
+          --type $TYPE\
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
           --import-dir $IMPORTDIR \
@@ -111,7 +118,7 @@ case $COMMAND in
         if [ "$TYPE" = "stills" ]; then
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
-            --mode=render \
+            --mode render \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
@@ -131,7 +138,7 @@ case $COMMAND in
         if [ "$TYPE" = "stills" ]; then
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
-            --mode=regenerate \
+            --mode regenerate \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \

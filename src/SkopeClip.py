@@ -27,7 +27,7 @@ class SkopeClip:
     return self.go(self.current+1)
   
   def go(self,frame):
-    print("SkopeClip go "+frame)
+    print("SkopeClip go "+str(frame))
     if frame < self.length:
       if frame >= 0:
         self.current = frame

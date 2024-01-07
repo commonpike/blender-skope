@@ -11,10 +11,11 @@ import Skope
 
 parser = argparse.ArgumentParser(description='Skope runner')
 parser.add_argument('--mode', default='edit')
-#parser.add_argument('--type', default='stills')
+parser.add_argument('--type', default='stills')
 parser.add_argument('--scale', default='10')
 parser.add_argument('--format', default='PNG')
 parser.add_argument('--amount', default='10')
+parser.add_argument('--length', default='360')
 parser.add_argument('--input-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/images')
 parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/output')
 parser.add_argument('--import-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/states')
@@ -28,18 +29,24 @@ bpy.types.Scene.skope = skope
 def main():
   
   print("Skope Runner",args)
-  skope.set({
-    'output_dir': args.output_dir,
-    'import_dir': args.import_dir,
-    'image_format': args.format,
-    'scale': args.scale
-  })
+  skope.output_dir = args.output_dir
+  skope.import_dir = args.import_dir
+  skope.image_format = args.format
+  skope.scale = args.scale
 
   if args.mode == "test":
-    # call apply_random_state on every frame
-    bpy.app.handlers.frame_change_pre.clear()
-    bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
-
+    if args.type == "stills":
+      # call apply_random_state on every frame
+      bpy.app.handlers.frame_change_pre.clear()
+      bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
+    elif args.type == "clip":
+      # create a random clip and step it every frame
+      skope.create_random_clip(int(args.length))
+      bpy.app.handlers.frame_change_pre.clear()
+      bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
+    else:
+      raise Exception("Type "+args.type+" not supported")
+    
   elif args.mode == "render":
     skope.render_stills(int(args.amount))
     

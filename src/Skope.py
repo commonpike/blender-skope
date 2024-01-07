@@ -5,7 +5,6 @@ import os
 
 
 from SkopeState import SkopeState
-from SkopeMirrors import SkopeMirrors
 from SkopeClip import SkopeClip
 
 
@@ -27,30 +26,22 @@ class Skope:
 
     # init state class vars
     scene = bpy.context.scene
-    SkopeState.num_frames = scene.frame_end - scene.frame_start
-    mirrors = [obj for obj in scene.objects if fnmatch.fnmatchcase(obj.name, "mirror*")];
-    SkopeMirrors.max_mirrors = len(mirrors)
-
+    SkopeState.num_frames = scene.frame_end - scene.frame_start # why ?
+    
     # current state
     self.state = SkopeState(scene,input_dir)
 
-    # current clip
-    # self.clip = SkopeClip(input_dir)
+    # optional clip
+    self.clip = None
 
-    self.init_scene(scene)
-
-  def set(self, settings = {}):
-    for attr in settings:
-      if attr == 'input_dir' : self.input_dir = settings[attr]
-      elif attr == 'output_dir' : self.output_dir = settings[attr]
-      elif attr == 'import_dir' : self.import_dir = settings[attr]
-      elif attr == 'rendering' : self.rendering = settings[attr]
-      elif attr == 'scale' : self.scale = int(settings[attr])
-      elif attr == 'image_format' : self.image_format = settings[attr]
-
-  def init_scene(self, scene):
-    print("Skope init_scene")
-
+  def create_random_clip(self, length):
+    print("Skope create_random_clip")
+    scene = bpy.context.scene
+    scene.frame_end = length # +-1 ?
+    scene.frame_set(1)
+    self.clip = SkopeClip(scene,length)
+    self.clip.random()
+    self.clip.apply(scene)
   
   def render_stills(self, amount): 
     print("Rendering random stills ..")
@@ -102,10 +93,17 @@ class Skope:
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
     
+  # framechange handlers
   # test mode frame_change_pre handler
   
   def apply_random_state(self,scene,x=0):
-    SkopeState.frame_num = scene.frame_current
+    print("apply_random_state")
+    SkopeState.frame_num = scene.frame_current # why ?
     self.state.random()
     self.state.apply(scene)
+
+  def apply_clip_step(self,scene,x=0):
+    print("apply_clip_step")
+    self.clip.go(scene.frame_current)
+    self.clip.apply(scene)
       
