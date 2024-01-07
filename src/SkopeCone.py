@@ -4,6 +4,8 @@ import bpy
 import bmesh
 import math
 
+from easings import mix
+
 PI=math.pi
 TWO_PI=2*math.pi
 
@@ -19,7 +21,7 @@ class SkopeCone:
     self.numsides=5
     self.radius=4
     self.height=10
-    self.rotation=.5
+    self.rotation=0
 
     if scene:
       cone = scene.objects.get("cone")
@@ -34,6 +36,8 @@ class SkopeCone:
        self.beams = []
        self.material = None
   
+    if scene:
+      self.apply(scene)
     
 
   def create(self,scene):
@@ -155,14 +159,19 @@ class SkopeCone:
         self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
         self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
 
-    self.rotation = random.random()*360
+    self.rotation = random.random()*TWO_PI
     # radius
-    # rotation
+
+  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+    print("SkopeScreen mix")
+    self.rotation = mix(src.rotation,dst.rotation,pct,easing)
+    # self.numsides = max(src.numsides,dst.numsides)
+    # self.beams
 
   def apply(self,scene):
     if not self.bmesh or not self.mesh or not self.object:
         raise Exception("SkopeCamera can not be applied")
-    print("SkopeCone Apply")
+    print("SkopeCone apply")
     for index in range(0,len(self.beams)):
        self.bmesh.verts[index*2].co = self.beams[index]['bottom']
        self.bmesh.verts[index*2+1].co = self.beams[index]['top']
@@ -178,7 +187,6 @@ class SkopeCone:
     }
 
   def fromJSON(self,data):
-    print("SkopeCone fromJSON")
     self.rotation = data['rotation']
     self.numsides = data['numsides']
     self.radius = data['radius']

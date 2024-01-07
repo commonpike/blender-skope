@@ -3,6 +3,8 @@ import random
 import glob
 import math
 
+from easings import mix
+
 PI=math.pi
 TWO_PI=2*math.pi
 
@@ -30,16 +32,16 @@ class SkopeScreen:
     else:
       self.object = None
       self.material = None
-      self.mixer = None
+      self.fader = None
       self.sources = []
     
     self.maxscale=2
     self.rotation = {"x":0, "y":0, "z":0 }
     self.location = {"x":0, "y":0, "z":0 }
-    self.scale = {"x":0, "y":0 }
-    self.image1 = ""
-    self.image2 = ""
-    self.mix = .5
+    self.scale = {"x":1, "y":1 }
+    self.fade = .5
+    if scene:
+      self.apply(scene)
 
   def create(self,scene):
     print("SkopeScreen create")
@@ -65,9 +67,9 @@ class SkopeScreen:
     material.location.x = 600
     material.location.y = 200
     
-    self.mixer = self.material.node_tree.nodes.new(type="ShaderNodeMixShader")
-    self.mixer.location.x = 400
-    self.mixer.location.y = 200
+    self.fader = self.material.node_tree.nodes.new(type="ShaderNodeMixShader")
+    self.fader.location.x = 400
+    self.fader.location.y = 200
     
     self.sources = []
 
@@ -75,10 +77,11 @@ class SkopeScreen:
     image1.location.x = 0
     image1.location.y = 200
 
+    self.image1 = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource1')
     source1 = bpy.data.images['ScreenSource1']
     source1.source = 'FILE'
-    source1.filepath =random.choice(self.images)
+    source1.filepath = self.image1
     image1.image = source1
     self.sources.append(source1)
 
@@ -86,23 +89,24 @@ class SkopeScreen:
     image2.location.x = 0
     image2.location.y = 0
 
+    self.image2 = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource2')
     source2 = bpy.data.images['ScreenSource2']
     source2.source = 'FILE'
-    source2.filepath =random.choice(self.images)
+    source2.filepath = self.image2
     image2.image = source2
     self.sources.append(source2)
     
     self.material.node_tree.links.new(
       material.inputs['Surface'], 
-      self.mixer.outputs[0]
+      self.fader.outputs[0]
     )
     self.material.node_tree.links.new(
-      self.mixer.inputs[1], 
+      self.fader.inputs[1], 
       image1.outputs['Color']
     )
     self.material.node_tree.links.new(
-      self.mixer.inputs[2], 
+      self.fader.inputs[2], 
       image2.outputs['Color']
     )
     self.object.data.materials.append(self.material)
@@ -115,7 +119,7 @@ class SkopeScreen:
     self.scale["y"] = 1
     self.image1 = random.choice(self.images)
     self.image2 = random.choice(self.images)
-    self.mix = .5
+    self.fade = .5
 
   def random(self,minsize = 0):
     global TWO_PI
@@ -130,12 +134,21 @@ class SkopeScreen:
     self.scale["y"] = scale
     self.image1 = random.choice(self.images)
     self.image2 = random.choice(self.images)
-    self.mix =random.random()
+    self.fade =random.random()
+
+  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+    print("SkopeScreen mix")
+    self.rotation["z"] = mix(src.rotation["z"],dst.rotation["z"],pct,easing)
+    self.scale["x"] = mix(src.scale["x"],dst.scale["x"],pct,easing)
+    self.scale["y"] = mix(src.scale["y"],dst.scale["y"],pct,easing)
+    self.fade = mix(src.fade,dst.fade,pct,easing)
+    self.image1 = src.image1
+    self.image2 = dst.image2
 
   def toJSON(self):
     return { 
       k:v for (k,v) in vars(self).items() 
-      if not k in ['object','material','mixer','sources'] 
+      if not k in ['object','material','fader','sources'] 
     }
   
   def fromJSON(self,data):
@@ -144,16 +157,19 @@ class SkopeScreen:
     self.location["z"] = data["location"]["z"]
     self.rotation["x"] = data["rotation"]["x"]
     self.rotation["y"] = data["rotation"]["y"]
+    self.rotation["z"] = data["rotation"]["z"]
+    self.width = data['width']
+    self.height = data['height']
+    self.dist = data['dist']
     self.scale["x"] = data["scale"]["x"]
     self.scale["y"] = data["scale"]["y"]
-    self.rotation["z"] = data["rotation"]["z"]
     self.images = data["images"]
     self.image1 = data["image1"]
     self.image2 = data["image2"]
-    self.mix = data["mix"]
+    self.fade = data["fade"]
 
   def apply(self,scene):
-    if not self.object or not self.mixer:
+    if not self.object or not self.fader:
         raise Exception("SkopeScreen can not be applied")
     print("Skopescreen apply")
     self.object.rotation_euler.x = self.rotation["x"]
@@ -166,4 +182,4 @@ class SkopeScreen:
     self.object.scale[2] = self.scale["y"]
     bpy.data.images['ScreenSource1'].filepath = self.image1
     bpy.data.images['ScreenSource2'].filepath = self.image2
-    self.mixer.inputs[0].default_value=self.mix
+    self.fader.inputs[0].default_value=self.fade

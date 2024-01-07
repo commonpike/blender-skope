@@ -2,11 +2,13 @@ import bpy
 import random
 import math
 
+from easings import mix
+
 class SkopeCamera:
 
   dist = 10
   def __init__(self,scene=None):
-    if (scene):
+    if scene:
       camera = scene.objects.get("camera")
       if camera:
         raise Exception("Sorry, only one SkopeCamera per scene")
@@ -14,7 +16,9 @@ class SkopeCamera:
         self.create(scene)
     else:
         self.object = None
-    self.location = {"x":0, "y":0, "z":0 }
+    self.location = {"x":0, "y":0, "z":SkopeCamera.dist }
+    if scene:
+      self.apply(scene)
 
   def create(self,scene):
     print("SkopeCamera creating camera")
@@ -47,10 +51,15 @@ class SkopeCamera:
     self.location["x"] = (random.random()-.5)*maxloc
     self.location["y"] = (random.random()-.5)*maxloc
 
+  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+    print("SkopeCamera mix")
+    self.location["x"] = mix(src.location["x"],dst.location["x"],pct,easing)
+    self.location["y"] = mix(src.location["y"],dst.location["y"],pct,easing)
+
   def apply(self,scene):
     if not self.object:
         raise Exception("SkopeCamera can not be applied")
-    print("SkopeCamera Apply state")
+    print("SkopeCamera apply")
     self.object.location.x = self.location["x"]
     self.object.location.y = self.location["y"]
     self.object.location.z = self.location["z"]

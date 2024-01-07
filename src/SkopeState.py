@@ -41,10 +41,10 @@ class SkopeState:
     clone.fromJSON(data)
     return clone
   
-  #def mix(self,src,dst,pct,easing):
-  #  self.screen.mix(src,dst,pct,easing)
-  #  self.camera.mix(src,dst,pct,easing)
-  #  self.cone.mix(src,dst,pct,easing)
+  def mix(self,src,dst,pct,easing):
+    self.screen.mix(src.screen,dst.screen,pct,easing)
+    self.camera.mix(src.camera,dst.camera,pct,easing)
+    self.cone.mix(src.cone,dst.cone,pct,easing)
 
   def writeJSON(self,file):
     print("Write json", file)

@@ -4,15 +4,15 @@ class SkopeClip:
   
   def __init__(self,scene,length):
     self.state = scene.skope.state
-    self.start = self.state.clone()
-    self.end = self.state.clone()
+    self.src = self.state.clone()
+    self.dst = self.state.clone()
     self.length = length
     self.current = 0
     self.easing = 'LINEAR'
 
   def random(self):
-    self.start.random()
-    self.end.random()
+    self.src.random()
+    self.dst.random()
     
   def start(self):
     return self.go(0)
@@ -27,12 +27,14 @@ class SkopeClip:
     return self.go(self.current+1)
   
   def go(self,frame):
+    print("SkopeClip go "+frame)
     if frame < self.length:
       if frame >= 0:
         self.current = frame
-    return self.current < self.length and self.current > 0
+    done = self.current < self.length - 1 and self.current > 0
+    return not done
 
-  def apply(self):
+  def apply(self,scene):
     pct = self.current * 100 / ( self.length - 1) # think twice
-    self.state.mix(self.start,self.end,pct,self.easing)
-    self.state.apply()
+    self.state.mix(self.src,self.dst,pct,self.easing)
+    self.state.apply(scene)
