@@ -8,3 +8,6 @@ skope = scene.skope
 
 #skope.state.random()
 #skope.state.apply(scene)
+
+#skope.clip.random()
+#skope.clip.apply(scene)

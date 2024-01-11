@@ -12,11 +12,13 @@ TWO_PI=2*math.pi
 class SkopeCone:
 
   minsides=3
-  maxsides=16
+  maxsides=8
   maxwiggle=1/5 # 1 = 100%
   smooth= True # removed in blender4
   autoSmooth=15 # removed in blender4
   allowSlant=True
+  allowWarp=False
+
   def __init__(self,scene=None):
     self.numsides=5
     self.radius=4
@@ -141,9 +143,12 @@ class SkopeCone:
   def random(self):
     global TWO_PI
     print("SkopeCone random")
+    # reset straight
     self.reset(
       random.randint(SkopeCone.minsides, SkopeCone.maxsides)
     )
+    
+    # wiggle some
     maxwiggle = SkopeCone.maxwiggle*TWO_PI*self.radius/self.numsides
     for index in range(0,len(self.beams)):
       random_angle = random.random()*360
@@ -159,14 +164,65 @@ class SkopeCone:
         self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
         self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
 
+    # warp some. this will make the number of 
+    # sides on the bottom less than those 
+    # at the top
+    if SkopeCone.allowWarp:
+      warpnum = random.randint(SkopeCone.minsides, self.numsides)
+      newbeams = []
+      for index in range(0,len(self.beams)):
+        warpindex = math.floor(index*warpnum/self.numsides)
+        print('warp',index,warpindex)
+        newbeams.append({
+          'top': self.beams[index]['top'],
+          'bottom': [
+            self.beams[warpindex]['bottom'][0],
+            self.beams[warpindex]['bottom'][1],
+            self.beams[warpindex]['bottom'][2],
+          ]
+        })
+      self.beams = newbeams
+        
+
+    # rotate
     self.rotation = random.random()*TWO_PI
+
     # radius
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
     self.rotation = mix(src.rotation,dst.rotation,pct,easing)
-    # self.numsides = max(src.numsides,dst.numsides)
-    # self.beams
+    numsides = max(src.numsides,dst.numsides)
+    if (self.numsides != numsides):
+      self.reset(numsides)
+    srcnum = src.numsides
+    dstnum = dst.numsides
+    for index in range(0,len(self.beams)):
+      srcindex = math.floor(index*srcnum/self.numsides)
+      dstindex = math.floor(index*dstnum/self.numsides)
+      print('from:',self.numsides,srcnum,dstnum)
+      print('mix:',index,srcindex,dstindex)
+      self.beams[index]['bottom'][0] = mix(
+        src.beams[srcindex]['bottom'][0],
+        dst.beams[dstindex]['bottom'][0],
+        pct,easing
+      )
+      self.beams[index]['bottom'][1] = mix(
+        src.beams[srcindex]['bottom'][1],
+        dst.beams[dstindex]['bottom'][1],
+        pct,easing
+      )
+      self.beams[index]['top'][0] = mix(
+        src.beams[srcindex]['top'][0],
+        dst.beams[dstindex]['top'][0],
+        pct,easing
+      )
+      self.beams[index]['top'][1] = mix(
+        src.beams[srcindex]['top'][1],
+        dst.beams[dstindex]['top'][1],
+        pct,easing
+      )
+    
 
   def apply(self,scene):
     if not self.bmesh or not self.mesh or not self.object:

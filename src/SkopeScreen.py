@@ -34,6 +34,8 @@ class SkopeScreen:
       self.material = None
       self.fader = None
       self.sources = []
+      self.image1 = ''
+      self.image2 = ''
     
     self.maxscale=2
     self.rotation = {"x":0, "y":0, "z":0 }
