@@ -19,8 +19,8 @@ class SkopeScreen:
       for pattern in self.src_globs:
         self.images.extend(glob.glob(inputdir+'/'+pattern.upper()))
         self.images.extend(glob.glob(inputdir+'/'+pattern.lower()))
-    self.width = 30.0
-    self.height = 30.0
+    self.width = 10.0
+    self.height = 10.0
     self.dist = 0
 
     if scene:

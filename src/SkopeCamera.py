@@ -7,6 +7,7 @@ from easings import mix
 class SkopeCamera:
 
   dist = 10
+  maxshift = .5
   def __init__(self,scene=None):
     if scene:
       camera = scene.objects.get("camera")
@@ -17,6 +18,9 @@ class SkopeCamera:
     else:
         self.object = None
     self.location = {"x":0, "y":0, "z":SkopeCamera.dist }
+    self.shift_x = 0
+    self.shift_y = 0
+
     if scene:
       self.apply(scene)
 
@@ -27,7 +31,8 @@ class SkopeCamera:
     self.object.location.x = 0
     self.object.location.y = 0
     self.object.location.z = SkopeCamera.dist
-    self.object.data.lens = 20
+    self.object.data.lens = 30
+    self.object.data.sensor_width = 70
     self.object.data.type = 'PERSP'
     self.object.data.shift_x = 0
     self.object.data.shift_y = 0
@@ -50,11 +55,15 @@ class SkopeCamera:
     self.reset()
     self.location["x"] = (random.random()-.5)*maxloc
     self.location["y"] = (random.random()-.5)*maxloc
+    self.shift_x = (random.random()-.5)*SkopeCamera.maxshift
+    self.shift_y = (random.random()-.5)*SkopeCamera.maxshift
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeCamera mix")
     self.location["x"] = mix(src.location["x"],dst.location["x"],pct,easing)
     self.location["y"] = mix(src.location["y"],dst.location["y"],pct,easing)
+    self.shift_x  = mix(src.shift_x,dst.shift_x,pct,easing)
+    self.shift_y  = mix(src.shift_y,dst.shift_y,pct,easing)
 
   def apply(self,scene):
     if not self.object:
@@ -63,6 +72,8 @@ class SkopeCamera:
     self.object.location.x = self.location["x"]
     self.object.location.y = self.location["y"]
     self.object.location.z = self.location["z"]
+    self.object.data.shift_x = self.shift_x
+    self.object.data.shift_y = self.shift_y
 
   def toJSON(self):
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
