@@ -18,6 +18,7 @@ class SkopeCone:
   autoSmooth=15 # removed in blender4
   allowSlant=True
   allowWarp=False
+  bevel = True
 
   def __init__(self,scene=None):
     self.numsides=5
@@ -34,6 +35,7 @@ class SkopeCone:
     else:
        self.mesh = None
        self.object = None
+       self.bevel = None
        self.bmesh = None
        self.beams = []
        self.material = None
@@ -97,6 +99,17 @@ class SkopeCone:
     self.material.node_tree.links.new(bdsf.outputs[0], output.inputs[0])
     # link the material to the object
     self.object.data.materials.append(self.material)
+
+    # add a bevel mod to the object
+    if SkopeCone.bevel:
+      self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
+      self.bevel.affect='EDGES'
+      self.bevel.width = 4
+      self.bevel.segments = 16
+      self.bevel.harden_normals = True
+    else:
+      self.bevel = None
+
     # link the object to the scene
     scene.collection.objects.link(self.object)
 
@@ -228,18 +241,21 @@ class SkopeCone:
     if not self.bmesh or not self.mesh or not self.object:
         raise Exception("SkopeCamera can not be applied")
     print("SkopeCone apply")
+    
     for index in range(0,len(self.beams)):
-       self.bmesh.verts[index*2].co = self.beams[index]['bottom']
-       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
+      self.bmesh.verts[index*2].co = self.beams[index]['bottom']
+      self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
     self.bmesh.to_mesh(self.mesh)
     self.mesh.update()
     self.object.rotation_euler.z = self.rotation
+    
+
 
   def toJSON(self):
     return { 
       k:v for (k,v) in vars(self).items() 
-      if not k in ['object','mesh','bmesh','material'] 
+      if not k in ['object','bevel','mesh','bmesh','material'] 
     }
 
   def fromJSON(self,data):
