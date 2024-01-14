@@ -21,8 +21,12 @@ class Skope:
     self.output_dir = ''
     self.import_dir = ''
     self.rendering = False
+    self.type = 'stills' # stills | clip
     self.scale = 10
     self.image_format = 'PNG'
+    self.video_format = 'FFMPEG'
+    self.ffmpeg_format = 'MPEG4'
+    self.motion_blur = True
 
     # init state class vars
     scene = bpy.context.scene
@@ -33,6 +37,23 @@ class Skope:
 
     # optional clip
     self.clip = None
+
+  def apply(self,scene):
+    scene.render.resolution_percentage = self.scale
+    filename = str(uuid.uuid4())[:4]
+    if self.type == 'stills':
+      scene.render.image_settings.file_format = self.image_format
+    else:
+      scene.render.image_settings.file_format = self.video_format
+      scene.render.ffmpeg.format=self.ffmpeg_format
+      filename += '-'
+    scene.render.filepath = self.output_dir+ '/' + filename
+    
+    if self.motion_blur:
+      scene.render.use_motion_blur = True  
+      scene.cycles.motion_blur_position = 'START'  
+      scene.render.motion_blur_shutter = 8  
+      bpy.ops.render.shutter_curve_preset(shape = 'SHARP')
 
   def create_random_clip(self, length):
     print("Skope create_random_clip")
@@ -84,7 +105,7 @@ class Skope:
     
     bpy.app.handlers.frame_change_pre.clear()
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
-    filename = str(uuid.uuid4()).zfill(4);
+    filename = str(uuid.uuid4())[:4];
     scene.render.filepath = self.output_dir+ '/' + filename
     
     print("Rendering",scene.render.filepath)
@@ -124,6 +145,11 @@ class Skope:
   # framechange handlers
   # test mode frame_change_pre handler
   
+  def apply_random_filepath(self,scene):
+    print("apply_random_filepath")
+    filename = str(uuid.uuid4())[:4]+'-';
+    scene.render.filepath = self.output_dir+ '/' + filename
+
   def apply_random_state(self,scene,x=0):
     print("apply_random_state")
     SkopeState.frame_num = scene.frame_current # why ?

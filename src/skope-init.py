@@ -33,6 +33,8 @@ def main():
   skope.import_dir = args.import_dir
   skope.image_format = args.format
   skope.scale = int(args.scale)
+  skope.type = args.type
+  skope.apply(bpy.context.scene)
 
   if args.mode == "test":
     if args.type == "stills":
@@ -44,6 +46,7 @@ def main():
       skope.create_random_clip(int(args.length))
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
+      bpy.app.handlers.render_pre.append(skope.apply_random_filepath)
     else:
       raise Exception("Type "+args.type+" not supported")
     

@@ -31,7 +31,7 @@ class SkopeCamera:
     self.object.location.x = 0
     self.object.location.y = 0
     self.object.location.z = SkopeCamera.dist
-    self.object.data.lens = 30
+    self.object.data.lens = 70
     self.object.data.sensor_width = 70
     self.object.data.type = 'PERSP'
     self.object.data.shift_x = 0

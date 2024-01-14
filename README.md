@@ -15,11 +15,12 @@ There are several `command`s available:
 There are also some command line options:
 
 ```
---type (stills|clips)
---amount (number)
+--type (stills|clip)
+--amount (number of stills)
+--length (number of frames in clip)
 --scale (percentage)
---format (JPG|PNG)
+--format (JPG|PNG - stills only)
 --input-dir (path to source images)
 --output-dir (path to output dir)
---import-dir (path to dir with prerendered state files to regenerate)
+--import-dir (path to dir with prerendered state files - regenerate only)
 ```

@@ -12,7 +12,7 @@ AMOUNT=10 #number of stills
 LENGTH=360 #number of frames in clip
 FORMAT=PNG # JPG,PNG
 INPUTDIR=render/input/images
-OUTPUTDIR=render/output/images
+OUTPUTDIR=
 IMPORTDIR=render/input/import
 
 shift # past command
@@ -73,6 +73,13 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
+if [ "$OUTPUTDIR" = "" ]; then
+  BASENAME=`basename $INPUTDIR`
+  if [ "$TYPE" = "clip" -a "$BASENAME" = "images" ]; then
+    BASENAME="video"
+  fi
+  OUTPUTDIR="render/output/$BASENAME"
+fi
 
 mkdir -p "$OUTPUTDIR"
 
@@ -97,7 +104,6 @@ case $COMMAND in
           --mode edit \
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
-          --import-dir $IMPORTDIR \
           --format $FORMAT \
           --scale $SCALE
         ;;
@@ -109,7 +115,6 @@ case $COMMAND in
           --type $TYPE\
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
-          --import-dir $IMPORTDIR \
           --format $FORMAT \
           --scale $SCALE
         ;;
@@ -122,7 +127,6 @@ case $COMMAND in
             --type stills \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
-            --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE \
             --amount $AMOUNT
@@ -133,7 +137,6 @@ case $COMMAND in
             --type clip \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
-            --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE \
             --length $LENGTH

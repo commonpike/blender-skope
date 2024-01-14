@@ -104,6 +104,7 @@ class SkopeCone:
     if SkopeCone.bevel:
       self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
       self.bevel.affect='EDGES'
+      self.bevel.limit_method='NONE'
       self.bevel.width = 4
       self.bevel.segments = 16
       self.bevel.harden_normals = True
