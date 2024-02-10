@@ -152,7 +152,7 @@ class Skope:
 
   def apply_random_state(self,scene,x=0):
     print("apply_random_state")
-    SkopeState.frame_num = scene.frame_current # why ?
+    #SkopeState.frame_num = scene.frame_current # why ?
     self.state.random()
     self.state.apply(scene)
 
