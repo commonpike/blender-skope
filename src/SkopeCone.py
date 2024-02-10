@@ -24,6 +24,10 @@ class SkopeCone:
   # different than at the bottom
   allowSlant=True
 
+  # sometimes make the number of sides on
+  # the bottom less than on the top
+  allowWarp=False
+  
   # if random>bevelChance, create
   # a random bevel on all edges
   bevelChance = .5
@@ -34,11 +38,9 @@ class SkopeCone:
 
   # make bevels smooth
   smooth=False # removed in blender4
-  autoSmooth=1 # angle; removed in blender4
+  autoSmooth=0 # angle; removed in blender4
 
-  # sometimes make the number of sides on
-  # the bottom less than on the top
-  allowWarp=True
+  
 
   def __init__(self,scene=None):
     self.numsides=5
