@@ -49,6 +49,8 @@ class SkopeCamera:
     self.location["x"] = 0
     self.location["y"] = 0
     self.location["z"] = SkopeCamera.dist
+    self.shift_x = 0
+    self.shift_y = 0
 
   def random(self, maxloc = 10):
     print("SkopeCamera random")
@@ -82,3 +84,5 @@ class SkopeCamera:
     self.location["x"] = data["location"]["x"]
     self.location["y"] = data["location"]["y"]
     self.location["z"] = data["location"]["z"]
+    self.shift_x = data["shift_x"]
+    self.shift_y = data["shift_y"]
