@@ -27,6 +27,7 @@ class Skope:
     self.video_format = 'FFMPEG'
     self.ffmpeg_format = 'MPEG4'
     self.motion_blur = True
+    self.frozen = False
 
     # init state class vars
     scene = bpy.context.scene
@@ -151,13 +152,24 @@ class Skope:
     scene.render.filepath = self.output_dir+ '/' + filename
 
   def apply_random_state(self,scene,x=0):
-    print("apply_random_state")
-    SkopeState.frame_num = scene.frame_current # why ?
-    self.state.random()
-    self.state.apply(scene)
+    if not self.frozen:
+      print("apply_random_state",SkopeState.frame_num,scene.frame_current)
+      bpy.types.RenderSettings.use_lock_interface = True
+      SkopeState.frame_num = scene.frame_current
+      self.state.random()
+      self.state.apply(scene)
+      
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
     self.clip.go(scene.frame_current)
     self.clip.apply(scene)
+
+  def freeze(self,scene,x=0):
+    print("freeze")
+    self.frozen = True
+
+  def unfreeze(self,scene,x=0):
+    print("unfreeze")
+    self.frozen = False
       

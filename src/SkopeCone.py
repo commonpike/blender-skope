@@ -11,14 +11,36 @@ TWO_PI=2*math.pi
 
 class SkopeCone:
 
+  # when creating a random skope,
+  # set the amount of sides between these
   minsides=3
   maxsides=8
-  maxwiggle=1/5 # 1 = 100%
-  smooth= True # removed in blender4
-  autoSmooth=15 # removed in blender4
+  
+  # randomly wiggle (offset) the vertices at the 
+  # top and bottom of the skope, 1 = 100%
+  maxwiggle=1/5 
+  
+  # if allowSlant, wiggle vertices at the top
+  # different than at the bottom
   allowSlant=True
+
+  # sometimes make the number of sides on
+  # the bottom less than on the top
   allowWarp=False
-  bevel = True
+  
+  # if random>bevelChance, create
+  # a random bevel on all edges
+  bevelChance = .5
+  bevelLimitMethod = 'WEIGHT'
+  bevelWidth = 4
+  bevelSegments = 16
+  bevelHardenNormals = True
+
+  # make bevels smooth
+  smooth=False # removed in blender4
+  autoSmooth=0 # angle; removed in blender4
+
+  
 
   def __init__(self,scene=None):
     self.numsides=5
@@ -51,8 +73,9 @@ class SkopeCone:
     self.mesh = bpy.data.meshes.new("SkopeConeMesh")
     self.object = bpy.data.objects.new("cone",self.mesh)
     
-    self.mesh.use_auto_smooth=(SkopeCone.autoSmooth>0)
-    self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
+    if SkopeCone.autoSmooth>0:
+      self.mesh.use_auto_smooth=True
+      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
 
     # insert bmesh into object
     self.createBMesh()
@@ -101,13 +124,13 @@ class SkopeCone:
     self.object.data.materials.append(self.material)
 
     # add a bevel mod to the object
-    if SkopeCone.bevel:
+    if SkopeCone.bevelChance:
       self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
       self.bevel.affect='EDGES'
-      self.bevel.limit_method='NONE'
-      self.bevel.width = 4
-      self.bevel.segments = 16
-      self.bevel.harden_normals = True
+      self.bevel.limit_method=SkopeCone.bevelLimitMethod
+      self.bevel.width = SkopeCone.bevelWidth
+      self.bevel.segments = SkopeCone.bevelSegments
+      self.bevel.harden_normals = SkopeCone.bevelHardenNormals
     else:
       self.bevel = None
 
@@ -131,13 +154,15 @@ class SkopeCone:
             self.radius*math.sin(math.radians(alpha)),
             self.radius*math.cos(math.radians(alpha)),
             self.height
-          ]
+          ],
+          'bevel': 0
        })
     for beam in self.beams:
        self.bmesh.verts.new(beam['bottom'])
        self.bmesh.verts.new(beam['top'])
         
     self.bmesh.verts.ensure_lookup_table()
+    self.bmesh.faces.ensure_lookup_table()
 
     for index in range(0,len(self.beams)):
         face = self.bmesh.faces.new([
@@ -147,7 +172,6 @@ class SkopeCone:
             self.bmesh.verts[(index*2+2)%len(self.bmesh.verts)]
         ])
         face.smooth = SkopeCone.smooth
-
   
   def reset(self, numsides=3):
     print("SkopeCone reset", numsides)
@@ -177,6 +201,12 @@ class SkopeCone:
       else:
         self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
         self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
+    
+    # set a random bevel on all beams
+    if SkopeCone.bevelChance:
+      for index in range(0,len(self.beams)):
+        if random.random() < SkopeCone.bevelChance:
+          self.beams[index]['bevel'] = random.random()
 
     # warp some. this will make the number of 
     # sides on the bottom less than those 
@@ -193,7 +223,8 @@ class SkopeCone:
             self.beams[warpindex]['bottom'][0],
             self.beams[warpindex]['bottom'][1],
             self.beams[warpindex]['bottom'][2],
-          ]
+          ],
+          'bevel': self.beams[warpindex]['bevel']
         })
       self.beams = newbeams
         
@@ -236,17 +267,32 @@ class SkopeCone:
         dst.beams[dstindex]['top'][1],
         pct,easing
       )
+      self.beams[index]['bevel'] = mix(
+        src.beams[srcindex]['bevel'],
+        dst.beams[dstindex]['bevel'],
+        pct,easing
+      )
     
 
   def apply(self,scene):
     if not self.bmesh or not self.mesh or not self.object:
         raise Exception("SkopeCamera can not be applied")
     print("SkopeCone apply")
-    
+
     for index in range(0,len(self.beams)):
       self.bmesh.verts[index*2].co = self.beams[index]['bottom']
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
+
+    if SkopeCone.bevelChance:
+      bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
+      self.bmesh.faces.ensure_lookup_table()
+      for index in range(0,len(self.beams)):
+          face = self.bmesh.faces[index]
+          print("apply bevel",self.beams[index]['bevel'])
+          for edge in face.edges:
+            edge[bevelWeightLayer] = self.beams[index]['bevel']
+    
     self.bmesh.to_mesh(self.mesh)
     self.mesh.update()
     self.object.rotation_euler.z = self.rotation

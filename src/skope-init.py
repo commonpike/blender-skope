@@ -27,8 +27,8 @@ skope = Skope.Skope(args.input_dir)
 bpy.types.Scene.skope = skope
 
 def main():
-  
-  print("Skope Runner",args)
+
+  print("skope-init",args)
   skope.output_dir = args.output_dir
   skope.import_dir = args.import_dir
   skope.image_format = args.format
@@ -41,6 +41,11 @@ def main():
       # call apply_random_state on every frame
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
+      # but not if you render one frame
+      bpy.app.handlers.render_pre.clear()
+      bpy.app.handlers.render_pre.append(skope.freeze)
+      bpy.app.handlers.render_post.clear()
+      bpy.app.handlers.render_post.append(skope.unfreeze)
     elif args.type == "clip":
       # create a random clip and step it every frame
       skope.create_random_clip(int(args.length))
