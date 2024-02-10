@@ -16,9 +16,9 @@ parser.add_argument('--scale', default='10')
 parser.add_argument('--format', default='PNG')
 parser.add_argument('--amount', default='10')
 parser.add_argument('--length', default='360')
-parser.add_argument('--input-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/images')
-parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/output')
-parser.add_argument('--import-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/input/states')
+parser.add_argument('--input-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/default/input')
+parser.add_argument('--output-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/default/output')
+parser.add_argument('--import-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/default/import')
 
 # read arguments after --
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])

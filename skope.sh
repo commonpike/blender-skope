@@ -11,9 +11,10 @@ SCALE=10 # percentage
 AMOUNT=10 #number of stills
 LENGTH=360 #number of frames in clip
 FORMAT=PNG # JPG,PNG
-INPUTDIR=render/input/images
+PROJECTDIR=render/default
+INPUTDIR=
 OUTPUTDIR=
-IMPORTDIR=render/input/import
+IMPORTDIR=
 
 shift # past command
 
@@ -41,13 +42,13 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -i|--input-dir)
-      INPUTDIR="$2"
+    -p|--project-dir)
+      PROJECTDIR="$2"
       shift # past argument
       shift # past value
       ;;
-    -l|--length)
-      LENGTH="$2"
+    -i|--input-dir)
+      INPUTDIR="$2"
       shift # past argument
       shift # past value
       ;;
@@ -58,6 +59,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -d|--import-dir)
       IMPORTDIR="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -l|--length)
+      LENGTH="$2"
       shift # past argument
       shift # past value
       ;;
@@ -73,24 +79,26 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-if [ "$OUTPUTDIR" = "" ]; then
-  BASENAME=`basename $INPUTDIR`
-  if [ "$TYPE" = "clip" -a "$BASENAME" = "images" ]; then
-    BASENAME="video"
-  fi
-  OUTPUTDIR="render/output/$BASENAME"
+if [ "$INPUTDIR" = "" ]; then
+  INPUTDIR="$PROJECTDIR/input"
+else
+  PROJECTDIR=`dirname "$INPUTDIR"`
 fi
-
-mkdir -p "$OUTPUTDIR"
+if [ "$OUTPUTDIR" = "" ]; then
+  OUTPUTDIR="$PROJECTDIR/output"
+fi
+if [ "$IMPORTDIR" = "" ]; then
+  IMPORTDIR="$PROJECTDIR/import"
+fi
 
 if [ ! -d "$INPUTDIR" ]; then
   echo "INPUTDIR $INPUTDIR does not exist"
   exit 1;
 fi
-if [ ! -d "$IMPORTDIR" ]; then
-  echo "IMPORTDIR $IMPORTDIR does not exist"
-  exit 1;
-fi
+
+mkdir -p "$OUTPUTDIR"
+mkdir -p "$IMPORTDIR"
+
 if [ ! -f "$BLENDER" ]; then
   echo "Blender is not at $BLENDER"
   exit 1;
@@ -104,6 +112,7 @@ case $COMMAND in
           --mode edit \
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
+          --import-dir $IMPORTDIR \
           --format $FORMAT \
           --scale $SCALE
         ;;
@@ -115,6 +124,7 @@ case $COMMAND in
           --type $TYPE\
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
+          --import-dir $IMPORTDIR \
           --format $FORMAT \
           --scale $SCALE
         ;;
@@ -127,6 +137,7 @@ case $COMMAND in
             --type stills \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
+            --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE \
             --amount $AMOUNT
@@ -137,6 +148,7 @@ case $COMMAND in
             --type clip \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
+            --import-dir $IMPORTDIR \
             --format $FORMAT \
             --scale $SCALE \
             --length $LENGTH
