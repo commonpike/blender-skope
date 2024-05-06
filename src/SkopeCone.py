@@ -74,10 +74,6 @@ class SkopeCone:
     # create a object
     self.mesh = bpy.data.meshes.new("SkopeConeMesh")
     self.object = bpy.data.objects.new("cone",self.mesh)
-    
-    if self.smooth and SkopeCone.autoSmooth>0:
-      self.mesh.use_auto_smooth=True
-      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
 
     # insert bmesh into object
     self.createBMesh()
@@ -183,6 +179,10 @@ class SkopeCone:
   def random(self):
     global TWO_PI
     print("SkopeCone random")
+
+    # smooth
+    self.smooth = (random.random() < SkopeCone.smoothChance)
+
     # reset straight
     self.reset(
       random.randint(SkopeCone.minsides, SkopeCone.maxsides)
@@ -237,8 +237,6 @@ class SkopeCone:
     # radius
     # ...
 
-    # smooth
-    self.smooth = (random.random() < SkopeCone.smoothChance)
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
@@ -282,13 +280,19 @@ class SkopeCone:
 
   def apply(self,scene):
     if not self.bmesh or not self.mesh or not self.object:
-        raise Exception("SkopeCamera can not be applied")
+        raise Exception("SkopeCone can not be applied")
     print("SkopeCone apply")
 
     for index in range(0,len(self.beams)):
       self.bmesh.verts[index*2].co = self.beams[index]['bottom']
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
+
+    if self.smooth and SkopeCone.autoSmooth>0:
+      self.mesh.use_auto_smooth=True
+      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
+    else:
+      self.mesh.use_auto_smooth=False
 
     if SkopeCone.bevelChance:
       bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
@@ -317,11 +321,6 @@ class SkopeCone:
     self.radius = data['radius']
     self.height = data['height']
     self.smooth = data['smooth']
-    if self.smooth and SkopeCone.autoSmooth>0:
-      self.mesh.use_auto_smooth=True
-      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
-    else:
-      self.mesh.use_auto_smooth=False
     self.createBMesh()
     self.beams = data['beams']
     
