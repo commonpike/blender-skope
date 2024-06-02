@@ -169,10 +169,10 @@ case $COMMAND in
             --format $FORMAT \
             --scale $SCALE
         elif [ $TYPE = "clip" ]; then
-          echo "Render clip: unimplemented" >&2
+          echo "Regenerate clip: unimplemented" >&2
           exit 1
         else
-          echo "Render: unknown type $type" >&2
+          echo "Regenerate: unknown type $type" >&2
           exit 1
         fi
         ;;
@@ -182,6 +182,7 @@ case $COMMAND in
         echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
         echo 'Commands: help, test, render, regenerate'
         echo 'Arguments: --amount, --type, --scale, --format, --length'
+        echo 'Type: stills (default) or clip'
         echo 'Project dir expects subdirs input, output, import'
 
         exit 1
