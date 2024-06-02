@@ -37,6 +37,7 @@ class SkopeCone:
   bevelHardenNormals = True
 
   # make bevels smooth
+  smoothChance=.5
   smooth=False # removed in blender4
   autoSmooth=0 # angle; removed in blender4
 
@@ -47,6 +48,7 @@ class SkopeCone:
     self.radius=4
     self.height=10
     self.rotation=0
+    self.smooth=SkopeCone.smooth
 
     if scene:
       cone = scene.objects.get("cone")
@@ -72,10 +74,6 @@ class SkopeCone:
     # create a object
     self.mesh = bpy.data.meshes.new("SkopeConeMesh")
     self.object = bpy.data.objects.new("cone",self.mesh)
-    
-    if SkopeCone.autoSmooth>0:
-      self.mesh.use_auto_smooth=True
-      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
 
     # insert bmesh into object
     self.createBMesh()
@@ -171,7 +169,7 @@ class SkopeCone:
             self.bmesh.verts[(index*2+3)%len(self.bmesh.verts)],
             self.bmesh.verts[(index*2+2)%len(self.bmesh.verts)]
         ])
-        face.smooth = SkopeCone.smooth
+        face.smooth = self.smooth
   
   def reset(self, numsides=3):
     print("SkopeCone reset", numsides)
@@ -181,6 +179,10 @@ class SkopeCone:
   def random(self):
     global TWO_PI
     print("SkopeCone random")
+
+    # smooth
+    self.smooth = (random.random() < SkopeCone.smoothChance)
+
     # reset straight
     self.reset(
       random.randint(SkopeCone.minsides, SkopeCone.maxsides)
@@ -233,6 +235,8 @@ class SkopeCone:
     self.rotation = random.random()*TWO_PI
 
     # radius
+    # ...
+
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
@@ -276,13 +280,19 @@ class SkopeCone:
 
   def apply(self,scene):
     if not self.bmesh or not self.mesh or not self.object:
-        raise Exception("SkopeCamera can not be applied")
+        raise Exception("SkopeCone can not be applied")
     print("SkopeCone apply")
 
     for index in range(0,len(self.beams)):
       self.bmesh.verts[index*2].co = self.beams[index]['bottom']
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
+
+    if self.smooth and SkopeCone.autoSmooth>0:
+      self.mesh.use_auto_smooth=True
+      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
+    else:
+      self.mesh.use_auto_smooth=False
 
     if SkopeCone.bevelChance:
       bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
@@ -310,5 +320,8 @@ class SkopeCone:
     self.numsides = data['numsides']
     self.radius = data['radius']
     self.height = data['height']
+    self.smooth = data['smooth']
     self.createBMesh()
     self.beams = data['beams']
+    
+    
