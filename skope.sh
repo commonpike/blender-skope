@@ -5,7 +5,7 @@ BLENDER="${BLENDER:=/Applications/3rdParty/Blender.app/Contents/MacOS/Blender}"
 
 cd `dirname $0`;
 
-COMMAND=${1:-edit} # edit,test,render,regenerate
+COMMAND=${1:-help} # help, edit,test,render,regenerate
 TYPE=stills # stills, clips
 SCALE=10 # percentage
 AMOUNT=10 #number of stills
@@ -178,8 +178,12 @@ case $COMMAND in
         ;;
         
     *)
-        # error
-        echo 'Unknown command ' $COMMAND >&2
+        # help
+        echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
+        echo 'Commands: help, test, render, regenerate'
+        echo 'Arguments: --amount, --type, --scale, --format, --length'
+        echo 'Project dir expects subdirs input, output, import'
+
         exit 1
 esac
 
