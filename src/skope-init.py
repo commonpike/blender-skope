@@ -29,11 +29,11 @@ bpy.types.Scene.skope = skope
 def main():
 
   print("skope-init",args)
-  skope.output_dir = args.output_dir
-  skope.import_dir = args.import_dir
-  skope.image_format = args.format
-  skope.scale = int(args.scale)
-  skope.type = args.type
+  skope.settings.output_dir = args.output_dir
+  skope.settings.import_dir = args.import_dir
+  skope.settings.image_format = args.format
+  skope.settings.scale = int(args.scale)
+  skope.settings.type = args.type
   skope.apply(bpy.context.scene)
 
   if args.mode == "test":
