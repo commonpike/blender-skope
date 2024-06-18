@@ -13,69 +13,80 @@ TWO_PI=2*math.pi
 class SkopeCone:
 
   settings = dict2obj({
-
-    "fix_roughness": 0,
-    "fix_metallic": 1,
-    "fix_diffuse_color": (1,1,1,1),
-
-    "set_height": 10,
-    "set_radius": 4,
-
-    "rnd_rotation": True,
-    "def_rotation": 0,
-    "min_rotation": 0,
-    "max_rotation": 1,
-    "dist_rotation": "LINEAR",
-
+    "roughness" : {
+      "fixed" : 0
+    },
+    "metallic" : {
+      "fixed" : 1
+    },
+    "diffuse_color" : {
+      "fixed" : (1,1,1,1)
+    },
+    "height": {
+      "set" : 10
+    },
+    "radius": {
+      "set" : 4
+    },
+    "rotation": {
+      "random": True,
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "distribution" : "LINEAR"
+    },
     # when creating a random skope,
-    # set the amount of sides between these
-    "rnd_numsides": True,
-    "def_numsides": 5,
-    "min_numsides": 3,
-    "max_numsides" : 8,
-    "dist_numsides" : "LINEAR",
-    # sometimes make the number of sides on
-    # the bottom less than on the top
-    "warp_numsides": False, #allowWarp
-
+    # set the amount of sides 
+    "numsides": {
+      "random": True,
+      "default": 5,
+      "minimum": 3,
+      "maximum": 8,
+      "distribution" : "LINEAR",
+      # randomly make the number of sides on
+      # the bottom less than on the top
+      "warp": False
+    } ,
     # randomly wiggle (offset) the vertices at the 
     # top and bottom of the skope, 1 = TWO_PI*radius/numsides
-    "rnd_wiggle" : True,
-    "min_wiggle" : 0,
-    "max_wiggle": 1/5,
-    "dist_wiggle": "LINEAR",
-    # if allowSlant, wiggle vertices at the top
-    # different than at the bottom
-    "slant_wiggle": True, # allowSlant
-
-    # if random>bevelChance, create
+    "wiggle": {
+      "random": True,
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1/5,
+      "distribution" : "LINEAR",
+      # if slant, wiggle vertices at the top
+      # different than at the bottom  
+      "slant": True
+    },
+    # if random>chance, create
     # a random bevel on all edges
-    "rnd_bevel" : True,
-    "def_bevel": False,
-    "chance_bevel": .5,
-    "fix_bevel_limit_method": 'WEIGHT',
-    "fix_bevel_width": 4,
-    "fix_bevel_segments": 16,
-    "fix_bevel_harden_normals": True,
-
+    "bevel" : {
+      "random": True,
+      "default": False,
+      "chance": .5,
+      "fixed_limit_method": 'WEIGHT',
+      "fixed_width": 4,
+      "fixed_segments": 16,
+      "fixed_harden_normals": True,
+    },
     # make bevels smooth
     # removed in blender4
-    "rnd_smooth" : True,
-    "def_smooth": False,
-    "chance_smooth": .5,
-
+    "smooth" : {
+      "random": True,
+      "default": False,
+      "chance": .5
+    },
     # use autosmooth, degrees
     # removed in blender4
-    "rnd_autosmooth": False,
-    "def_autosmooth" : 0,
-    "min_autosmooth" : 0,
-    "max_autosmooth": 180,
-    "dist_autosmooth": "LINEAR"
-
+    "autosmooth" : {
+      "random": False,
+      "default": 0,
+      "minimum": 0,
+      "maximum": 180,
+      "distribution" : "LINEAR"
+    }
   })
-
-  
-
   
 
   def __init__(self,scene=None):
@@ -101,17 +112,17 @@ class SkopeCone:
   def reset(self, numsides=0, smooth=None, rebuild=True):
     print("SkopeCone reset", numsides, smooth, rebuild)
     if numsides==0:
-      self.numsides = self.settings.def_numsides
+      self.numsides = self.settings.numsides.default
     else:
       self.numsides = numsides
     if smooth is None:
-      self.smooth = self.settings.def_smooth
+      self.smooth = self.settings.smooth.default
     else:
       self.smooth = smooth
-    self.radius = self.settings.set_radius
-    self.height = self.settings.set_height
-    self.rotation = self.settings.def_rotation
-    self.enable_bevel = self.settings.rnd_bevel or self.settings.def_bevel
+    self.radius = self.settings.radius.set
+    self.height = self.settings.height.set
+    self.rotation = self.settings.rotation.default
+    self.enable_bevel = self.settings.bevel.random or self.settings.bevel.default
     if rebuild:
       self.createBMesh()
 
@@ -140,9 +151,9 @@ class SkopeCone:
         self.material.node_tree.links.clear()
         self.material.node_tree.nodes.clear()
 
-    self.material.roughness = self.settings.fix_roughness
-    self.material.metallic = self.settings.fix_metallic
-    self.material.diffuse_color=self.settings.fix_diffuse_color
+    self.material.roughness = self.settings.roughness.fixed
+    self.material.metallic = self.settings.metallic.fixed
+    self.material.diffuse_color=self.settings.diffuse_color.fixed
 
     nodes = self.material.node_tree.nodes
     output = nodes.new(type='ShaderNodeOutputMaterial')
@@ -172,10 +183,10 @@ class SkopeCone:
     if self.enable_bevel:
       self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
       self.bevel.affect='EDGES'
-      self.bevel.limit_method=self.settings.fix_bevel_limit_method
-      self.bevel.width = self.settings.fix_bevel_width
-      self.bevel.segments = self.settings.fix_bevel_segments
-      self.bevel.harden_normals = self.settings.fix_bevel_harden_normals
+      self.bevel.limit_method=self.settings.bevel.fixed_limit_method
+      self.bevel.width = self.settings.bevel.fixed_width
+      self.bevel.segments = self.settings.bevel.fixed_segments
+      self.bevel.harden_normals = self.settings.bevel.fixed_harden_normals
     else:
       self.bevel = None
 
@@ -225,36 +236,36 @@ class SkopeCone:
     print("SkopeCone random")
 
     # smooth
-    if self.settings.rnd_smooth:
-      smooth = rndbool(self.settings.chance_smooth)
+    if self.settings.smooth.random:
+      smooth = rndbool(self.settings.smooth.chance)
     else:
-      smooth = self.settings.def_smooth
+      smooth = self.settings.smooth.default
 
     # numsides
-    if self.settings.rnd_numsides:
+    if self.settings.numsides.random:
       numsides = rndint(
-        self.settings.min_numsides, 
-        self.settings.max_numsides,
-        self.settings.dist_numsides
+        self.settings.numsides.minimum, 
+        self.settings.numsides.maximum,
+        self.settings.numsides.distribution
       )
     else:
-      numsides = self.settings.def_numsides
+      numsides = self.settings.numsides.default
 
     # reset straight
     self.reset(numsides,smooth)
     
     # wiggle some
-    if self.settings.rnd_wiggle:
-      minwiggle = self.settings.min_wiggle*TWO_PI*self.radius/self.numsides
-      maxwiggle = self.settings.max_wiggle*TWO_PI*self.radius/self.numsides
+    if self.settings.wiggle.random:
+      minwiggle = self.settings.wiggle.minimum*TWO_PI*self.radius/self.numsides
+      maxwiggle = self.settings.wiggle.maximum*TWO_PI*self.radius/self.numsides
       for index in range(0,len(self.beams)):
         random_angle = rnd(0,360,'LINEAR')
-        random_wiggle = rnd(minwiggle,maxwiggle,self.settings.dist_wiggle)
+        random_wiggle = rnd(minwiggle,maxwiggle,self.settings.wiggle.distribution)
         self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
         self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
-        if self.settings.slant_wiggle:
+        if self.settings.wiggle.slant:
           random_angle = rnd(0,360,'LINEAR')
-          random_wiggle = rnd(minwiggle,maxwiggle,self.settings.dist_wiggle)
+          random_wiggle = rnd(minwiggle,maxwiggle,self.settings.wiggle.distribution)
           self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
           self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
         else:
@@ -264,17 +275,17 @@ class SkopeCone:
     # set a random bevel on all beams
     if self.enable_bevel:
       for index in range(0,len(self.beams)):
-        if self.settings.rnd_bevel:
-          if rndbool(self.settings.chance_bevel):
+        if self.settings.bevel.random:
+          if rndbool(self.settings.bevel.chance):
             self.beams[index]['bevel'] = random.random()
-        elif self.settings.def_bevel:
+        elif self.settings.bevel.default:
           self.beams[index]['bevel'] = random.random()
 
     # warp some. this will make the number of 
     # sides on the bottom less than those 
     # at the top
-    if self.settings.warp_numsides:
-      warpnum = random.randint(self.settings.min_numsides, self.numsides)
+    if self.settings.numsides.warp:
+      warpnum = random.randint(self.settings.numsides.minimum, self.numsides)
       newbeams = []
       for index in range(0,len(self.beams)):
         warpindex = math.floor(index*warpnum/self.numsides)
@@ -292,11 +303,11 @@ class SkopeCone:
         
 
     # rotate
-    if self.settings.rnd_rotation:
+    if self.settings.rotation.random:
       self.rotation = rnd(
-        self.settings.min_rotation,
-        self.settings.max_rotation,
-        self.settings.dist_rotation
+        self.settings.rotation.minimum,
+        self.settings.rotation.maximum,
+        self.settings.rotation.distribution
       )*TWO_PI
 
 
@@ -355,14 +366,14 @@ class SkopeCone:
     self.bmesh.verts.ensure_lookup_table()
 
     if self.smooth:
-      if self.settings.rnd_autosmooth:
+      if self.settings.autosmooth.random:
         autosmooth = rnd(
-          self.settings.min_autosmooth,
-          self.settings.max_autosmooth,
-          self.settings.dist_autosmooth
+          self.settings.autosmooth.minimum,
+          self.settings.autosmooth.maximum,
+          self.settings.autosmooth.distribution
         )
       else:
-        autosmooth = self.settings.def_autosmooth
+        autosmooth = self.settings.autosmooth.default
       if autosmooth>0:
         self.mesh.use_auto_smooth=True
         self.mesh.auto_smooth_angle=PI*autosmooth/180
