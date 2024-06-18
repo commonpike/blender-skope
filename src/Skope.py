@@ -6,12 +6,13 @@ import os
 
 from SkopeState import SkopeState
 from SkopeClip import SkopeClip
+from utilities import dict2obj
 
 
 class Skope:
   """A kaleidoscope for use in blender"""
   
-  settings = type('SkopeScreenSettings', (object,), {
+  settings = dict2obj({
     'input_dir': '',
     'output_dir': '',
     'import_dir': '',

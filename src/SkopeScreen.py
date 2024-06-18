@@ -4,14 +4,17 @@ import glob
 import math
 
 from easings import mix, rnd
+from utilities import dict2obj
 
 PI=math.pi
 TWO_PI=2*math.pi
 
 class SkopeScreen:
 
-  settings = type('SkopeScreenSettings', (object,), {
+  settings = dict2obj({
 
+    "fix_roughness": 0,
+    
     "rnd_img1": True,
     "rnd_img2": True,
 
@@ -24,7 +27,7 @@ class SkopeScreen:
     "def_rotation": {"x":0, "y":0, "z":0 },
 
     "rnd_scale" : True,
-    "def_scale": 1,
+    "def_scale": {"x":1,"y":1},
     "min_scale" : .5,
     "max_scale": 2,
     "dist_scale": "LINEAR",
@@ -72,10 +75,7 @@ class SkopeScreen:
     self.height = self.settings.def_height
     self.location = self.settings.def_location
     self.rotation = self.settings.def_rotation
-    self.scale = { 
-      'x': self.settings.def_scale, 
-      'y': self.settings.def_scale 
-    }
+    self.scale = self.settings.def_scale
     self.fade = self.settings.def_fade
     self.dist = self.settings.def_dist
     self.images = []
@@ -104,7 +104,7 @@ class SkopeScreen:
     self.object = bpy.data.objects.new("screen", screen_data)
 
     self.material = bpy.data.materials.new(name = "ScreenMaterial")
-    self.material.roughness = 0
+    self.material.roughness = self.settings.fix_roughness
     self.material.use_nodes = True
     self.material.node_tree.nodes.clear()
     
@@ -166,7 +166,7 @@ class SkopeScreen:
     self.reset()
     
     if self.settings.rnd_rotz:
-      self.rotation["z"] = rnd(
+      self.rotation.z = rnd(
         self.settings.min_rotz,
         self.settings.max_rotz,
         self.settings.dist_rotz
@@ -181,7 +181,8 @@ class SkopeScreen:
         self.settings.max_scale,
         self.settings.dist_scale
       )
-      self.scale = { 'x': scale, 'y': scale }
+      self.scale.x = scale
+      self.scale.y = scale
 
     if self.settings.rnd_img1:
       self.image1 = random.choice(self.images)
@@ -198,9 +199,9 @@ class SkopeScreen:
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
-    self.rotation["z"] = mix(src.rotation["z"],dst.rotation["z"],pct,easing)
-    self.scale["x"] = mix(src.scale["x"],dst.scale["x"],pct,easing)
-    self.scale["y"] = mix(src.scale["y"],dst.scale["y"],pct,easing)
+    self.rotation.z = mix(src.rotation.z,dst.rotation.z,pct,easing)
+    self.scale.x = mix(src.scale.x,dst.scale.x,pct,easing)
+    self.scale.y = mix(src.scale.y,dst.scale.y,pct,easing)
     self.fade = mix(src.fade,dst.fade,pct,easing)
     self.image1 = src.image1
     self.image2 = dst.image2
@@ -212,17 +213,17 @@ class SkopeScreen:
     }
   
   def fromJSON(self,data):
-    self.location["x"] = data["location"]["x"]
-    self.location["y"] = data["location"]["y"]
-    self.location["z"] = data["location"]["z"]
-    self.rotation["x"] = data["rotation"]["x"]
-    self.rotation["y"] = data["rotation"]["y"]
-    self.rotation["z"] = data["rotation"]["z"]
+    self.location.x = data["location"]["x"]
+    self.location.y = data["location"]["y"]
+    self.location.z = data["location"]["z"]
+    self.rotation.x = data["rotation"]["x"]
+    self.rotation.y = data["rotation"]["y"]
+    self.rotation.z = data["rotation"]["z"]
     self.width = data['width']
     self.height = data['height']
     self.dist = data['dist']
-    self.scale["x"] = data["scale"]["x"]
-    self.scale["y"] = data["scale"]["y"]
+    self.scale.x = data["scale"]["x"]
+    self.scale.y = data["scale"]["y"]
     self.images = data["images"]
     self.image1 = data["image1"]
     self.image2 = data["image2"]
@@ -232,14 +233,14 @@ class SkopeScreen:
     if not self.object or not self.fader:
         raise Exception("SkopeScreen can not be applied")
     print("Skopescreen apply")
-    self.object.rotation_euler.x = self.rotation["x"]
-    self.object.rotation_euler.y = self.rotation["y"]
-    self.object.rotation_euler.z = self.rotation["z"]
-    self.object.location.x = self.location["x"]
-    self.object.location.y = self.location["y"]
-    self.object.location.z = self.location["z"]
-    self.object.scale[0] = self.scale["x"]
-    self.object.scale[2] = self.scale["y"]
+    self.object.rotation_euler.x = self.rotation.x
+    self.object.rotation_euler.y = self.rotation.y
+    self.object.rotation_euler.z = self.rotation.z
+    self.object.location.x = self.location.x
+    self.object.location.y = self.location.y
+    self.object.location.z = self.location.z
+    self.object.scale[0] = self.scale.x
+    self.object.scale[2] = self.scale.y
     bpy.data.images['ScreenSource1'].filepath = self.image1
     bpy.data.images['ScreenSource2'].filepath = self.image2
     self.fader.inputs[0].default_value=self.fade
