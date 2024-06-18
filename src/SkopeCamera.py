@@ -7,31 +7,63 @@ from utilities import dict2obj
 class SkopeCamera:
 
   settings = dict2obj({
-
-    "fix_lens": 70,
-    "fix_sensor_width": 70,
-    "fix_type": "PERSP",
-    "fix_clip_start": .1,
-    "fix_clip_end": 100,
-    "fix_rotation": {"x":0, "y":0, "z":0 },
-
-    "location_within_radius": True,
-    "def_location" : {"x":0, "y":0, "z":10 },
-    "rnd_location" : {"x":True, "y":True, "z":False },
-    "min_location" : {"x":-5, "y":-5, "z":-1 },
-    "max_location" : {"x":5, "y":5, "z":1 },
-    "dist_location" : {"x":"LINEAR", "y":"LINEAR", "z":"LINEAR" },
-
-    "rnd_shift" : True,
-    "def_shift_x": 0,
-    "def_shift_y": 0,
-    "min_shift" : -.25,
-    "max_shift" : .25,
-    "dist_shift" : "LINEAR"
+    "lens": {
+      "fixed": 70
+    },
+    "sensor_width": {
+      "fixed" : 70
+    },
+    "type": {
+      "fixed" : "PERSP"
+    },
+    "clip_start": {
+      "fixed" : .1
+    },
+    "clip_end": {
+      "fixed" : 100
+    },
+    "rotation_x": {
+      "fixed": 0
+    },
+    "rotation_y": {
+      "fixed": 0
+    },
+    "rotation_z": {
+      "fixed": 0
+    },
+    "location_x": {
+      "default": 0,
+      "random": True,
+      "minimum": -5,
+      "maximum": 5,
+      "distribution": "LINEAR"
+    },
+    "location_y": {
+      "default": 0,
+      "random": True,
+      "minimum": -5,
+      "maximum": 5,
+      "distribution": "LINEAR"
+    },
+    "location_z": {
+      "default": 10,
+      "random": False,
+      "minimum": -1,
+      "maximum": 1,
+      "distribution": "LINEAR"
+    },
+    "location_within_radius": {
+      "set": True
+    },
+    "shift": {
+      "random": True,
+      "default": 0,
+      "minimum": -.25,
+      "maximum": .25,
+      "distribution": "LINEAR"
+    }
   })
 
-  dist = 10
-  maxshift = .5
   def __init__(self,scene=None):
     if scene:
       camera = scene.objects.get("camera")
@@ -48,28 +80,35 @@ class SkopeCamera:
 
   def reset(self):
     print("SkopeCamera Reset")
-    self.location = self.settings.def_location
-    self.shift_x = self.settings.def_shift_x
-    self.shift_y = self.settings.def_shift_y
+    self.location = {
+      'x': self.settings.location_x.default,
+      'y': self.settings.location_y.default,
+      'z': self.settings.location_z.default
+    }
+    #self.location.x = self.settings.location_x.default
+    #self.location.y = self.settings.location_y.default
+    #self.location.z = self.settings.location_z.default
+    self.shift_x = self.settings.shift.default
+    self.shift_y = self.settings.shift.default
 
   def create(self,scene):
     print("SkopeCamera creating camera")
     camera_data = bpy.data.cameras.new(name='camera')
     self.object = bpy.data.objects.new('camera', camera_data)
-    self.object.location.x = self.settings.def_location.x
-    self.object.location.y = self.settings.def_location.y
-    self.object.location.z = self.settings.def_location.z
-    self.object.data.shift_x = self.settings.def_shift_x
-    self.object.data.shift_y = self.settings.def_shift_y
+    self.object.location.x = self.settings.location_x.default
+    self.object.location.y = self.settings.location_y.default
+    self.object.location.z = self.settings.location_z.default
+    self.object.data.shift_x = self.settings.shift.default
+    self.object.data.shift_y = self.settings.shift.default
     
-    self.object.data.lens = self.settings.fix_lens
-    self.object.data.sensor_width = self.settings.fix_sensor_width
-    self.object.data.type = self.settings.fix_type
-    self.object.data.clip_start = self.settings.fix_clip_start
-    self.object.data.clip_end = self.settings.fix_clip_end
-    self.object.rotation_euler[0] = self.settings.fix_rotation.x
-    self.object.rotation_euler[1] = self.settings.fix_rotation.y
-    self.object.rotation_euler[2] = self.settings.fix_rotation.z
+    self.object.data.lens = self.settings.lens.fixed
+    self.object.data.sensor_width = self.settings.sensor_width.fixed
+    self.object.data.type = self.settings.type.fixed
+    self.object.data.clip_start = self.settings.clip_start.fixed
+    self.object.data.clip_end = self.settings.clip_end.fixed
+    self.object.rotation_euler[0] = self.settings.rotation_x.fixed
+    self.object.rotation_euler[1] = self.settings.rotation_y.fixed
+    self.object.rotation_euler[2] = self.settings.rotation_z.fixed
     scene.collection.objects.link(self.object)
     scene.camera = self.object ## ??
 
@@ -78,51 +117,51 @@ class SkopeCamera:
   def random(self, radius = 10):
     print("SkopeCamera random")
     self.reset()
-    if not self.settings.location_within_radius or radius == 0:
-        maxlocx = self.settings.max_location.x
-        maxlocy = self.settings.max_location.y
-        minlocx = self.settings.min_location.x
-        minlocy = self.settings.min_location.y
+    if not self.settings.location_within_radius.set or radius == 0:
+        maxlocx = self.settings.location_x.maximum
+        maxlocy = self.settings.location_y.maximum
+        minlocx = self.settings.location_x.minimum
+        minlocy = self.settings.location_y.minimum
     else :
         maxlocx = radius/2
         minlocx = -radius/2
         maxlocy = radius/2
         minlocy = -radius/2
-    if self.settings.rnd_location.x:
-      self.location.x = rnd(
+    if self.settings.location_x.random:
+      self.location['x'] = rnd(
         minlocx,
         maxlocx,
-        self.settings.dist_location.x
+        self.settings.location_x.distribution
       )
-    if self.settings.rnd_location.y:
-      self.location.y = rnd(
+    if self.settings.location_y.random:
+      self.location['y'] = rnd(
         minlocy,
         maxlocy,
-        self.settings.dist_location.y
+        self.settings.location_y.distribution
       )
-    if self.settings.rnd_location.z:
-      self.location.z = rnd(
-        self.settings.min_location.z,
-        self.settings.max_location.z,
-        self.settings.dist_location.z
+    if self.settings.location_z.random:
+      self.location['z'] = rnd(
+        self.settings.location_z.minimum,
+        self.settings.location_z.maximum,
+        self.settings.location_z.distribution
       )
 
-    if self.settings.rnd_shift:
+    if self.settings.shift.random:
       self.shift_x = rnd(
-        self.settings.min_shift,
-        self.settings.max_shift,
-        self.settings.dist_shift
+        self.settings.shift.minimum,
+        self.settings.shift.maximum,
+        self.settings.shift.distribution
       )
       self.shift_y = rnd(
-        self.settings.min_shift,
-        self.settings.max_shift,
-        self.settings.dist_shift
+        self.settings.shift.minimum,
+        self.settings.shift.maximum,
+        self.settings.shift.distribution
       )
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeCamera mix")
-    self.location.x = mix(src.location.x,dst.location.x,pct,easing)
-    self.location.y = mix(src.location.y,dst.location.y,pct,easing)
+    self.location['x'] = mix(src.location['x'],dst.location['x'],pct,easing)
+    self.location['y'] = mix(src.location['y'],dst.location['y'],pct,easing)
     self.shift_x  = mix(src.shift_x,dst.shift_x,pct,easing)
     self.shift_y  = mix(src.shift_y,dst.shift_y,pct,easing)
 
@@ -130,9 +169,9 @@ class SkopeCamera:
     if not self.object:
         raise Exception("SkopeCamera can not be applied")
     print("SkopeCamera apply")
-    self.object.location.x = self.location.x
-    self.object.location.y = self.location.y
-    self.object.location.z = self.location.z
+    self.object.location.x = self.location['x']
+    self.object.location.y = self.location['y']
+    self.object.location.z = self.location['z']
     self.object.data.shift_x = self.shift_x
     self.object.data.shift_y = self.shift_y
 
@@ -140,8 +179,8 @@ class SkopeCamera:
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
   
   def fromJSON(self,data):
-    self.location.x = data["location"]["x"]
-    self.location.y = data["location"]["y"]
-    self.location.z = data["location"]["z"]
+    self.location['x'] = data["location"]["x"]
+    self.location['y'] = data["location"]["y"]
+    self.location['z'] = data["location"]["z"]
     self.shift_x = data["shift_x"]
     self.shift_y = data["shift_y"]
