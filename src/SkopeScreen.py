@@ -74,42 +74,6 @@ class SkopeScreen:
 
   })
 
-  settingsOLD = dict2obj({
-
-    "roughness.fixed": 0,
-
-    "image1.random": True,
-    "image2.random": True,
-
-    "sources.directory": '',
-    "sources.globs": ['*.JPG','*.PNG'],
-    "width.set": 10.0,
-    "height.set":10.0,
-    "dist.set": 0.0,
-    "def_location": {"x":0, "y":0, "z":0 },
-    "def_rotation": {"x":0, "y":0, "z":0 },
-
-    "scale.random" : True,
-    "scale.default": {"x":1,"y":1},
-    "scale.minimum" : .5,
-    "scale.maximum": 2,
-    "scale.distribution": "LINEAR",
-    # "scale_extends_radius": True,
-
-    "fade.random": True,
-    "fade.default": .5,
-    "fade.minimum": 0,
-    "fade.maximum": 1,
-    "fade.distribution": "LINEAR",
-
-    "rotation_z.random": True,
-    "rotation_z.default": 0,
-    "rotation_z.minimum": 0,
-    "rotation_z.maximum": TWO_PI,
-    "rotation_z.distribution": "LINEAR"
-
-  })
-
   def __init__(self,scene=None,inputdir=None):
 
     self.settings.sources.directory = inputdir
