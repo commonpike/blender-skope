@@ -4,52 +4,83 @@ import bpy
 import bmesh
 import math
 
-from easings import mix
+from easings import mix, rnd, rndint, rndbool
+from utilities import dict2obj
 
 PI=math.pi
 TWO_PI=2*math.pi
 
 class SkopeCone:
 
-  # when creating a random skope,
-  # set the amount of sides between these
-  minsides=3
-  maxsides=8
-  
-  # randomly wiggle (offset) the vertices at the 
-  # top and bottom of the skope, 1 = 100%
-  maxwiggle=1/5 
-  
-  # if allowSlant, wiggle vertices at the top
-  # different than at the bottom
-  allowSlant=True
+  settings = dict2obj({
 
-  # sometimes make the number of sides on
-  # the bottom less than on the top
-  allowWarp=False
-  
-  # if random>bevelChance, create
-  # a random bevel on all edges
-  bevelChance = .5
-  bevelLimitMethod = 'WEIGHT'
-  bevelWidth = 4
-  bevelSegments = 16
-  bevelHardenNormals = True
+    "fix_roughness": 0,
+    "fix_metallic": 1,
+    "fix_diffuse_color": (1,1,1,1),
 
-  # make bevels smooth
-  smoothChance=.5
-  smooth=False # removed in blender4
-  autoSmooth=0 # angle; removed in blender4
+    "set_height": 10,
+    "set_radius": 4,
+
+    "rnd_rotation": True,
+    "def_rotation": 0,
+    "min_rotation": 0,
+    "max_rotation": 1,
+    "dist_rotation": "LINEAR",
+
+    # when creating a random skope,
+    # set the amount of sides between these
+    "rnd_numsides": True,
+    "def_numsides": 5,
+    "min_numsides": 3,
+    "max_numsides" : 8,
+    "dist_numsides" : "LINEAR",
+    # sometimes make the number of sides on
+    # the bottom less than on the top
+    "warp_numsides": False, #allowWarp
+
+    # randomly wiggle (offset) the vertices at the 
+    # top and bottom of the skope, 1 = TWO_PI*radius/numsides
+    "rnd_wiggle" : True,
+    "min_wiggle" : 0,
+    "max_wiggle": 1/5,
+    "dist_wiggle": "LINEAR",
+    # if allowSlant, wiggle vertices at the top
+    # different than at the bottom
+    "slant_wiggle": True, # allowSlant
+
+    # if random>bevelChance, create
+    # a random bevel on all edges
+    "rnd_bevel" : True,
+    "def_bevel": False,
+    "chance_bevel": .5,
+    "fix_bevel_limit_method": 'WEIGHT',
+    "fix_bevel_width": 4,
+    "fix_bevel_segments": 16,
+    "fix_bevel_harden_normals": True,
+
+    # make bevels smooth
+    # removed in blender4
+    "rnd_smooth" : True,
+    "def_smooth": False,
+    "chance_smooth": .5,
+
+    # use autosmooth, degrees
+    # removed in blender4
+    "rnd_autosmooth": False,
+    "def_autosmooth" : 0,
+    "min_autosmooth" : 0,
+    "max_autosmooth": 180,
+    "dist_autosmooth": "LINEAR"
+
+  })
+
+  
 
   
 
   def __init__(self,scene=None):
-    self.numsides=5
-    self.radius=4
-    self.height=10
-    self.rotation=0
-    self.smooth=SkopeCone.smooth
-
+    
+    self.reset(0,None,False)
     if scene:
       cone = scene.objects.get("cone")
       if cone:
@@ -63,10 +94,26 @@ class SkopeCone:
        self.bmesh = None
        self.beams = []
        self.material = None
-  
+
     if scene:
       self.apply(scene)
     
+  def reset(self, numsides=0, smooth=None, rebuild=True):
+    print("SkopeCone reset", numsides, smooth, rebuild)
+    if numsides==0:
+      self.numsides = self.settings.def_numsides
+    else:
+      self.numsides = numsides
+    if smooth is None:
+      self.smooth = self.settings.def_smooth
+    else:
+      self.smooth = smooth
+    self.radius = self.settings.set_radius
+    self.height = self.settings.set_height
+    self.rotation = self.settings.def_rotation
+    self.enable_bevel = self.settings.rnd_bevel or self.settings.def_bevel
+    if rebuild:
+      self.createBMesh()
 
   def create(self,scene):
     print("SkopeCone create")
@@ -93,9 +140,9 @@ class SkopeCone:
         self.material.node_tree.links.clear()
         self.material.node_tree.nodes.clear()
 
-    self.material.roughness = 0
-    self.material.metallic = 1
-    self.material.diffuse_color=(1,1,1,1)
+    self.material.roughness = self.settings.fix_roughness
+    self.material.metallic = self.settings.fix_metallic
+    self.material.diffuse_color=self.settings.fix_diffuse_color
 
     nodes = self.material.node_tree.nodes
     output = nodes.new(type='ShaderNodeOutputMaterial')
@@ -122,13 +169,13 @@ class SkopeCone:
     self.object.data.materials.append(self.material)
 
     # add a bevel mod to the object
-    if SkopeCone.bevelChance:
+    if self.enable_bevel:
       self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
       self.bevel.affect='EDGES'
-      self.bevel.limit_method=SkopeCone.bevelLimitMethod
-      self.bevel.width = SkopeCone.bevelWidth
-      self.bevel.segments = SkopeCone.bevelSegments
-      self.bevel.harden_normals = SkopeCone.bevelHardenNormals
+      self.bevel.limit_method=self.settings.fix_bevel_limit_method
+      self.bevel.width = self.settings.fix_bevel_width
+      self.bevel.segments = self.settings.fix_bevel_segments
+      self.bevel.harden_normals = self.settings.fix_bevel_harden_normals
     else:
       self.bevel = None
 
@@ -171,50 +218,63 @@ class SkopeCone:
         ])
         face.smooth = self.smooth
   
-  def reset(self, numsides=3):
-    print("SkopeCone reset", numsides)
-    self.numsides = numsides
-    self.createBMesh()
+
 
   def random(self):
     global TWO_PI
     print("SkopeCone random")
 
     # smooth
-    self.smooth = (random.random() < SkopeCone.smoothChance)
+    if self.settings.rnd_smooth:
+      smooth = rndbool(self.settings.chance_smooth)
+    else:
+      smooth = self.settings.def_smooth
+
+    # numsides
+    if self.settings.rnd_numsides:
+      numsides = rndint(
+        self.settings.min_numsides, 
+        self.settings.max_numsides,
+        self.settings.dist_numsides
+      )
+    else:
+      numsides = self.settings.def_numsides
 
     # reset straight
-    self.reset(
-      random.randint(SkopeCone.minsides, SkopeCone.maxsides)
-    )
+    self.reset(numsides,smooth)
     
     # wiggle some
-    maxwiggle = SkopeCone.maxwiggle*TWO_PI*self.radius/self.numsides
-    for index in range(0,len(self.beams)):
-      random_angle = random.random()*360
-      random_wiggle = random.random()*maxwiggle
-      self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
-      self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
-      random_angle = random.random()*360
-      if SkopeCone.allowSlant:
-        random_wiggle = random.random()*maxwiggle
-        self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
-        self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
-      else:
-        self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
-        self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
+    if self.settings.rnd_wiggle:
+      minwiggle = self.settings.min_wiggle*TWO_PI*self.radius/self.numsides
+      maxwiggle = self.settings.max_wiggle*TWO_PI*self.radius/self.numsides
+      for index in range(0,len(self.beams)):
+        random_angle = rnd(0,360,'LINEAR')
+        random_wiggle = rnd(minwiggle,maxwiggle,self.settings.dist_wiggle)
+        self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
+        self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
+        if self.settings.slant_wiggle:
+          random_angle = rnd(0,360,'LINEAR')
+          random_wiggle = rnd(minwiggle,maxwiggle,self.settings.dist_wiggle)
+          self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
+          self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
+        else:
+          self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
+          self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
     
     # set a random bevel on all beams
-    if SkopeCone.bevelChance:
+    if self.enable_bevel:
       for index in range(0,len(self.beams)):
-        if random.random() < SkopeCone.bevelChance:
+        if self.settings.rnd_bevel:
+          if rndbool(self.settings.chance_bevel):
+            self.beams[index]['bevel'] = random.random()
+        elif self.settings.def_bevel:
           self.beams[index]['bevel'] = random.random()
 
     # warp some. this will make the number of 
     # sides on the bottom less than those 
     # at the top
-    if SkopeCone.allowWarp:
-      warpnum = random.randint(SkopeCone.minsides, self.numsides)
+    if self.settings.warp_numsides:
+      warpnum = random.randint(self.settings.min_numsides, self.numsides)
       newbeams = []
       for index in range(0,len(self.beams)):
         warpindex = math.floor(index*warpnum/self.numsides)
@@ -232,18 +292,24 @@ class SkopeCone:
         
 
     # rotate
-    self.rotation = random.random()*TWO_PI
+    if self.settings.rnd_rotation:
+      self.rotation = rnd(
+        self.settings.min_rotation,
+        self.settings.max_rotation,
+        self.settings.dist_rotation
+      )*TWO_PI
 
-    # radius
-    # ...
 
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
-    self.rotation = mix(src.rotation,dst.rotation,pct,easing)
     numsides = max(src.numsides,dst.numsides)
-    if (self.numsides != numsides):
+    smooth = dst.smooth
+    if self.numsides != numsides or self.smooth != smooth:
       self.reset(numsides)
+    self.radius = mix(src.radius,dst.radius,pct,easing)
+    self.height = mix(src.height,dst.height,pct,easing)
+    self.rotation = mix(src.rotation,dst.rotation,pct,easing)
     srcnum = src.numsides
     dstnum = dst.numsides
     for index in range(0,len(self.beams)):
@@ -288,13 +354,24 @@ class SkopeCone:
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
 
-    if self.smooth and SkopeCone.autoSmooth>0:
-      self.mesh.use_auto_smooth=True
-      self.mesh.auto_smooth_angle=PI*SkopeCone.autoSmooth/180
+    if self.smooth:
+      if self.settings.rnd_autosmooth:
+        autosmooth = rnd(
+          self.settings.min_autosmooth,
+          self.settings.max_autosmooth,
+          self.settings.dist_autosmooth
+        )
+      else:
+        autosmooth = self.settings.def_autosmooth
+      if autosmooth>0:
+        self.mesh.use_auto_smooth=True
+        self.mesh.auto_smooth_angle=PI*autosmooth/180
+      else:
+        self.mesh.use_auto_smooth=False
     else:
       self.mesh.use_auto_smooth=False
 
-    if SkopeCone.bevelChance:
+    if self.enable_bevel:
       bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
       self.bmesh.faces.ensure_lookup_table()
       for index in range(0,len(self.beams)):

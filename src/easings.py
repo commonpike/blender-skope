@@ -10,8 +10,19 @@ def mixLinear(src,dst,pct):
 
 def rnd(min,max,dist):
     if dist == "LINEAR":
-        return rndLinear(min,max)
+        return rndLinearFloat(min,max)
     raise Exception("Distribution "+dist+" not supported")
 
-def rndLinear(min,max):
+def rndint(min,max,dist):
+    if dist == "LINEAR":
+        return rndLinearInt(min,max)
+    raise Exception("Distribution "+dist+" not supported")
+
+def rndbool(chance):
+    return random.random() < chance
+
+def rndLinearFloat(min,max):
     return min + random.random() * (max - min)
+
+def rndLinearInt(min,max):
+    return random.randint(min,max)

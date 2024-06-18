@@ -14,7 +14,7 @@ class SkopeScreen:
   settings = dict2obj({
 
     "fix_roughness": 0,
-    
+
     "rnd_img1": True,
     "rnd_img2": True,
 
@@ -31,6 +31,7 @@ class SkopeScreen:
     "min_scale" : .5,
     "max_scale": 2,
     "dist_scale": "LINEAR",
+    # "scale_extends_radius": True,
 
     "rnd_fade": True,
     "def_fade": .5,
