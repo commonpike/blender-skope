@@ -12,17 +12,12 @@ TWO_PI=2*math.pi
 class SkopeScreen:
 
   settings = SkopeSettings({
-    "roughness" : 0,
-    "image1": {
-      "random": True
-    },
-    "image2": {
-      "random": True
-    },
     'sources': {
       'directory' : '',
-      'globs': ['*.JPG','*.PNG']
+      'globs': ['*.JPG','*.PNG'],
+      'random': True
     },
+    "roughness" : 0,
     'width': 10.0,
     'height': 10.0,
     'dist':  0.0,
@@ -39,18 +34,39 @@ class SkopeScreen:
       'distribution': 'LINEAR',
       # extend_radius: True
     },
-    'fade': {
-      'random': True,
-      'default': .5,
-      'minimum':0,
-      'maximum': 1,
-      'distribution': 'LINEAR',
-    },
     'rotation_z': {
       'random': True,
       'default': 0,
       'minimum':0,
       'maximum': TWO_PI,
+      'distribution': 'LINEAR',
+    },
+    "images_location": {
+      "random": True,
+      'default': 0,
+      'minimum': -5,
+      'maximum': 5,
+      'distribution': 'LINEAR',
+    },
+    "images_rotation": {
+      "random": True,
+      'default': 0,
+      'minimum': 0,
+      'maximum': TWO_PI,
+      'distribution': 'LINEAR',
+    },
+    "images_scale": {
+      "random": True,
+      'default': 1,
+      'minimum': .5,
+      'maximum': 1.5,
+      'distribution': 'LINEAR',
+    },
+    'images_fade': {
+      'random': True,
+      'default': .5,
+      'minimum':0,
+      'maximum': 1,
       'distribution': 'LINEAR',
     }
 
@@ -74,6 +90,8 @@ class SkopeScreen:
       self.material = None
       self.fader = None
       self.sources = []
+      self.mapping1 = None
+      self.mapping2 = None
         
     if scene:
       self.apply(scene)
@@ -98,7 +116,7 @@ class SkopeScreen:
       'x': self.settings.get('scale'),
       'y': self.settings.get('scale'),
     }
-    self.fade = self.settings.get('fade')
+    self.fade = self.settings.get('images_fade')
     self.dist = self.settings.get('dist')
     if reset_images:
       print("reloading images",self.settings.sources['directory'])
@@ -107,10 +125,26 @@ class SkopeScreen:
         for pattern in self.settings.sources['globs']:
           self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.upper()))
           self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
+      
+      self.image1 = {
+          'src': '',
+          'x': 0,
+          'y': 0,
+          'rotation': 0,
+          'scale' : 1
+      }
       if len(self.images):
-        self.image1 = self.images[0]
+        self.image1['src'] =  self.images[0]
+        
+      self.image2 = {
+          'src': '',
+          'x': 0,
+          'y': 0,
+          'rotation': 0,
+          'scale' : 1
+      }
       if len(self.images) > 1:
-        self.image2 = self.images[1]
+        self.image2['src'] =  self.images[1]
 
   def create(self,scene):
     print("SkopeScreen create")
@@ -142,41 +176,75 @@ class SkopeScreen:
     
     self.sources = []
 
-    image1 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
-    image1.location.x = 0
-    image1.location.y = 200
+    imgnode1 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode1.location.x = 0
+    imgnode1.location.y = 400
+    imgnode1.extension = 'MIRROR'
 
-    self.image1 = random.choice(self.images)
+    self.image1['src'] = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource1')
     source1 = bpy.data.images['ScreenSource1']
     source1.source = 'FILE'
-    source1.filepath = self.image1
-    image1.image = source1
+    source1.filepath = self.image1['src']
+    imgnode1.image = source1
     self.sources.append(source1)
 
-    image2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
-    image2.location.x = 0
-    image2.location.y = 0
+    coords1= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords1.location.x = -400
+    coords1.location.y = 400
 
-    self.image2 = random.choice(self.images)
+    self.mapping1= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
+    self.mapping1.location.x = -200
+    self.mapping1.location.y = 400
+
+    imgnode2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode2.location.x = 0
+    imgnode2.location.y = 0
+    imgnode2.extension = 'MIRROR'
+    
+    self.image2['src'] = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource2')
     source2 = bpy.data.images['ScreenSource2']
     source2.source = 'FILE'
-    source2.filepath = self.image2
-    image2.image = source2
+    source2.filepath = self.image2['src']
+    imgnode2.image = source2
     self.sources.append(source2)
     
+    coords2= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords2.location.x = -400
+    coords2.location.y = 0
+
+    self.mapping2= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
+    self.mapping2.location.x = -200
+    self.mapping2.location.y = 0
+
     self.material.node_tree.links.new(
       material.inputs['Surface'], 
       self.fader.outputs[0]
     )
     self.material.node_tree.links.new(
       self.fader.inputs[1], 
-      image1.outputs['Color']
+      imgnode2.outputs['Color']
+    )
+    self.material.node_tree.links.new(
+      imgnode1.inputs['Vector'],
+      self.mapping1.outputs['Vector']
+    )
+    self.material.node_tree.links.new(
+      self.mapping1.inputs['Vector'],
+      coords1.outputs['Generated']
     )
     self.material.node_tree.links.new(
       self.fader.inputs[2], 
-      image2.outputs['Color']
+      imgnode2.outputs['Color']
+    )
+    self.material.node_tree.links.new(
+      imgnode2.inputs['Vector'],
+      self.mapping2.outputs['Vector']
+    )
+    self.material.node_tree.links.new(
+      self.mapping2.inputs['Vector'],
+      coords2.outputs['Generated']
     )
     self.object.data.materials.append(self.material)
     scene.collection.objects.link(self.object)
@@ -200,13 +268,23 @@ class SkopeScreen:
       self.scale['y'] = scale
 
     if len(self.images):
-      if self.settings.image1['random']:
-        self.image1 = random.choice(self.images)
+      if self.settings.sources['random']:
+        self.image1['src'] = random.choice(self.images)
+        self.image2['src'] = random.choice(self.images)
 
-      if self.settings.image2['random']:
-        self.image2 = random.choice(self.images)
+    self.image1['x'] = self.settings.rnd('images_location')
+    self.image1['y'] = self.settings.rnd('images_location')
+    self.image1['rotation'] = self.settings.rnd('images_rotation')
+    self.image1['scale'] = self.settings.rnd('images_scale')
+    self.image1['fade'] = self.settings.rnd('images_fade')
 
-    self.fade = self.settings.rnd('fade')
+    self.image2['x'] = self.settings.rnd('images_location')
+    self.image2['y'] = self.settings.rnd('images_location')
+    self.image2['rotation'] = self.settings.rnd('images_rotation')
+    self.image2['scale'] = self.settings.rnd('images_scale')
+    self.image2['fade'] = self.settings.rnd('images_fade')
+
+    self.fade = self.image1['fade']/(self.image1['fade']+self.image2['fade'])
     
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
@@ -215,13 +293,13 @@ class SkopeScreen:
     self.scale['x'] = mix(src.scale['x'],dst.scale['x'],pct,easing)
     self.scale['y'] = mix(src.scale['y'],dst.scale['y'],pct,easing)
     self.fade = mix(src.fade,dst.fade,pct,easing)
-    self.image1 = src.image1
-    self.image2 = dst.image2
+    self.image1['src'] = src.image1['src']
+    self.image2['src'] = dst.image2['src']
 
   def toJSON(self):
     return { 
       k:v for (k,v) in vars(self).items() 
-      if not k in ['object','material','fader','sources'] 
+      if not k in ['object','material','fader','sources','mapping1','mapping2'] 
     }
   
   def fromJSON(self,data):
@@ -242,7 +320,7 @@ class SkopeScreen:
     self.fade = data["fade"]
 
   def apply(self,scene):
-    if not self.object or not self.fader:
+    if not self.object or not self.fader or not self.mapping1 or not self.mapping2:
         raise Exception("SkopeScreen can not be applied")
     print("Skopescreen apply")
     self.object.rotation_euler.x = self.rotation['x']
@@ -252,7 +330,17 @@ class SkopeScreen:
     self.object.location.y = self.location['y']
     self.object.location.z = self.location['z']
     self.object.scale[0] = self.scale['x']
-    self.object.scale[2] = self.scale['y']
-    bpy.data.images['ScreenSource1'].filepath = self.image1
-    bpy.data.images['ScreenSource2'].filepath = self.image2
+    self.object.scale[1] = self.scale['y']
+    bpy.data.images['ScreenSource1'].filepath = self.image1['src']
+    bpy.data.images['ScreenSource2'].filepath = self.image2['src']
     self.fader.inputs[0].default_value=self.fade
+    self.mapping1.inputs[1].default_value[0] = self.image1['x']
+    self.mapping1.inputs[1].default_value[1] = self.image1['y']
+    self.mapping1.inputs[2].default_value[2] = self.image1['rotation']
+    self.mapping1.inputs[3].default_value[0] = self.image1['scale']
+    self.mapping1.inputs[3].default_value[1] = self.image1['scale']
+    self.mapping2.inputs[1].default_value[0] = self.image2['x']
+    self.mapping2.inputs[1].default_value[1] = self.image2['y']
+    self.mapping2.inputs[2].default_value[2] = self.image2['rotation']
+    self.mapping2.inputs[3].default_value[0] = self.image2['scale']
+    self.mapping2.inputs[3].default_value[1] = self.image2['scale']
