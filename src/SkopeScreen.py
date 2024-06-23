@@ -3,15 +3,15 @@ import random
 import glob
 import math
 
-from easings import mix, rnd
-from utilities import dict2obj
+from easings import mix
+from SkopeSettings import SkopeSettings
 
 PI=math.pi
 TWO_PI=2*math.pi
 
 class SkopeScreen:
 
-  settings = dict2obj({
+  settings = SkopeSettings({
     "roughness" : {
       "fixed": 0
     },
@@ -76,7 +76,8 @@ class SkopeScreen:
 
   def __init__(self,scene=None,inputdir=None):
 
-    self.settings.sources.directory = inputdir
+    print("Skopescreen",inputdir)
+    self.settings.sources['directory'] = inputdir
     self.reset();
 
     if scene:
@@ -96,36 +97,38 @@ class SkopeScreen:
       self.apply(scene)
 
 
-  def reset(self):
-    print("Skopescreen reset")
+  def reset(self, reset_images=True):
+    print("Skopescreen reset", reset_images)
 
-    self.width = self.settings.width.set
-    self.height = self.settings.height.set
+    self.width = self.settings.get('width')
+    self.height = self.settings.get('height')
     self.location = {
-      'x': self.settings.location_x.set,
-      'y': self.settings.location_y.set,
-      'z': self.settings.location_z.set
+      'x': self.settings.get('location_x'),
+      'y': self.settings.get('location_y'),
+      'z': self.settings.get('location_z')
     }
     self.rotation = {
-      'x': self.settings.rotation_x.set,
-      'y': self.settings.rotation_y.set,
-      'z': self.settings.rotation_z.default
+      'x': self.settings.get('rotation_x'),
+      'y': self.settings.get('rotation_x'),
+      'z': self.settings.get('rotation_z'),
     }
     self.scale = {
-      'x': self.settings.scale.default,
-      'y': self.settings.scale.default
+      'x': self.settings.get('scale'),
+      'y': self.settings.get('scale'),
     }
-    self.fade = self.settings.fade.default
-    self.dist = self.settings.dist.set
-    self.images = []
-    if self.settings.sources.directory:
-      for pattern in self.settings.sources.globs:
-        self.images.extend(glob.glob(self.settings.sources.directory+'/'+pattern.upper()))
-        self.images.extend(glob.glob(self.settings.sources.directory+'/'+pattern.lower()))
-    if len(self.images):
-      self.image1 = self.images[0]
-    if len(self.images) > 1:
-      self.image2 = self.images[1]
+    self.fade = self.settings.get('fade')
+    self.dist = self.settings.get('dist')
+    if reset_images:
+      print("reloading images",self.settings.sources['directory'])
+      self.images = []
+      if self.settings.sources['directory']:
+        for pattern in self.settings.sources['globs']:
+          self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.upper()))
+          self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
+      if len(self.images):
+        self.image1 = self.images[0]
+      if len(self.images) > 1:
+        self.image2 = self.images[1]
 
   def create(self,scene):
     print("SkopeScreen create")
@@ -143,7 +146,7 @@ class SkopeScreen:
     self.object = bpy.data.objects.new("screen", screen_data)
 
     self.material = bpy.data.materials.new(name = "ScreenMaterial")
-    self.material.roughness = self.settings.roughness.fixed
+    self.material.roughness = self.settings.get('roughness')
     self.material.use_nodes = True
     self.material.node_tree.nodes.clear()
     
@@ -202,39 +205,27 @@ class SkopeScreen:
     global TWO_PI
     print("Skopescreen random")
     
-    self.reset()
+    self.reset(False)
     
-    if self.settings.rotation_z.random:
-      self.rotation['z'] = rnd(
-        self.settings.rotation_z.minimum,
-        self.settings.rotation_z.maximum,
-        self.settings.rotation_z.distribution
-      )
+    self.rotation['z'] = self.settings.rnd('rotation_z')
     
-    if self.settings.scale.random:
+    if self.settings.scale['random']:
       if minsize == 0:
-        minsize = self.width * self.settings.scale.minimum
+        minsize = self.width * self.settings.scale['minimum']
       minscale = minsize / self.width # assuming square
-      scale = rnd(
-        minscale,
-        self.settings.scale.maximum,
-        self.settings.scale.distribution
-      )
+      scale = self.settings.rnd('scale',minscale)
       self.scale['x'] = scale
       self.scale['y'] = scale
 
-    if self.settings.image1.random:
-      self.image1 = random.choice(self.images)
+    if len(self.images):
+      if self.settings.image1['random']:
+        self.image1 = random.choice(self.images)
 
-    if self.settings.image2.random:
-      self.image2 = random.choice(self.images)
+      if self.settings.image2['random']:
+        self.image2 = random.choice(self.images)
 
-    if self.settings.fade.random:
-      self.fade = rnd (
-        self.settings.fade.minimum,
-        self.settings.fade.maximum,
-        self.settings.fade.distribution
-      )
+    self.fade = self.settings.rnd('fade')
+    
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
