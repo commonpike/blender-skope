@@ -4,29 +4,37 @@ import glob
 import os
 
 
+from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
 from SkopeClip import SkopeClip
+from utilities import dict2obj
 
 
 class Skope:
   """A kaleidoscope for use in blender"""
   
+  settings = SkopeSettings({
+    'input_dir': '',
+    'output_dir': '',
+    'import_dir': '',
+    'type': 'stills', #stills | clip
+    'scale': 10,
+    'image_format': 'PNG',
+    'video_format': 'FFMPEG',
+    'ffmpeg_format': 'MPEG4',
+    'motion_blur': True,
+    'motion_blur_shutter': 8,
+    'motion_blur_shape': 'SHARP'
+  })
 
   def __init__(self, input_dir):
   
     print("Kaleidoscope init",input_dir)
     
-    # settings 
-    self.input_dir = input_dir
-    self.output_dir = ''
-    self.import_dir = ''
+    self.settings.input_dir = input_dir
+    self.settings.output_dir = input_dir
+    self.settings.import_dir = input_dir
     self.rendering = False
-    self.type = 'stills' # stills | clip
-    self.scale = 10
-    self.image_format = 'PNG'
-    self.video_format = 'FFMPEG'
-    self.ffmpeg_format = 'MPEG4'
-    self.motion_blur = True
     self.frozen = False
 
     # init state class vars
@@ -40,21 +48,21 @@ class Skope:
     self.clip = None
 
   def apply(self,scene):
-    scene.render.resolution_percentage = self.scale
+    scene.render.resolution_percentage = self.settings.scale
     filename = str(uuid.uuid4())[:4]
-    if self.type == 'stills':
-      scene.render.image_settings.file_format = self.image_format
+    if self.settings.type == 'stills':
+      scene.render.image_settings.file_format = self.settings.image_format
     else:
-      scene.render.image_settings.file_format = self.video_format
-      scene.render.ffmpeg.format=self.ffmpeg_format
+      scene.render.image_settings.file_format = self.settings.video_format
+      scene.render.ffmpeg.format=self.settings.ffmpeg_format
       filename += '-'
-    scene.render.filepath = self.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
     
-    if self.motion_blur:
+    if self.settings.motion_blur:
       scene.render.use_motion_blur = True  
       scene.cycles.motion_blur_position = 'START'  
-      scene.render.motion_blur_shutter = 8  
-      bpy.ops.render.shutter_curve_preset(shape = 'SHARP')
+      scene.render.motion_blur_shutter = self.settings.motion_blur_shutter  
+      bpy.ops.render.shutter_curve_preset(shape = self.settings.motion_blur_shape)
 
   def create_random_clip(self, length):
     print("Skope create_random_clip")
@@ -71,8 +79,8 @@ class Skope:
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
     oif = scene.render.image_settings.file_format
-    scene.render.resolution_percentage = self.scale
-    scene.render.image_settings.file_format = self.image_format
+    scene.render.resolution_percentage = self.settings.scale
+    scene.render.image_settings.file_format = self.settings.image_format
     for frame in range(0,amount):
       self.render_still(frame,scene)
     scene.render.filepath = ofp
@@ -85,7 +93,7 @@ class Skope:
     self.state.random()
     self.state.apply(scene)
     filename = str(frame).zfill(4);
-    scene.render.filepath = self.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
     print("Rendering",scene.render.filepath)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath +'.json')
@@ -97,9 +105,9 @@ class Skope:
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
     oif = scene.render.image_settings.file_format
-    scene.render.resolution_percentage = self.scale
-    scene.render.image_settings.file_format = 'FFMPEG'
-    scene.render.ffmpeg.format='MPEG4'
+    scene.render.resolution_percentage = self.settings.scale
+    scene.render.image_settings.file_format = self.settings.video_format
+    scene.render.ffmpeg.format=self.settings.ffmpeg_format
     # scene.render.ffmpeg.codec
     # scene.render.ffmpeg.ffmpeg_preset
     # ...
@@ -107,7 +115,7 @@ class Skope:
     bpy.app.handlers.frame_change_pre.clear()
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
     filename = str(uuid.uuid4())[:4];
-    scene.render.filepath = self.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
     
     print("Rendering",scene.render.filepath)
     bpy.ops.render.render(animation=True) # render animation
@@ -122,12 +130,12 @@ class Skope:
   
   def regenerate_stills(self): 
     print("Regenerating selected json files ..")
-    state_files=glob.glob(self.import_dir+'/*.json')
+    state_files=glob.glob(self.settings.import_dir+'/*.json')
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
-    scene.render.resolution_percentage = self.scale
-    scene.render.image_settings.file_format = self.image_format
+    scene.render.resolution_percentage = self.settings.scale
+    scene.render.image_settings.file_format = self.settings.image_format
     for state_file in state_files:
       self.regenerate_still(state_file,scene)
     scene.render.filepath = ofp
@@ -138,7 +146,7 @@ class Skope:
     basename = os.path.splitext(os.path.basename(file))[0]
     self.state.readJSON(file)
     self.state.apply(scene)
-    scene.render.filepath = self.output_dir + '/' + basename
+    scene.render.filepath = self.settings.output_dir + '/' + basename
     print("Regenerating",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
@@ -149,7 +157,7 @@ class Skope:
   def apply_random_filepath(self,scene):
     print("apply_random_filepath")
     filename = str(uuid.uuid4())[:4]+'-';
-    scene.render.filepath = self.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
 
   def apply_random_state(self,scene,x=0):
     if not self.frozen:
