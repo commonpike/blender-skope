@@ -28,6 +28,8 @@ class SkopeSettings(dict):
      
     def default(self,key):
         if key in self:
+            if not isinstance(self[key], dict):
+                return self[key]
             if 'set' in self[key]:
                 return self[key]['set']
             if 'fixed' in self[key]:

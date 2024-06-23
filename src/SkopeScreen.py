@@ -12,9 +12,7 @@ TWO_PI=2*math.pi
 class SkopeScreen:
 
   settings = SkopeSettings({
-    "roughness" : {
-      "fixed": 0
-    },
+    "roughness" : 0,
     "image1": {
       "random": True
     },
@@ -25,30 +23,14 @@ class SkopeScreen:
       'directory' : '',
       'globs': ['*.JPG','*.PNG']
     },
-    'width': {
-      'set' : 10.0
-    },
-    'height': {
-      'set' : 10.0
-    },
-    'dist': {
-      'set' : 0.0
-    },
-    'location_x': {
-      'set' : 0
-    },
-    'location_y': {
-      'set' : 0
-    },
-    'location_z': {
-      'set' : 0
-    },
-    'rotation_x': {
-      'set' : 0
-    },
-    'rotation_y': {
-      'set' : 0
-    },
+    'width': 10.0,
+    'height': 10.0,
+    'dist':  0.0,
+    'location_x':0,
+    'location_y': 0,
+    'location_z': 0,
+    'rotation_x': 0,
+    'rotation_y': 0,
     'scale': {
       'random': True,
       'default': 1,

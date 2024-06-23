@@ -13,21 +13,11 @@ TWO_PI=2*math.pi
 class SkopeCone:
 
   settings = SkopeSettings({
-    "roughness" : {
-      "fixed" : 0
-    },
-    "metallic" : {
-      "fixed" : 1
-    },
-    "diffuse_color" : {
-      "fixed" : (1,1,1,1)
-    },
-    "height": {
-      "set" : 10
-    },
-    "radius": {
-      "set" : 4
-    },
+    "roughness" : 0,
+    "metallic" : 1,
+    "diffuse_color" : (1,1,1,1),
+    "height": 10,
+    "radius": 4,
     "rotation": {
       "random": True,
       "default": 0,

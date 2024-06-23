@@ -7,30 +7,14 @@ from SkopeSettings import SkopeSettings
 class SkopeCamera:
 
   settings = SkopeSettings({
-    "lens": {
-      "fixed": 70
-    },
-    "sensor_width": {
-      "fixed" : 70
-    },
-    "type": {
-      "fixed" : "PERSP"
-    },
-    "clip_start": {
-      "fixed" : .1
-    },
-    "clip_end": {
-      "fixed" : 100
-    },
-    "rotation_x": {
-      "fixed": 0
-    },
-    "rotation_y": {
-      "fixed": 0
-    },
-    "rotation_z": {
-      "fixed": 0
-    },
+    "lens": 70,
+    "sensor_width": 70,
+    "type": "PERSP",
+    "clip_start": .1,
+    "clip_end": 100,
+    "rotation_x": 0,
+    "rotation_y": 0,
+    "rotation_z": 0,
     "location_x": {
       "default": 0,
       "random": True,

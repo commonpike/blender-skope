@@ -4,6 +4,7 @@ import glob
 import os
 
 
+from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
 from SkopeClip import SkopeClip
 from utilities import dict2obj
@@ -12,7 +13,7 @@ from utilities import dict2obj
 class Skope:
   """A kaleidoscope for use in blender"""
   
-  settings = dict2obj({
+  settings = SkopeSettings({
     'input_dir': '',
     'output_dir': '',
     'import_dir': '',
