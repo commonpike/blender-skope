@@ -1,7 +1,9 @@
 #!/bin/sh
 
+source .env
+
 #BLENDER=/Applications/UPBGE.app/Contents/MacOS/Blender
-BLENDER="${BLENDER:=/Applications/3rdParty/Blender.app/Contents/MacOS/Blender}"
+BLENDER="${BLENDER:=$BLENDER_LOCATION/Blender.app/Contents/MacOS/Blender}"
 
 cd `dirname $0`;
 

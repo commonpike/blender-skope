@@ -3,3 +3,4 @@ render
 __pycache__/
 .DS_Store
 *.blend1
+vendor
