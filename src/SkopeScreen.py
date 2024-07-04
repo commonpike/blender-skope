@@ -224,7 +224,7 @@ class SkopeScreen:
     )
     self.material.node_tree.links.new(
       self.fader.inputs[1], 
-      imgnode2.outputs['Color']
+      imgnode1.outputs['Color']
     )
     self.material.node_tree.links.new(
       imgnode1.inputs['Vector'],
