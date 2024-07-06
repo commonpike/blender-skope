@@ -23,6 +23,7 @@ class SkopeCone:
       "default": 0,
       "minimum": 0,
       "maximum": TWO_PI,
+      "delta": .1,
       "distribution" : "LINEAR"
     },
     # when creating a random skope,
@@ -32,6 +33,7 @@ class SkopeCone:
       "default": 5,
       "minimum": 3,
       "maximum": 8,
+      "delta": .1,
       "distribution" : "LINEAR",
       # randomly make the number of sides on
       # the bottom less than on the top
@@ -44,6 +46,7 @@ class SkopeCone:
       "default": 0,
       "minimum": 0,
       "maximum": 1/5,
+      "delta": .1,
       "distribution" : "LINEAR",
       # if slant, wiggle vertices at the top
       # different than at the bottom  
@@ -63,8 +66,8 @@ class SkopeCone:
     # make bevels smooth
     # removed in blender4
     "smooth" : {
-      "random": True,
-      "default": False,
+      "random": False,
+      "default": True,
       "chance": .5
     },
     # use autosmooth, degrees
@@ -74,6 +77,7 @@ class SkopeCone:
       "default": 0,
       "minimum": 0,
       "maximum": 180,
+      "delta": .1,
       "distribution" : "LINEAR"
     }
   })
@@ -285,6 +289,29 @@ class SkopeCone:
     # rotate
     self.rotation = self.settings.rnd('rotation')
 
+  def rnd_delta(self):
+    print("SkopeScreen rnd_delta")
+    self.radius = self.settings.rnd_delta('radius',self.radius)
+    self.height = self.settings.rnd_delta('height',self.height)
+    self.rotation = self.settings.rnd_delta('rotation',self.rotation)
+    if self.settings.wiggle['random']:
+      minwiggle = self.settings.wiggle['minimum']*TWO_PI*self.radius/self.numsides
+      maxwiggle = self.settings.wiggle['maximum']*TWO_PI*self.radius/self.numsides
+      for index in range(0,len(self.beams)):
+        random_angle = random.random()*360
+        random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+        self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
+        self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
+        if self.settings.wiggle['slant']:
+          random_angle = random.random()*360
+          random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+          self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
+          self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
+        else:
+          self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
+          self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
+
+    
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")

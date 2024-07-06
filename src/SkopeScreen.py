@@ -31,6 +31,7 @@ class SkopeScreen:
       'default': 1,
       'minimum':.5,
       'maximum': 2,
+      'delta': .1,
       'distribution': 'LINEAR',
       # extend_radius: True
     },
@@ -39,6 +40,7 @@ class SkopeScreen:
       'default': 0,
       'minimum':0,
       'maximum': TWO_PI,
+      'delta': .1,
       'distribution': 'LINEAR',
     },
     "images_location": {
@@ -46,6 +48,7 @@ class SkopeScreen:
       'default': 0,
       'minimum': -5,
       'maximum': 5,
+      'delta': .1,
       'distribution': 'LINEAR',
     },
     "images_rotation": {
@@ -53,6 +56,7 @@ class SkopeScreen:
       'default': 0,
       'minimum': 0,
       'maximum': TWO_PI,
+      'delta': .05,
       'distribution': 'LINEAR',
     },
     "images_scale": {
@@ -60,6 +64,7 @@ class SkopeScreen:
       'default': 1,
       'minimum': .5,
       'maximum': 1.5,
+      'delta': .1,
       'distribution': 'LINEAR',
     },
     'images_fade': {
@@ -67,6 +72,7 @@ class SkopeScreen:
       'default': .5,
       'minimum':0,
       'maximum': 1,
+      'delta': .1,
       'distribution': 'LINEAR',
     }
 
@@ -116,7 +122,6 @@ class SkopeScreen:
       'x': self.settings.get('scale'),
       'y': self.settings.get('scale'),
     }
-    self.fade = self.settings.get('images_fade')
     self.dist = self.settings.get('dist')
     if reset_images:
       print("reloading images",self.settings.sources['directory'])
@@ -131,7 +136,8 @@ class SkopeScreen:
           'x': 0,
           'y': 0,
           'rotation': 0,
-          'scale' : 1
+          'scale' : 1,
+          'fade': .5
       }
       if len(self.images):
         self.image1['src'] =  self.images[0]
@@ -141,7 +147,8 @@ class SkopeScreen:
           'x': 0,
           'y': 0,
           'rotation': 0,
-          'scale' : 1
+          'scale' : 1,
+          'fade': .5
       }
       if len(self.images) > 1:
         self.image2['src'] =  self.images[1]
@@ -284,17 +291,42 @@ class SkopeScreen:
     self.image2['scale'] = self.settings.rnd('images_scale')
     self.image2['fade'] = self.settings.rnd('images_fade')
 
-    self.fade = self.image1['fade']/(self.image1['fade']+self.image2['fade'])
     
+
+  def rnd_delta(self):
+    print("SkopeScreen rnd_delta")
+    self.rotation['z'] = self.settings.rnd_delta('rotation_z',self.rotation['z'])
+    scale = self.settings.rnd_delta('scale',self.scale['x'])
+    self.scale['x'] = scale
+    self.scale['y'] = scale
+    self.image1['x'] = self.settings.rnd_delta('images_location',self.image1['x'])
+    self.image1['y'] = self.settings.rnd_delta('images_location',self.image1['y'])
+    self.image1['rotation'] = self.settings.rnd_delta('images_rotation',self.image1['rotation'])
+    self.image1['scale'] = self.settings.rnd_delta('images_scale',self.image1['scale'])
+    self.image1['fade'] = self.settings.rnd_delta('images_fade',self.image1['fade'])
+    self.image2['x'] = self.settings.rnd_delta('images_location',self.image2['x'])
+    self.image2['y'] = self.settings.rnd_delta('images_location',self.image2['y'])
+    self.image2['rotation'] = self.settings.rnd_delta('images_rotation',self.image2['rotation'])
+    self.image2['scale'] = self.settings.rnd_delta('images_scale',self.image2['scale'])
+    self.image2['fade'] = self.settings.rnd_delta('images_fade',self.image2['fade'])
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")
     self.rotation['z'] = mix(src.rotation['z'],dst.rotation['z'],pct,easing)
     self.scale['x'] = mix(src.scale['x'],dst.scale['x'],pct,easing)
     self.scale['y'] = mix(src.scale['y'],dst.scale['y'],pct,easing)
-    self.fade = mix(src.fade,dst.fade,pct,easing)
     self.image1['src'] = src.image1['src']
     self.image2['src'] = dst.image2['src']
+    self.image1['x'] = mix(src.image1['x'],dst.image1['x'],pct,easing)
+    self.image1['y'] = mix(src.image1['y'],dst.image1['y'],pct,easing)
+    self.image1['rotation'] = mix(src.image1['rotation'],dst.image1['rotation'],pct,easing)
+    self.image1['scale'] = mix(src.image1['scale'],dst.image1['scale'],pct,easing)
+    self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],pct,easing)
+    self.image2['x'] = mix(src.image2['x'],dst.image2['x'],pct,easing)
+    self.image2['y'] = mix(src.image2['y'],dst.image2['y'],pct,easing)
+    self.image2['rotation'] = mix(src.image2['rotation'],dst.image2['rotation'],pct,easing)
+    self.image2['scale'] = mix(src.image2['scale'],dst.image2['scale'],pct,easing)
+    self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],pct,easing)
 
   def toJSON(self):
     return { 
@@ -317,7 +349,6 @@ class SkopeScreen:
     self.images = data["images"]
     self.image1 = data["image1"]
     self.image2 = data["image2"]
-    self.fade = data["fade"]
 
   def apply(self,scene):
     if not self.object or not self.fader or not self.mapping1 or not self.mapping2:
@@ -333,7 +364,7 @@ class SkopeScreen:
     self.object.scale[1] = self.scale['y']
     bpy.data.images['ScreenSource1'].filepath = self.image1['src']
     bpy.data.images['ScreenSource2'].filepath = self.image2['src']
-    self.fader.inputs[0].default_value=self.fade
+    self.fader.inputs[0].default_value=self.getFade()
     self.mapping1.inputs[1].default_value[0] = self.image1['x']
     self.mapping1.inputs[1].default_value[1] = self.image1['y']
     self.mapping1.inputs[2].default_value[2] = self.image1['rotation']
@@ -344,3 +375,10 @@ class SkopeScreen:
     self.mapping2.inputs[2].default_value[2] = self.image2['rotation']
     self.mapping2.inputs[3].default_value[0] = self.image2['scale']
     self.mapping2.inputs[3].default_value[1] = self.image2['scale']
+
+  def getFade(self):
+    if self.image1['fade'] == 0:
+      return 1
+    if self.image2['fade'] == 0:
+      return 0
+    return self.image1['fade']/(self.image1['fade']+self.image2['fade'])

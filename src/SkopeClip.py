@@ -15,7 +15,8 @@ class SkopeClip:
 
   def random(self):
     self.src.random()
-    self.dst.random()
+    self.dst = self.src.clone()
+    self.dst.rnd_delta()
     
   def start(self):
     return self.go(0)

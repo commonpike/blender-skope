@@ -29,6 +29,12 @@ class SkopeState:
     self.screen.random(2 * self.cone.radius)
     self.camera.random(self.cone.radius)
 
+  def rnd_delta(self):
+    print("Skopestate rnd_delta")
+    self.cone.rnd_delta()
+    self.screen.rnd_delta()
+    self.camera.rnd_delta()
+
   def apply(self,scene):
     print("Skopestate apply")
     self.screen.apply(scene)
