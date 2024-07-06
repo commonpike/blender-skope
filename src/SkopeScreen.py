@@ -72,7 +72,7 @@ class SkopeScreen:
       'default': .5,
       'minimum':0,
       'maximum': 1,
-      'delta': .1,
+      'delta': .75,
       'distribution': 'LINEAR',
     }
 

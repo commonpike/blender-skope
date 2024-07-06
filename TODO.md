@@ -1,9 +1,21 @@
 # TODO.
 
-### source
+## easings 
+- easeinout
 
-glob
-check files
+## skopecone
+- rnd_delta wiggle reset beams
+- rnd_delta: numsides
+- bevelnone, smoothnone
+- length
 
-### generate
+## skopescreen
+- 3 images
+- images_fadeout (swap)
+
+## skopeclip
+- images_fadeout (swap)
+
+## skopecamera
+- stay in cone (physics/collision)
 
