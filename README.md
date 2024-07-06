@@ -1,5 +1,17 @@
 # Blender - Skope
 
+## Install
+
+Run `install.sh` to install a version of Blender 
+in the `./vendor` dir.
+
+If you have Blender, don't bother running install.sh;
+just edit `.env` to match your Blender path. Ymmv.
+
+Run `skope.sh test`. This should open the default
+project-dir. 
+
+## Run
 Dont open the .blend file. Instead, run \
 `skope.sh [command] --project-dir render/foobar` 
 
