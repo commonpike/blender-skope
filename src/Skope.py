@@ -65,7 +65,7 @@ class Skope:
       bpy.ops.render.shutter_curve_preset(shape = self.settings.motion_blur_shape)
 
   def create_random_clip(self, length):
-    print("Skope create_random_clip")
+    print("Skope create_random_clip", length)
     scene = bpy.context.scene
     scene.frame_end = length # +-1 ?
     scene.frame_set(1)
@@ -170,8 +170,12 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
-    self.clip.go(scene.frame_current)
-    self.clip.apply(scene)
+    if scene.frame_current >= self.clip.length :
+      self.clip.next_delta()
+      bpy.context.scene.frame_set(0)
+    else :
+      self.clip.go(scene.frame_current)
+      self.clip.apply(scene)
 
   def freeze(self,scene,x=0):
     print("freeze")

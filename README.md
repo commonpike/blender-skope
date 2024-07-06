@@ -2,11 +2,13 @@
 
 ## Install
 
-Run `install.sh` to install a version of Blender 
-in the `./vendor` dir.
+Copy .env-dist to .env
 
 If you have Blender, don't bother running install.sh;
 just edit `.env` to match your Blender path. Ymmv.
+
+Otherwise, run `install.sh` to install a version of Blender 
+in the `./vendor` dir.
 
 Run `skope.sh test`. This should open the default
 project-dir. 

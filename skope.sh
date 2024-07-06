@@ -3,7 +3,7 @@
 source .env
 
 #BLENDER=/Applications/UPBGE.app/Contents/MacOS/Blender
-BLENDER="${BLENDER:=$BLENDER_LOCATION/Blender.app/Contents/MacOS/Blender}"
+BLENDER="${BLENDER:=$BLENDER_LOCATION}"
 
 cd `dirname $0`;
 
@@ -128,7 +128,8 @@ case $COMMAND in
           --output-dir $OUTPUTDIR \
           --import-dir $IMPORTDIR \
           --format $FORMAT \
-          --scale $SCALE
+          --scale $SCALE \
+          --length $LENGTH
         ;;
         
     render)

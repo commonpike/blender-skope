@@ -50,7 +50,7 @@ class SkopeCone:
       "distribution" : "LINEAR",
       # if slant, wiggle vertices at the top
       # different than at the bottom  
-      "slant": True
+      "slant": False
     },
     # if random>chance, create
     # a random bevel on all edges
