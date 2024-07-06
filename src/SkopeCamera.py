@@ -20,6 +20,7 @@ class SkopeCamera:
       "random": True,
       "minimum": -5,
       "maximum": 5,
+      "delta": .5,
       "distribution": "LINEAR"
     },
     "location_y": {
@@ -27,6 +28,7 @@ class SkopeCamera:
       "random": True,
       "minimum": -5,
       "maximum": 5,
+      "delta": .5,
       "distribution": "LINEAR"
     },
     "location_z": {
@@ -34,6 +36,7 @@ class SkopeCamera:
       "random": True,
       "minimum": 2,
       "maximum": 10,
+      "delta": .5,
       "distribution": "LINEAR"
     },
     "location_within_radius": {
@@ -44,6 +47,7 @@ class SkopeCamera:
       "default": 0,
       "minimum": -.25,
       "maximum": .25,
+      "delta": .5,
       "distribution": "LINEAR"
     }
   })
@@ -114,6 +118,12 @@ class SkopeCamera:
     self.shift_x = self.settings.rnd('shift')
     self.shift_y = self.settings.rnd('shift')
     
+  def rnd_delta(self):
+    print("SkopeCamera rnd_delta")
+    self.location['x'] = self.settings.rnd_delta('location_x',self.location['x'])  
+    self.location['y'] = self.settings.rnd_delta('location_y',self.location['y']) 
+    self.shift_x  = self.settings.rnd_delta('shift',self.shift_x)
+    self.shift_y  = self.settings.rnd_delta('shift',self.shift_y)
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeCamera mix")

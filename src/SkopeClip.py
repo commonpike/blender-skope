@@ -15,7 +15,8 @@ class SkopeClip:
 
   def random(self):
     self.src.random()
-    self.dst.random()
+    self.dst = self.src.clone()
+    self.dst.rnd_delta()
     
   def start(self):
     return self.go(0)
@@ -34,8 +35,13 @@ class SkopeClip:
     if frame < self.length:
       if frame >= 0:
         self.current = frame
-    done = self.current < self.length - 1 and self.current > 0
-    return not done
+        return True
+    return False
+
+  def next_delta(self):
+    print("SkopeClip next_delta")
+    self.src = self.dst.clone()
+    self.dst.rnd_delta()
 
   def apply(self,scene):
     pct = self.current * 100 / ( self.length - 1) # think twice

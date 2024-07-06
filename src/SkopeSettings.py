@@ -41,6 +41,8 @@ class SkopeSettings(dict):
 
     def isRandom(self,key):
         if key in self:
+            if not isinstance(self[key], dict):
+                return False
             if 'random' in self[key]:
                 return self[key]['random']
             return False
@@ -48,6 +50,8 @@ class SkopeSettings(dict):
           
     def rnd(self,key,min=None,max=None,dist=None):
         if key in self:
+            if not isinstance(self[key], dict):
+                return self.get(key)
             if not 'random' in self[key] or not self[key]['random']:
                 return self.get(key)
             if dist is None:
@@ -68,6 +72,31 @@ class SkopeSettings(dict):
             if dist == "LINEAR":
                 return self.rndLinearFloat(min,max)
             raise Exception("Distribution "+dist+" not supported")
+        raise Exception("Key "+key+" not found")
+    
+    def rnd_delta(self,key,val):
+        if key in self:
+            if not isinstance(self[key], dict):
+                return self.get(key)
+            if not 'random' in self[key] or not self[key]['random']:
+                return self.get(key)
+            if 'delta' in self[key]:
+                delta = self[key]['delta']
+            else:
+                delta = .1
+            if 'minimum' in self[key]:
+                min = self[key]['minimum']
+            else:
+                min = self.get(key)
+            if 'maximum' in self[key]:
+                max = self[key]['maximum']
+            else:
+                max = self.get(key)
+            deltamin = val - (delta * (val-min))
+            deltamax = val + (delta * (max-val))
+            print('rnd_delta',val,deltamin,deltamax)
+            return self.rnd(key,deltamin,deltamax)
+        
         raise Exception("Key "+key+" not found")
 
     def rndint(self,key, min=None, max=None, dist=None):
