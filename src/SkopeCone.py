@@ -16,15 +16,15 @@ class SkopeCone:
     "roughness" : 0,
     "metallic" : 1,
     "diffuse_color" : (1,1,1,1),
-    "height": 10,
+    "height": 20,
     "radius": 4,
     "rotation": {
       "random": True,
       "default": 0,
       "minimum": 0,
       "maximum": TWO_PI,
-      "delta": .1,
       "distribution" : "UNIFORM",
+      "delta": .1,
       "easing": "EASEINOUT"
     },
     # when creating a random skope,
@@ -34,8 +34,8 @@ class SkopeCone:
       "default": 5,
       "minimum": 3,
       "maximum": 8,
-      "delta": .1,
       "distribution" : "UNIFORM",
+      "delta": .1,
       # randomly make the number of sides on
       # the bottom less than on the top
       "warp": False
@@ -47,11 +47,11 @@ class SkopeCone:
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "delta": .1,
       "distribution" : "UNIFORM",
       "within_beams" : True,
       "rel_minimum": 0,
       "rel_maximum": 1/5,
+      "delta": .1,
       "easing": "EASEINOUT",
       # if slant, wiggle vertices at the top
       # different than at the bottom  
@@ -83,7 +83,6 @@ class SkopeCone:
       "default": 0,
       "minimum": 0,
       "maximum": 180,
-      "delta": .1,
       "distribution" : "UNIFORM"
     }
   })

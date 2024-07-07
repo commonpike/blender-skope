@@ -18,5 +18,6 @@ v random fade gaussian
 - images_fadeout (swap)
 
 ## skopecamera
+- animate lens, sensor_width (==?)
 - stay in cone (physics/collision)
 

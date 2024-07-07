@@ -20,9 +20,9 @@ class SkopeCamera:
       "random": True,
       "minimum": -5,
       "maximum": 5,
-      "delta": .5,
       "distribution" : "UNIFORM",
       "within_radius": True,
+      "delta": .5,
       "easing": "EASEINOUT"
     },
     "location_y": {
@@ -30,26 +30,27 @@ class SkopeCamera:
       "random": True,
       "minimum": -5,
       "maximum": 5,
-      "delta": .5,
       "distribution" : "UNIFORM",
       "within_radius": True,
+      "delta": .5,
       "easing": "EASEINOUT"
     },
     "location_z": {
-      "default": 10,
+      "default": 20,
       "random": True,
       "minimum": 2,
-      "maximum": 10,
+      "maximum": 20,
+      "distribution" : "UNIFORM",
       "delta": .5,
-      "distribution" : "UNIFORM"
+      "easing": "EASEINOUT"
     },
     "shift": {
       "random": True,
       "default": 0,
       "minimum": -.25,
       "maximum": .25,
-      "delta": .5,
       "distribution" : "UNIFORM",
+      "delta": .5,
       "easing": "EASEINOUT"
     }
   })
@@ -120,13 +121,16 @@ class SkopeCamera:
     print("SkopeCamera rnd_delta")
     self.location['x'] = self.settings.rnd_delta('location_x',self.location['x'])  
     self.location['y'] = self.settings.rnd_delta('location_y',self.location['y']) 
+    self.location['z'] = self.settings.rnd_delta('location_z',self.location['z']) 
     self.shift_x  = self.settings.rnd_delta('shift',self.shift_x)
     self.shift_y  = self.settings.rnd_delta('shift',self.shift_y)
+    
 
   def mix(self, src, dst, pct = 0):
     print("SkopeCamera mix")
     self.location['x'] = mix(src.location['x'],dst.location['x'],pct,self.settings.location_x['easing'])
     self.location['y'] = mix(src.location['y'],dst.location['y'],pct,self.settings.location_y['easing'])
+    self.location['z'] = mix(src.location['z'],dst.location['z'],pct,self.settings.location_z['easing'])
     self.shift_x  = mix(src.shift_x,dst.shift_x,pct,self.settings.shift['easing'])
     self.shift_y  = mix(src.shift_y,dst.shift_y,pct,self.settings.shift['easing'])
 

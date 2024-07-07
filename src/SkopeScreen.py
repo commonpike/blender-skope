@@ -31,9 +31,9 @@ class SkopeScreen:
       'default': 1,
       'minimum':.5,
       'maximum': 2,
-      'delta': .1,
       "distribution" : "UNIFORM",
       "extend_radius": True,
+      'delta': .1,
       "easing": "EASEINOUT"
     },
     'rotation_z': {
@@ -41,8 +41,8 @@ class SkopeScreen:
       'default': 0,
       'minimum':0,
       'maximum': TWO_PI,
-      'delta': .1,
       "distribution" : "UNIFORM",
+      'delta': .1,
       "easing": "EASEINOUT"
     },
     "images_location": {
@@ -50,8 +50,8 @@ class SkopeScreen:
       'default': 0,
       'minimum': -5,
       'maximum': 5,
-      'delta': .1,
       "distribution" : "UNIFORM",
+      'delta': .1,
       "easing": "EASEINOUT"
     },
     "images_rotation": {
@@ -59,8 +59,8 @@ class SkopeScreen:
       'default': 0,
       'minimum': 0,
       'maximum': TWO_PI,
-      'delta': .05,
       "distribution" : "UNIFORM",
+      'delta': .05,
       "easing": "EASEINOUT"
     },
     "images_scale": {
@@ -68,8 +68,8 @@ class SkopeScreen:
       'default': 1,
       'minimum': .5,
       'maximum': 1.5,
-      'delta': .1,
       "distribution" : "UNIFORM",
+      'delta': .1,
       "easing": "EASEINOUT"
     },
     'images_fade': {
@@ -77,8 +77,8 @@ class SkopeScreen:
       'default': .5,
       'minimum':0,
       'maximum': 1,
-      'delta': .75,
       "distribution" : "GAUSSIAN",
+      'delta': .75,
       "easing": "EASEINOUT"
     }
 
