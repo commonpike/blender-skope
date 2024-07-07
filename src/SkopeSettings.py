@@ -12,7 +12,8 @@
 #
 
 import random
-  
+from distributions import rnd,rndint,rndbool
+
 class SkopeSettings(dict):
     def __init__(self, mapping=None):
         self.config = mapping
@@ -48,30 +49,25 @@ class SkopeSettings(dict):
             return False
         raise Exception("Key "+key+" not found")
           
-    def rnd(self,key,min=None,max=None,dist=None):
+    def rnd(self,key):
         if key in self:
             if not isinstance(self[key], dict):
                 return self.get(key)
             if not 'random' in self[key] or not self[key]['random']:
                 return self.get(key)
-            if dist is None:
-                if 'distribution' in self[key]:
-                    dist = self[key]['distribution']
-                else:
-                    dist = 'LINEAR'
-            if min is None:
-                if 'minimum' in self[key]:
-                    min = self[key]['minimum']
-                else:
-                    min = self.get(key)
-            if max is None:
-                if 'maximum' in self[key]:
-                    max = self[key]['maximum']
-                else:
-                    max = self.get(key)
-            if dist == "LINEAR":
-                return self.rndLinearFloat(min,max)
-            raise Exception("Distribution "+dist+" not supported")
+            if 'distribution' in self[key]:
+                dist = self[key]['distribution']
+            else:
+                dist = 'UNIFORM'
+            if 'minimum' in self[key]:
+                min = self[key]['minimum']
+            else:
+                min = self.get(key)
+            if 'maximum' in self[key]:
+                max = self[key]['maximum']
+            else:
+                max = self.get(key)
+            return rnd(min,max,dist)
         raise Exception("Key "+key+" not found")
     
     def rnd_delta(self,key,val):
@@ -84,6 +80,10 @@ class SkopeSettings(dict):
                 delta = self[key]['delta']
             else:
                 delta = .1
+            if 'distribution' in self[key]:
+                dist = self[key]['distribution']
+            else:
+                dist = 'UNIFORM'
             if 'minimum' in self[key]:
                 min = self[key]['minimum']
             else:
@@ -95,51 +95,44 @@ class SkopeSettings(dict):
             deltamin = val - (delta * (val-min))
             deltamax = val + (delta * (max-val))
             print('rnd_delta',val,deltamin,deltamax)
-            return self.rnd(key,deltamin,deltamax)
+            return rnd(deltamin,deltamax,dist)
         
         raise Exception("Key "+key+" not found")
 
-    def rndint(self,key, min=None, max=None, dist=None):
+    def rndint(self,key):
         if key in self:
             if not 'random' in self[key] or not self[key]['random']:
                 return self.get(key)
-            if dist is None:
-                if 'distribution' in self[key]:
-                    dist = self[key]['distribution']
-                else:
-                    dist = 'LINEAR'
-            if min is None:
-                if 'minimum' in self[key]:
-                    min = self[key]['minimum']
-                else:
-                    min = self.get(key)
-            if max is None:
-                if 'maximum' in self[key]:
-                    max = self[key]['maximum']
-                else:
-                    max = self.get(key)
-            if dist == "LINEAR":
-                return self.rndLinearInt(min,max)
-            raise Exception("Distribution "+dist+" not supported")
+            if 'distribution' in self[key]:
+                dist = self[key]['distribution']
+            else:
+                dist = 'UNIFORM'
+            if 'minimum' in self[key]:
+                min = self[key]['minimum']
+            else:
+                min = self.get(key)
+            if 'maximum' in self[key]:
+                max = self[key]['maximum']
+            else:
+                max = self.get(key)
+            return rndint(min,max,dist)
         raise Exception("Key "+key+" not found")
 
     def rndbool(self,key):
         if key in self:
             if not 'random' in self[key] or not self[key]['random']:
                 return self.get(key)
+            if 'distribution' in self[key]:
+                dist = self[key]['distribution']
+            else:
+                dist = 'UNIFORM'
             if 'chance' in self[key]:
                 chance = self[key]['chance']
             else:
                 chance = .5
-            return random.random() < chance
+            return rndbool(chance,dist)
         raise Exception("Key "+key+" not found")
   
-    # helpers 
-
-    def rndLinearFloat(self,min,max):
-        return min + random.random() * (max - min)
-
-    def rndLinearInt(self,min,max):
-        return random.randint(min,max)
+    
         
         

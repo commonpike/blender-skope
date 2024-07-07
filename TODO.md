@@ -4,12 +4,13 @@
 - easeinout
 
 ## skopecone
-- rnd_delta wiggle reset beams
+v rnd_delta wiggle reset beams
 - rnd_delta: numsides
 - bevelnone, smoothnone
-- length
+- height
 
 ## skopescreen
+- random fade gaussian
 - 3 images
 - images_fadeout (swap)
 

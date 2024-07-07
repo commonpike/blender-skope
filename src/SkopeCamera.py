@@ -21,7 +21,8 @@ class SkopeCamera:
       "minimum": -5,
       "maximum": 5,
       "delta": .5,
-      "distribution": "LINEAR"
+      "distribution" : "UNIFORM",
+      "within_radius": True
     },
     "location_y": {
       "default": 0,
@@ -29,7 +30,8 @@ class SkopeCamera:
       "minimum": -5,
       "maximum": 5,
       "delta": .5,
-      "distribution": "LINEAR"
+      "distribution" : "UNIFORM",
+      "within_radius": True
     },
     "location_z": {
       "default": 10,
@@ -37,10 +39,7 @@ class SkopeCamera:
       "minimum": 2,
       "maximum": 10,
       "delta": .5,
-      "distribution": "LINEAR"
-    },
-    "location_within_radius": {
-      "set": True
+      "distribution" : "UNIFORM"
     },
     "shift": {
       "random": True,
@@ -48,7 +47,7 @@ class SkopeCamera:
       "minimum": -.25,
       "maximum": .25,
       "delta": .5,
-      "distribution": "LINEAR"
+      "distribution" : "UNIFORM"
     }
   })
 
@@ -102,18 +101,14 @@ class SkopeCamera:
   def random(self, radius = 10):
     print("SkopeCamera random")
     self.reset()
-    if not self.settings.get('location_within_radius') or radius == 0:
-        maxlocx = self.settings.location_x['maximum']
-        maxlocy = self.settings.location_y['maximum']
-        minlocx = self.settings.location_x['minimum']
-        minlocy = self.settings.location_y['minimum']
-    else :
-        maxlocx = radius/2
-        minlocx = -radius/2
-        maxlocy = radius/2
-        minlocy = -radius/2
-    self.location['x'] = self.settings.rnd('location_x',minlocx,maxlocx)  
-    self.location['y'] = self.settings.rnd('location_y',minlocy,maxlocy)  
+    if self.settings.location_x['within_radius']:
+        self.settings.location_x['maximum'] = radius/2
+        self.settings.location_x['minimum'] = -radius/2
+    if self.settings.location_y['within_radius']:
+        self.settings.location_y['maximum'] = radius/2
+        self.settings.location_y['minimum'] = -radius/2
+    self.location['x'] = self.settings.rnd('location_x')  
+    self.location['y'] = self.settings.rnd('location_y')  
     self.location['z'] = self.settings.rnd('location_z')
     self.shift_x = self.settings.rnd('shift')
     self.shift_y = self.settings.rnd('shift')

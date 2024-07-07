@@ -24,7 +24,7 @@ class SkopeCone:
       "minimum": 0,
       "maximum": TWO_PI,
       "delta": .1,
-      "distribution" : "LINEAR"
+      "distribution" : "UNIFORM"
     },
     # when creating a random skope,
     # set the amount of sides 
@@ -34,7 +34,7 @@ class SkopeCone:
       "minimum": 3,
       "maximum": 8,
       "delta": .1,
-      "distribution" : "LINEAR",
+      "distribution" : "UNIFORM",
       # randomly make the number of sides on
       # the bottom less than on the top
       "warp": False
@@ -45,9 +45,12 @@ class SkopeCone:
       "random": True,
       "default": 0,
       "minimum": 0,
-      "maximum": 1/5,
+      "maximum": 1,
       "delta": .1,
-      "distribution" : "LINEAR",
+      "distribution" : "UNIFORM",
+      "within_beams" : True,
+      "rel_minimum": 0,
+      "rel_maximum": 1/5,
       # if slant, wiggle vertices at the top
       # different than at the bottom  
       "slant": False
@@ -78,7 +81,7 @@ class SkopeCone:
       "minimum": 0,
       "maximum": 180,
       "delta": .1,
-      "distribution" : "LINEAR"
+      "distribution" : "UNIFORM"
     }
   })
   
@@ -240,16 +243,17 @@ class SkopeCone:
     
     # wiggle some
     if self.settings.wiggle['random']:
-      minwiggle = self.settings.wiggle['minimum']*TWO_PI*self.radius/self.numsides
-      maxwiggle = self.settings.wiggle['maximum']*TWO_PI*self.radius/self.numsides
+      if self.settings.wiggle['within_beams']:
+        self.settings.wiggle['minimum'] = self.settings.wiggle['rel_minimum']*TWO_PI*self.radius/self.numsides
+        self.settings.wiggle['maximum'] = self.settings.wiggle['rel_maximum']*TWO_PI*self.radius/self.numsides
       for index in range(0,len(self.beams)):
         random_angle = random.random()*360
-        random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+        random_wiggle = self.settings.rnd('wiggle')
         self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
         self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
         if self.settings.wiggle['slant']:
           random_angle = random.random()*360
-          random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+          random_wiggle = self.settings.rnd('wiggle')
           self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
           self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
         else:
@@ -295,23 +299,40 @@ class SkopeCone:
     self.height = self.settings.rnd_delta('height',self.height)
     self.rotation = self.settings.rnd_delta('rotation',self.rotation)
     if self.settings.wiggle['random']:
-      minwiggle = self.settings.wiggle['minimum']*TWO_PI*self.radius/self.numsides
-      maxwiggle = self.settings.wiggle['maximum']*TWO_PI*self.radius/self.numsides
+      self.removeWiggle()
+      if self.settings.wiggle['within_beams']:
+        self.settings.wiggle['minimum'] = self.settings.wiggle['rel_minimum']*TWO_PI*self.radius/self.numsides
+        self.settings.wiggle['maximum'] = self.settings.wiggle['rel_maximum']*TWO_PI*self.radius/self.numsides
       for index in range(0,len(self.beams)):
         random_angle = random.random()*360
-        random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+        random_wiggle = self.settings.rnd('wiggle')
         self.beams[index]['bottom'][0] += random_wiggle*math.sin(random_angle)
         self.beams[index]['bottom'][1] += random_wiggle*math.cos(random_angle)
         if self.settings.wiggle['slant']:
           random_angle = random.random()*360
-          random_wiggle = self.settings.rnd('wiggle',minwiggle,maxwiggle)
+          random_wiggle = self.settings.rnd('wiggle')
           self.beams[index]['top'][0] += random_wiggle*math.sin(random_angle)
           self.beams[index]['top'][1] += random_wiggle*math.cos(random_angle)
         else:
           self.beams[index]['top'][0] = self.beams[index]['bottom'][0]
           self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
 
-    
+  def removeWiggle(self):
+    step = float(360/self.numsides)
+    angles = (x * step for x in range(0, self.numsides))
+    for beam in self.beams:
+      alpha = next(angles)
+      print('removeWiggle',beam,alpha)
+      beam['bottom'] = [
+        self.radius*math.sin(math.radians(alpha)),
+        self.radius*math.cos(math.radians(alpha)),
+        0
+      ]
+      beam['top'] = [
+        self.radius*math.sin(math.radians(alpha)),
+        self.radius*math.cos(math.radians(alpha)),
+        self.height
+      ]
 
   def mix(self, src, dst, pct = 0, easing='LINEAR'):
     print("SkopeScreen mix")

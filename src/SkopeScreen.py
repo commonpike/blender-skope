@@ -32,8 +32,8 @@ class SkopeScreen:
       'minimum':.5,
       'maximum': 2,
       'delta': .1,
-      'distribution': 'LINEAR',
-      # extend_radius: True
+      "distribution" : "UNIFORM",
+      "extend_radius": True
     },
     'rotation_z': {
       'random': True,
@@ -41,7 +41,7 @@ class SkopeScreen:
       'minimum':0,
       'maximum': TWO_PI,
       'delta': .1,
-      'distribution': 'LINEAR',
+      "distribution" : "UNIFORM",
     },
     "images_location": {
       "random": True,
@@ -49,7 +49,7 @@ class SkopeScreen:
       'minimum': -5,
       'maximum': 5,
       'delta': .1,
-      'distribution': 'LINEAR',
+      "distribution" : "UNIFORM",
     },
     "images_rotation": {
       "random": True,
@@ -57,7 +57,7 @@ class SkopeScreen:
       'minimum': 0,
       'maximum': TWO_PI,
       'delta': .05,
-      'distribution': 'LINEAR',
+      "distribution" : "UNIFORM",
     },
     "images_scale": {
       "random": True,
@@ -65,7 +65,7 @@ class SkopeScreen:
       'minimum': .5,
       'maximum': 1.5,
       'delta': .1,
-      'distribution': 'LINEAR',
+      "distribution" : "UNIFORM",
     },
     'images_fade': {
       'random': True,
@@ -73,7 +73,7 @@ class SkopeScreen:
       'minimum':0,
       'maximum': 1,
       'delta': .75,
-      'distribution': 'LINEAR',
+      "distribution" : "UNIFORM",
     }
 
   })
@@ -267,10 +267,10 @@ class SkopeScreen:
     self.rotation['z'] = self.settings.rnd('rotation_z')
     
     if self.settings.scale['random']:
-      if minsize == 0:
-        minsize = self.width * self.settings.scale['minimum']
-      minscale = minsize / self.width # assuming square
-      scale = self.settings.rnd('scale',minscale)
+      if self.settings.scale['extend_radius']:
+        if minsize != 0:
+          self.settings.scale['minimum'] = minsize / self.width
+      scale = self.settings.rnd('scale')
       self.scale['x'] = scale
       self.scale['y'] = scale
 
