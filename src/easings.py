@@ -7,7 +7,7 @@ def mix(src,dst,pct,easing="LINEAR"):
     if easing == "LINEAR":
         return mixLinear(src,dst,pct)
     if easing == "EASEINOUT":
-        return mixInOutCubic(src,dst,pct)
+        return mixInOutSine(src,dst,pct)
     if easing == "INOUTSINE":
         return mixInOutSine(src,dst,pct)
     if easing == "INOUTQUAD":

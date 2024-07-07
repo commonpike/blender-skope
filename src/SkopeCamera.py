@@ -36,7 +36,7 @@ class SkopeCamera:
       "easing": "EASEINOUT"
     },
     "location_z": {
-      "default": 20,
+      "default": 10,
       "random": True,
       "minimum": 2,
       "maximum": 20,

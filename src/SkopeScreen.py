@@ -79,6 +79,7 @@ class SkopeScreen:
       'maximum': 1,
       "distribution" : "GAUSSIAN",
       'delta': .75,
+      'fadeout_chance': .25,
       "easing": "EASEINOUT"
     }
 
@@ -301,20 +302,34 @@ class SkopeScreen:
 
   def rnd_delta(self):
     print("SkopeScreen rnd_delta")
+
+    fadeoutimg = ''
+    if 2*random.random()*self.settings.images_fade['fadeout_chance'] < .5:
+      fadeoutimg = random.choice(['image1','image2'])
+
     self.rotation['z'] = self.settings.rnd_delta('rotation_z',self.rotation['z'])
     scale = self.settings.rnd_delta('scale',self.scale['x'])
     self.scale['x'] = scale
     self.scale['y'] = scale
+
     self.image1['x'] = self.settings.rnd_delta('images_location',self.image1['x'])
     self.image1['y'] = self.settings.rnd_delta('images_location',self.image1['y'])
     self.image1['rotation'] = self.settings.rnd_delta('images_rotation',self.image1['rotation'])
     self.image1['scale'] = self.settings.rnd_delta('images_scale',self.image1['scale'])
-    self.image1['fade'] = self.settings.rnd_delta('images_fade',self.image1['fade'])
+    if self.image1['fade'] != 0 and fadeoutimg == 'image1':
+      self.image1['fade'] = 0
+    else:
+      self.image1['fade'] = self.settings.rnd_delta('images_fade',self.image1['fade'])
+
     self.image2['x'] = self.settings.rnd_delta('images_location',self.image2['x'])
     self.image2['y'] = self.settings.rnd_delta('images_location',self.image2['y'])
     self.image2['rotation'] = self.settings.rnd_delta('images_rotation',self.image2['rotation'])
     self.image2['scale'] = self.settings.rnd_delta('images_scale',self.image2['scale'])
-    self.image2['fade'] = self.settings.rnd_delta('images_fade',self.image2['fade'])
+    if self.image2['fade'] != 0 and fadeoutimg == 'image2':
+      print("fadeout2",self.image2['src'])
+      self.image2['fade'] = 0
+    else:
+      self.image2['fade'] = self.settings.rnd_delta('images_fade',self.image2['fade'])
 
   def mix(self, src, dst, pct = 0):
     print("SkopeScreen mix")
@@ -382,9 +397,21 @@ class SkopeScreen:
     self.mapping2.inputs[3].default_value[0] = self.image2['scale']
     self.mapping2.inputs[3].default_value[1] = self.image2['scale']
 
+  # helpers -----
+
   def getFade(self):
     if self.image1['fade'] == 0:
       return 1
     if self.image2['fade'] == 0:
       return 0
-    return self.image1['fade']/(self.image1['fade']+self.image2['fade'])
+    return self.image2['fade']/(self.image1['fade']+self.image2['fade'])
+  
+  def swapOneInvisibleImage(self):
+    if len(self.images) and self.settings.sources['random']:
+      if self.image1['fade'] == 0.0:
+          print("fadein1",self.image1['src'])
+          self.image1['src'] = random.choice(self.images)
+      else:
+        if self.image2['fade'] == 0.0:
+            self.image2['src'] = random.choice(self.images)
+            print("fadein2",self.image2['src'])

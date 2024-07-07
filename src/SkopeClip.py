@@ -39,6 +39,7 @@ class SkopeClip:
 
   def next_delta(self):
     print("SkopeClip next_delta")
+    self.dst.screen.swapOneInvisibleImage()
     self.src = self.dst.clone()
     self.dst.rnd_delta()
 

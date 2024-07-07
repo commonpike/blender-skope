@@ -64,6 +64,8 @@ class Skope:
       scene.render.motion_blur_shutter = self.settings.motion_blur_shutter  
       bpy.ops.render.shutter_curve_preset(shape = self.settings.motion_blur_shape)
 
+    bpy.context.view_layer.objects.active = self.state.screen.object
+    
   def create_random_clip(self, length):
     print("Skope create_random_clip", length)
     scene = bpy.context.scene
@@ -72,6 +74,7 @@ class Skope:
     self.clip = SkopeClip(scene,length)
     self.clip.random()
     self.clip.apply(scene)
+    
   
   def render_stills(self, amount): 
     print("Rendering random stills ..")
