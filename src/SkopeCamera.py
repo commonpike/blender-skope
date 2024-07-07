@@ -22,7 +22,8 @@ class SkopeCamera:
       "maximum": 5,
       "delta": .5,
       "distribution" : "UNIFORM",
-      "within_radius": True
+      "within_radius": True,
+      "easing": "EASEINOUT"
     },
     "location_y": {
       "default": 0,
@@ -31,7 +32,8 @@ class SkopeCamera:
       "maximum": 5,
       "delta": .5,
       "distribution" : "UNIFORM",
-      "within_radius": True
+      "within_radius": True,
+      "easing": "EASEINOUT"
     },
     "location_z": {
       "default": 10,
@@ -47,7 +49,8 @@ class SkopeCamera:
       "minimum": -.25,
       "maximum": .25,
       "delta": .5,
-      "distribution" : "UNIFORM"
+      "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     }
   })
 
@@ -120,12 +123,12 @@ class SkopeCamera:
     self.shift_x  = self.settings.rnd_delta('shift',self.shift_x)
     self.shift_y  = self.settings.rnd_delta('shift',self.shift_y)
 
-  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+  def mix(self, src, dst, pct = 0):
     print("SkopeCamera mix")
-    self.location['x'] = mix(src.location['x'],dst.location['x'],pct,easing)
-    self.location['y'] = mix(src.location['y'],dst.location['y'],pct,easing)
-    self.shift_x  = mix(src.shift_x,dst.shift_x,pct,easing)
-    self.shift_y  = mix(src.shift_y,dst.shift_y,pct,easing)
+    self.location['x'] = mix(src.location['x'],dst.location['x'],pct,self.settings.location_x['easing'])
+    self.location['y'] = mix(src.location['y'],dst.location['y'],pct,self.settings.location_y['easing'])
+    self.shift_x  = mix(src.shift_x,dst.shift_x,pct,self.settings.shift['easing'])
+    self.shift_y  = mix(src.shift_y,dst.shift_y,pct,self.settings.shift['easing'])
 
   def apply(self,scene):
     if not self.object:

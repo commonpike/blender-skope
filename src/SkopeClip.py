@@ -11,7 +11,6 @@ class SkopeClip:
     self.dst = self.state.clone()
     self.length = length
     self.current = 0
-    self.easing = 'LINEAR'
 
   def random(self):
     self.src.random()
@@ -46,7 +45,7 @@ class SkopeClip:
   def apply(self,scene):
     pct = self.current * 100 / ( self.length - 1) # think twice
     print("SkopeClip apply",pct);
-    self.state.mix(self.src,self.dst,pct,self.easing)
+    self.state.mix(self.src,self.dst,pct)
     self.state.apply(scene)
 
   

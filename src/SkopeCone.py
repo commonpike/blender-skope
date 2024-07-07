@@ -24,7 +24,8 @@ class SkopeCone:
       "minimum": 0,
       "maximum": TWO_PI,
       "delta": .1,
-      "distribution" : "UNIFORM"
+      "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     },
     # when creating a random skope,
     # set the amount of sides 
@@ -51,6 +52,7 @@ class SkopeCone:
       "within_beams" : True,
       "rel_minimum": 0,
       "rel_maximum": 1/5,
+      "easing": "EASEINOUT",
       # if slant, wiggle vertices at the top
       # different than at the bottom  
       "slant": False
@@ -65,6 +67,7 @@ class SkopeCone:
       "fixed_width": 4,
       "fixed_segments": 16,
       "fixed_harden_normals": True,
+      "easing": "EASEINOUT"
     },
     # make bevels smooth
     # removed in blender4
@@ -334,15 +337,15 @@ class SkopeCone:
         self.height
       ]
 
-  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+  def mix(self, src, dst, pct = 0):
     print("SkopeScreen mix")
     numsides = max(src.numsides,dst.numsides)
     smooth = dst.smooth
     if self.numsides != numsides or self.smooth != smooth:
       self.reset(numsides)
-    self.radius = mix(src.radius,dst.radius,pct,easing)
-    self.height = mix(src.height,dst.height,pct,easing)
-    self.rotation = mix(src.rotation,dst.rotation,pct,easing)
+    self.radius = mix(src.radius,dst.radius,pct)
+    self.height = mix(src.height,dst.height,pct)
+    self.rotation = mix(src.rotation,dst.rotation,pct,self.settings.rotation["easing"])
     srcnum = src.numsides
     dstnum = dst.numsides
     for index in range(0,len(self.beams)):
@@ -353,27 +356,27 @@ class SkopeCone:
       self.beams[index]['bottom'][0] = mix(
         src.beams[srcindex]['bottom'][0],
         dst.beams[dstindex]['bottom'][0],
-        pct,easing
+        pct,self.settings.wiggle["easing"]
       )
       self.beams[index]['bottom'][1] = mix(
         src.beams[srcindex]['bottom'][1],
         dst.beams[dstindex]['bottom'][1],
-        pct,easing
+        pct,self.settings.wiggle["easing"]
       )
       self.beams[index]['top'][0] = mix(
         src.beams[srcindex]['top'][0],
         dst.beams[dstindex]['top'][0],
-        pct,easing
+        pct,self.settings.wiggle["easing"]
       )
       self.beams[index]['top'][1] = mix(
         src.beams[srcindex]['top'][1],
         dst.beams[dstindex]['top'][1],
-        pct,easing
+        pct,self.settings.wiggle["easing"]
       )
       self.beams[index]['bevel'] = mix(
         src.beams[srcindex]['bevel'],
         dst.beams[dstindex]['bevel'],
-        pct,easing
+        pct,self.settings.bevel["easing"]
       )
     
 

@@ -33,7 +33,8 @@ class SkopeScreen:
       'maximum': 2,
       'delta': .1,
       "distribution" : "UNIFORM",
-      "extend_radius": True
+      "extend_radius": True,
+      "easing": "EASEINOUT"
     },
     'rotation_z': {
       'random': True,
@@ -42,6 +43,7 @@ class SkopeScreen:
       'maximum': TWO_PI,
       'delta': .1,
       "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     },
     "images_location": {
       "random": True,
@@ -50,6 +52,7 @@ class SkopeScreen:
       'maximum': 5,
       'delta': .1,
       "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     },
     "images_rotation": {
       "random": True,
@@ -58,6 +61,7 @@ class SkopeScreen:
       'maximum': TWO_PI,
       'delta': .05,
       "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     },
     "images_scale": {
       "random": True,
@@ -66,6 +70,7 @@ class SkopeScreen:
       'maximum': 1.5,
       'delta': .1,
       "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     },
     'images_fade': {
       'random': True,
@@ -74,6 +79,7 @@ class SkopeScreen:
       'maximum': 1,
       'delta': .75,
       "distribution" : "UNIFORM",
+      "easing": "EASEINOUT"
     }
 
   })
@@ -310,23 +316,23 @@ class SkopeScreen:
     self.image2['scale'] = self.settings.rnd_delta('images_scale',self.image2['scale'])
     self.image2['fade'] = self.settings.rnd_delta('images_fade',self.image2['fade'])
 
-  def mix(self, src, dst, pct = 0, easing='LINEAR'):
+  def mix(self, src, dst, pct = 0):
     print("SkopeScreen mix")
-    self.rotation['z'] = mix(src.rotation['z'],dst.rotation['z'],pct,easing)
-    self.scale['x'] = mix(src.scale['x'],dst.scale['x'],pct,easing)
-    self.scale['y'] = mix(src.scale['y'],dst.scale['y'],pct,easing)
+    self.rotation['z'] = mix(src.rotation['z'],dst.rotation['z'],pct,self.settings.rotation_z['easing'])
+    self.scale['x'] = mix(src.scale['x'],dst.scale['x'],pct,self.settings.scale['easing'])
+    self.scale['y'] = mix(src.scale['y'],dst.scale['y'],pct,self.settings.scale['easing'])
     self.image1['src'] = src.image1['src']
     self.image2['src'] = dst.image2['src']
-    self.image1['x'] = mix(src.image1['x'],dst.image1['x'],pct,easing)
-    self.image1['y'] = mix(src.image1['y'],dst.image1['y'],pct,easing)
-    self.image1['rotation'] = mix(src.image1['rotation'],dst.image1['rotation'],pct,easing)
-    self.image1['scale'] = mix(src.image1['scale'],dst.image1['scale'],pct,easing)
-    self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],pct,easing)
-    self.image2['x'] = mix(src.image2['x'],dst.image2['x'],pct,easing)
-    self.image2['y'] = mix(src.image2['y'],dst.image2['y'],pct,easing)
-    self.image2['rotation'] = mix(src.image2['rotation'],dst.image2['rotation'],pct,easing)
-    self.image2['scale'] = mix(src.image2['scale'],dst.image2['scale'],pct,easing)
-    self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],pct,easing)
+    self.image1['x'] = mix(src.image1['x'],dst.image1['x'],pct,self.settings.images_location['easing'])
+    self.image1['y'] = mix(src.image1['y'],dst.image1['y'],pct,self.settings.images_location['easing'])
+    self.image1['rotation'] = mix(src.image1['rotation'],dst.image1['rotation'],pct,self.settings.images_rotation['easing'])
+    self.image1['scale'] = mix(src.image1['scale'],dst.image1['scale'],pct,self.settings.images_scale['easing'])
+    self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],pct,self.settings.images_fade['easing'])
+    self.image2['x'] = mix(src.image2['x'],dst.image2['x'],pct,self.settings.images_location['easing'])
+    self.image2['y'] = mix(src.image2['y'],dst.image2['y'],pct,self.settings.images_location['easing'])
+    self.image2['rotation'] = mix(src.image2['rotation'],dst.image2['rotation'],pct,self.settings.images_rotation['easing'])
+    self.image2['scale'] = mix(src.image2['scale'],dst.image2['scale'],pct,self.settings.images_scale['easing'])
+    self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],pct,self.settings.images_fade['easing'])
 
   def toJSON(self):
     return { 
