@@ -10,8 +10,6 @@ def mix(src,dst,pct,easing="LINEAR"):
         return mixInOutCubic(src,dst,pct)
     if easing == "INOUTSINE":
         return mixInOutSine(src,dst,pct)
-    if easing == "INOUTSINE":
-        return mixInOutSine(src,dst,pct)
     if easing == "INOUTQUAD":
         return mixInOutQuad(src,dst,pct)
     if easing == "INOUTCUBIC":

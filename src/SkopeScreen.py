@@ -78,7 +78,7 @@ class SkopeScreen:
       'minimum':0,
       'maximum': 1,
       'delta': .75,
-      "distribution" : "UNIFORM",
+      "distribution" : "GAUSSIAN",
       "easing": "EASEINOUT"
     }
 

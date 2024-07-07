@@ -1,7 +1,7 @@
 # TODO.
 
 ## easings 
-- easeinout
+v easeinout
 
 ## skopecone
 v rnd_delta wiggle reset beams
@@ -10,7 +10,7 @@ v rnd_delta wiggle reset beams
 - height
 
 ## skopescreen
-- random fade gaussian
+v random fade gaussian
 - 3 images
 - images_fadeout (swap)
 
