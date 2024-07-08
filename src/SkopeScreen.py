@@ -176,21 +176,25 @@ class SkopeScreen:
     self.object = bpy.data.objects.new("screen", screen_data)
 
     self.material = bpy.data.materials.new(name = "ScreenMaterial")
+    self.material.name = "ScreenMaterial"
     self.material.roughness = self.settings.get('roughness')
     self.material.use_nodes = True
     self.material.node_tree.nodes.clear()
     
-    material = self.material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
-    material.location.x = 600
-    material.location.y = 200
+    output = self.material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+    output.name = 'Output'
+    output.location.x = 600
+    output.location.y = 200
     
     self.fader = self.material.node_tree.nodes.new(type="ShaderNodeMixShader")
+    self.fader.name = 'Fader'
     self.fader.location.x = 400
     self.fader.location.y = 200
     
     self.sources = []
 
     imgnode1 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode1.name = "Image1"
     imgnode1.location.x = 0
     imgnode1.location.y = 400
     imgnode1.extension = 'MIRROR'
@@ -204,14 +208,17 @@ class SkopeScreen:
     self.sources.append(source1)
 
     coords1= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords1.name = "Coordinates1"
     coords1.location.x = -400
     coords1.location.y = 400
 
     self.mapping1= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
+    self.mapping1.name = "Mapping1"
     self.mapping1.location.x = -200
     self.mapping1.location.y = 400
 
     imgnode2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode2.name = "Image2"
     imgnode2.location.x = 0
     imgnode2.location.y = 0
     imgnode2.extension = 'MIRROR'
@@ -225,15 +232,17 @@ class SkopeScreen:
     self.sources.append(source2)
     
     coords2= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords2.name = "Coordinates2"
     coords2.location.x = -400
     coords2.location.y = 0
 
     self.mapping2= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
+    self.mapping2.name  = "Mapping2"
     self.mapping2.location.x = -200
     self.mapping2.location.y = 0
 
     self.material.node_tree.links.new(
-      material.inputs['Surface'], 
+      output.inputs['Surface'], 
       self.fader.outputs[0]
     )
     self.material.node_tree.links.new(
@@ -375,27 +384,37 @@ class SkopeScreen:
     if not self.object or not self.fader or not self.mapping1 or not self.mapping2:
         raise Exception("SkopeScreen can not be applied")
     print("Skopescreen apply")
-    self.object.rotation_euler.x = self.rotation['x']
-    self.object.rotation_euler.y = self.rotation['y']
-    self.object.rotation_euler.z = self.rotation['z']
-    self.object.location.x = self.location['x']
-    self.object.location.y = self.location['y']
-    self.object.location.z = self.location['z']
-    self.object.scale[0] = self.scale['x']
-    self.object.scale[1] = self.scale['y']
+
+    object = bpy.data.objects["screen"]
+    object.rotation_euler.x = self.rotation['x']
+    object.rotation_euler.y = self.rotation['y']
+    object.rotation_euler.z = self.rotation['z']
+    object.location.x = self.location['x']
+    object.location.y = self.location['y']
+    object.location.z = self.location['z']
+    object.scale[0] = self.scale['x']
+    object.scale[1] = self.scale['y']
     bpy.data.images['ScreenSource1'].filepath = self.image1['src']
     bpy.data.images['ScreenSource2'].filepath = self.image2['src']
-    self.fader.inputs[0].default_value=self.getFade()
-    self.mapping1.inputs[1].default_value[0] = self.image1['x']
-    self.mapping1.inputs[1].default_value[1] = self.image1['y']
-    self.mapping1.inputs[2].default_value[2] = self.image1['rotation']
-    self.mapping1.inputs[3].default_value[0] = self.image1['scale']
-    self.mapping1.inputs[3].default_value[1] = self.image1['scale']
-    self.mapping2.inputs[1].default_value[0] = self.image2['x']
-    self.mapping2.inputs[1].default_value[1] = self.image2['y']
-    self.mapping2.inputs[2].default_value[2] = self.image2['rotation']
-    self.mapping2.inputs[3].default_value[0] = self.image2['scale']
-    self.mapping2.inputs[3].default_value[1] = self.image2['scale']
+
+    material = bpy.data.materials["ScreenMaterial"]
+
+    fader = material.node_tree.nodes["Fader"]
+    fader.inputs[0].default_value=self.getFade()
+
+    mapping1 = material.node_tree.nodes["Mapping1"]
+    mapping1.inputs[1].default_value[0] = self.image1['x']
+    mapping1.inputs[1].default_value[1] = self.image1['y']
+    mapping1.inputs[2].default_value[2] = self.image1['rotation']
+    mapping1.inputs[3].default_value[0] = self.image1['scale']
+    mapping1.inputs[3].default_value[1] = self.image1['scale']
+
+    mapping2 = material.node_tree.nodes["Mapping2"]
+    mapping2.inputs[1].default_value[0] = self.image2['x']
+    mapping2.inputs[1].default_value[1] = self.image2['y']
+    mapping2.inputs[2].default_value[2] = self.image2['rotation']
+    mapping2.inputs[3].default_value[0] = self.image2['scale']
+    mapping2.inputs[3].default_value[1] = self.image2['scale']
 
   # helpers -----
 

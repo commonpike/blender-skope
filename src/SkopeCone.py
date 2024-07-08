@@ -80,7 +80,7 @@ class SkopeCone:
     # removed in blender4
     "autosmooth" : {
       "random": False,
-      "default": 0,
+      "default": 0, # anything else may cause jumps during clip animation
       "minimum": 0,
       "maximum": 180,
       "distribution" : "UNIFORM"

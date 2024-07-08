@@ -74,6 +74,8 @@ class Skope:
     self.clip = SkopeClip(scene,length)
     self.clip.random()
     self.clip.apply(scene)
+    filename = str(uuid.uuid4())[:4]+'-';
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
     
   
   def render_stills(self, amount): 
@@ -157,10 +159,10 @@ class Skope:
   # framechange handlers
   # test mode frame_change_pre handler
   
-  def apply_random_filepath(self,scene):
-    print("apply_random_filepath")
-    filename = str(uuid.uuid4())[:4]+'-';
-    scene.render.filepath = self.settings.output_dir+ '/' + filename
+  #def apply_random_filepath(self,scene,x):
+  #  print("apply_random_filepath")
+  #  filename = str(uuid.uuid4())[:4]+'-';
+  #  scene.render.filepath = self.settings.output_dir+ '/' + filename
 
   def apply_random_state(self,scene,x=0):
     if not self.frozen:
@@ -173,7 +175,7 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
-    if scene.frame_current >= self.clip.length :
+    if scene.frame_current > self.clip.length :
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
     else :
