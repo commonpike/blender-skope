@@ -167,7 +167,8 @@ class Skope:
   def apply_random_state(self,scene,x=0):
     if not self.frozen:
       print("apply_random_state",SkopeState.frame_num,scene.frame_current)
-      bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.context.scene.render.use_lock_interface = True
       SkopeState.frame_num = scene.frame_current
       self.state.random()
       self.state.apply(scene)
@@ -175,11 +176,13 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
-    if scene.frame_current > self.clip.length :
+    if scene.frame_current >= self.clip.length :
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
     else :
       self.clip.go(scene.frame_current)
+      #bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.context.scene.render.use_lock_interface = True
       self.clip.apply(scene)
 
   def freeze(self,scene,x=0):

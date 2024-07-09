@@ -135,14 +135,16 @@ class SkopeCamera:
     self.shift_y  = mix(src.shift_y,dst.shift_y,pct,self.settings.shift['easing'])
 
   def apply(self,scene):
-    if not self.object:
-        raise Exception("SkopeCamera can not be applied")
     print("SkopeCamera apply")
-    self.object.location.x = self.location['x']
-    self.object.location.y = self.location['y']
-    self.object.location.z = self.location['z']
-    self.object.data.shift_x = self.shift_x
-    self.object.data.shift_y = self.shift_y
+    object = bpy.data.objects["camera"]
+    if not object:
+        raise Exception("SkopeCamera can not be applied")
+    
+    object.location.x = self.location['x']
+    object.location.y = self.location['y']
+    object.location.z = self.location['z']
+    object.data.shift_x = self.shift_x
+    object.data.shift_y = self.shift_y
 
   def toJSON(self):
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }

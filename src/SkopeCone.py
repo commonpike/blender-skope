@@ -129,7 +129,7 @@ class SkopeCone:
     print("SkopeCone create")
 
     # create a object
-    self.mesh = bpy.data.meshes.new("SkopeConeMesh")
+    self.mesh = bpy.data.meshes.new("SkopeConeMesh")    
     self.object = bpy.data.objects.new("cone",self.mesh)
 
     # insert bmesh into object
@@ -380,9 +380,12 @@ class SkopeCone:
     
 
   def apply(self,scene):
-    if not self.bmesh or not self.mesh or not self.object:
-        raise Exception("SkopeCone can not be applied")
     print("SkopeCone apply")
+    object = bpy.data.objects["cone"]
+    mesh = bpy.data.meshes["SkopeConeMesh"]
+
+    if not self.bmesh or not mesh or not object:
+        raise Exception("SkopeCone can not be applied")
 
     for index in range(0,len(self.beams)):
       self.bmesh.verts[index*2].co = self.beams[index]['bottom']
@@ -391,13 +394,13 @@ class SkopeCone:
 
     if self.smooth:
       autosmooth = self.settings.rnd('autosmooth')
-      if autosmooth>0:
-        self.mesh.use_auto_smooth=True
-        self.mesh.auto_smooth_angle=PI*autosmooth/180
-      else:
-        self.mesh.use_auto_smooth=False
+      #if autosmooth>0:
+      mesh.use_auto_smooth=True
+      mesh.auto_smooth_angle=PI*autosmooth/180
+      #else:
+      #  mesh.use_auto_smooth=False
     else:
-      self.mesh.use_auto_smooth=False
+      mesh.use_auto_smooth=False
 
     if self.enable_bevel:
       bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
@@ -409,8 +412,8 @@ class SkopeCone:
             edge[bevelWeightLayer] = self.beams[index]['bevel']
     
     self.bmesh.to_mesh(self.mesh)
-    self.mesh.update()
-    self.object.rotation_euler.z = self.rotation
+    mesh.update()
+    object.rotation_euler.z = self.rotation
     
 
 

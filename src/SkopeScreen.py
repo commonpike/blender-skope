@@ -381,11 +381,20 @@ class SkopeScreen:
     self.image2 = data["image2"]
 
   def apply(self,scene):
-    if not self.object or not self.fader or not self.mapping1 or not self.mapping2:
-        raise Exception("SkopeScreen can not be applied")
+
     print("Skopescreen apply")
 
     object = bpy.data.objects["screen"]
+    image1 = bpy.data.images['ScreenSource1']
+    image2 = bpy.data.images['ScreenSource2']
+    material = bpy.data.materials["ScreenMaterial"]
+    fader = material.node_tree.nodes["Fader"]
+    mapping1 = material.node_tree.nodes["Mapping1"]
+    mapping2 = material.node_tree.nodes["Mapping2"]
+
+    if not object or not fader or not image1 or not image2 or not mapping1 or not mapping2:
+      raise Exception("SkopeScreen can not be applied")
+
     object.rotation_euler.x = self.rotation['x']
     object.rotation_euler.y = self.rotation['y']
     object.rotation_euler.z = self.rotation['z']
@@ -394,22 +403,19 @@ class SkopeScreen:
     object.location.z = self.location['z']
     object.scale[0] = self.scale['x']
     object.scale[1] = self.scale['y']
-    bpy.data.images['ScreenSource1'].filepath = self.image1['src']
-    bpy.data.images['ScreenSource2'].filepath = self.image2['src']
 
-    material = bpy.data.materials["ScreenMaterial"]
+    image1.filepath = self.image1['src']
+    image2.filepath = self.image2['src']
 
-    fader = material.node_tree.nodes["Fader"]
     fader.inputs[0].default_value=self.getFade()
 
-    mapping1 = material.node_tree.nodes["Mapping1"]
     mapping1.inputs[1].default_value[0] = self.image1['x']
     mapping1.inputs[1].default_value[1] = self.image1['y']
     mapping1.inputs[2].default_value[2] = self.image1['rotation']
     mapping1.inputs[3].default_value[0] = self.image1['scale']
     mapping1.inputs[3].default_value[1] = self.image1['scale']
 
-    mapping2 = material.node_tree.nodes["Mapping2"]
+    
     mapping2.inputs[1].default_value[0] = self.image2['x']
     mapping2.inputs[1].default_value[1] = self.image2['y']
     mapping2.inputs[2].default_value[2] = self.image2['rotation']
