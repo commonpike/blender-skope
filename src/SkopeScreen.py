@@ -425,9 +425,9 @@ class SkopeScreen:
   # helpers -----
 
   def getFade(self):
-    if self.image1['fade'] == 0:
+    if self.image1['fade'] == 0.0:
       return 1.0
-    if self.image2['fade'] == 0:
+    if self.image2['fade'] == 0.0:
       return 0.0
     return self.image2['fade']/(self.image1['fade']+self.image2['fade'])
   
