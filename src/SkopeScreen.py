@@ -99,12 +99,12 @@ class SkopeScreen:
         self.create(scene)
     else:
       print("Skopescreen off-scene")
-      self.object = None
-      self.material = None
-      self.fader = None
-      self.sources = []
-      self.mapping1 = None
-      self.mapping2 = None
+      #self.object = None
+      #self.material = None
+      #self.fader = None
+      #self.sources = []
+      #self.mapping1 = None
+      #self.mapping2 = None
         
     if scene:
       self.apply(scene)
@@ -173,27 +173,27 @@ class SkopeScreen:
     screen_data = bpy.data.meshes.new("screen")
     screen_data.from_pydata(vert, [], fac)
     screen_data.uv_layers.new(name='ScreenUVMap')
-    self.object = bpy.data.objects.new("screen", screen_data)
+    object = bpy.data.objects.new("screen", screen_data)
 
-    self.material = bpy.data.materials.new(name = "ScreenMaterial")
-    self.material.name = "ScreenMaterial"
-    self.material.roughness = self.settings.get('roughness')
-    self.material.use_nodes = True
-    self.material.node_tree.nodes.clear()
+    material = bpy.data.materials.new(name = "ScreenMaterial")
+    material.name = "ScreenMaterial"
+    material.roughness = self.settings.get('roughness')
+    material.use_nodes = True
+    material.node_tree.nodes.clear()
     
-    output = self.material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+    output = material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
     output.name = 'Output'
     output.location.x = 600
     output.location.y = 200
     
-    self.fader = self.material.node_tree.nodes.new(type="ShaderNodeMixShader")
-    self.fader.name = 'Fader'
-    self.fader.location.x = 400
-    self.fader.location.y = 200
+    fader = material.node_tree.nodes.new(type="ShaderNodeMixShader")
+    fader.name = 'Fader'
+    fader.location.x = 400
+    fader.location.y = 200
     
-    self.sources = []
+    #self.sources = []
 
-    imgnode1 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode1 = material.node_tree.nodes.new(type="ShaderNodeTexImage")
     imgnode1.name = "Image1"
     imgnode1.location.x = 0
     imgnode1.location.y = 400
@@ -205,19 +205,19 @@ class SkopeScreen:
     source1.source = 'FILE'
     source1.filepath = self.image1['src']
     imgnode1.image = source1
-    self.sources.append(source1)
+    #self.sources.append(source1)
 
-    coords1= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords1= material.node_tree.nodes.new(type="ShaderNodeTexCoord")
     coords1.name = "Coordinates1"
     coords1.location.x = -400
     coords1.location.y = 400
 
-    self.mapping1= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
-    self.mapping1.name = "Mapping1"
-    self.mapping1.location.x = -200
-    self.mapping1.location.y = 400
+    mapping1= material.node_tree.nodes.new(type="ShaderNodeMapping")
+    mapping1.name = "Mapping1"
+    mapping1.location.x = -200
+    mapping1.location.y = 400
 
-    imgnode2 = self.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+    imgnode2 = material.node_tree.nodes.new(type="ShaderNodeTexImage")
     imgnode2.name = "Image2"
     imgnode2.location.x = 0
     imgnode2.location.y = 0
@@ -229,48 +229,48 @@ class SkopeScreen:
     source2.source = 'FILE'
     source2.filepath = self.image2['src']
     imgnode2.image = source2
-    self.sources.append(source2)
+    #self.sources.append(source2)
     
-    coords2= self.material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+    coords2= material.node_tree.nodes.new(type="ShaderNodeTexCoord")
     coords2.name = "Coordinates2"
     coords2.location.x = -400
     coords2.location.y = 0
 
-    self.mapping2= self.material.node_tree.nodes.new(type="ShaderNodeMapping")
-    self.mapping2.name  = "Mapping2"
-    self.mapping2.location.x = -200
-    self.mapping2.location.y = 0
+    mapping2= material.node_tree.nodes.new(type="ShaderNodeMapping")
+    mapping2.name  = "Mapping2"
+    mapping2.location.x = -200
+    mapping2.location.y = 0
 
-    self.material.node_tree.links.new(
+    material.node_tree.links.new(
       output.inputs['Surface'], 
-      self.fader.outputs[0]
+      fader.outputs[0]
     )
-    self.material.node_tree.links.new(
-      self.fader.inputs[1], 
+    material.node_tree.links.new(
+      fader.inputs[1], 
       imgnode1.outputs['Color']
     )
-    self.material.node_tree.links.new(
+    material.node_tree.links.new(
       imgnode1.inputs['Vector'],
-      self.mapping1.outputs['Vector']
+      mapping1.outputs['Vector']
     )
-    self.material.node_tree.links.new(
-      self.mapping1.inputs['Vector'],
+    material.node_tree.links.new(
+      mapping1.inputs['Vector'],
       coords1.outputs['Generated']
     )
-    self.material.node_tree.links.new(
-      self.fader.inputs[2], 
+    material.node_tree.links.new(
+      fader.inputs[2], 
       imgnode2.outputs['Color']
     )
-    self.material.node_tree.links.new(
+    material.node_tree.links.new(
       imgnode2.inputs['Vector'],
-      self.mapping2.outputs['Vector']
+      mapping2.outputs['Vector']
     )
-    self.material.node_tree.links.new(
-      self.mapping2.inputs['Vector'],
+    material.node_tree.links.new(
+      mapping2.inputs['Vector'],
       coords2.outputs['Generated']
     )
-    self.object.data.materials.append(self.material)
-    scene.collection.objects.link(self.object)
+    object.data.materials.append(material)
+    scene.collection.objects.link(object)
 
   
     
@@ -325,8 +325,8 @@ class SkopeScreen:
     self.image1['y'] = self.settings.rnd_delta('images_location',self.image1['y'])
     self.image1['rotation'] = self.settings.rnd_delta('images_rotation',self.image1['rotation'])
     self.image1['scale'] = self.settings.rnd_delta('images_scale',self.image1['scale'])
-    if self.image1['fade'] != 0 and fadeoutimg == 'image1':
-      self.image1['fade'] = 0
+    if self.image1['fade'] != 0.0 and fadeoutimg == 'image1':
+      self.image1['fade'] = 0.0
     else:
       self.image1['fade'] = self.settings.rnd_delta('images_fade',self.image1['fade'])
 
@@ -334,9 +334,9 @@ class SkopeScreen:
     self.image2['y'] = self.settings.rnd_delta('images_location',self.image2['y'])
     self.image2['rotation'] = self.settings.rnd_delta('images_rotation',self.image2['rotation'])
     self.image2['scale'] = self.settings.rnd_delta('images_scale',self.image2['scale'])
-    if self.image2['fade'] != 0 and fadeoutimg == 'image2':
+    if self.image2['fade'] != 0.0 and fadeoutimg == 'image2':
       print("fadeout2",self.image2['src'])
-      self.image2['fade'] = 0
+      self.image2['fade'] = 0.0
     else:
       self.image2['fade'] = self.settings.rnd_delta('images_fade',self.image2['fade'])
 
@@ -408,7 +408,7 @@ class SkopeScreen:
     image2.filepath = self.image2['src']
 
     fader.inputs[0].default_value=self.getFade()
-
+    
     mapping1.inputs[1].default_value[0] = self.image1['x']
     mapping1.inputs[1].default_value[1] = self.image1['y']
     mapping1.inputs[2].default_value[2] = self.image1['rotation']
@@ -426,9 +426,9 @@ class SkopeScreen:
 
   def getFade(self):
     if self.image1['fade'] == 0:
-      return 1
+      return 1.0
     if self.image2['fade'] == 0:
-      return 0
+      return 0.0
     return self.image2['fade']/(self.image1['fade']+self.image2['fade'])
   
   def swapOneInvisibleImage(self):

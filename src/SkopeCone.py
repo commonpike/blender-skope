@@ -98,12 +98,12 @@ class SkopeCone:
       else:
         self.create(scene)
     else:
-       self.mesh = None
-       self.object = None
-       self.bevel = None
+       #self.mesh = None
+       #self.object = None
+       #self.bevel = None
        self.bmesh = None
        self.beams = []
-       self.material = None
+       #self.material = None
 
     if scene:
       self.apply(scene)
@@ -129,35 +129,35 @@ class SkopeCone:
     print("SkopeCone create")
 
     # create a object
-    self.mesh = bpy.data.meshes.new("SkopeConeMesh")    
-    self.object = bpy.data.objects.new("cone",self.mesh)
+    mesh = bpy.data.meshes.new("SkopeConeMesh")    
+    object = bpy.data.objects.new("cone",mesh)
 
     # insert bmesh into object
     self.createBMesh()
-    self.bmesh.to_mesh(self.mesh)
-    self.mesh.update()
+    self.bmesh.to_mesh(mesh)
+    mesh.update()
     #self.bmesh.free()
 
     # set mirror shading
-    self.material = bpy.data.materials.get('MirrorMaterial')
+    material = bpy.data.materials.get('MirrorMaterial')
 
-    if self.material is None:
-        self.material = bpy.data.materials.new(name='MirrorMaterial')
+    if material is None:
+        material = bpy.data.materials.new(name='MirrorMaterial')
 
-    self.material.use_nodes = True
+    material.use_nodes = True
 
-    if self.material.node_tree:
-        self.material.node_tree.links.clear()
-        self.material.node_tree.nodes.clear()
+    if material.node_tree:
+        material.node_tree.links.clear()
+        material.node_tree.nodes.clear()
 
-    self.material.roughness = self.settings.get('roughness')
-    self.material.metallic = self.settings.get('metallic')
-    self.material.diffuse_color=self.settings.get('diffuse_color')
+    material.roughness = self.settings.get('roughness')
+    material.metallic = self.settings.get('metallic')
+    material.diffuse_color=self.settings.get('diffuse_color')
 
-    nodes = self.material.node_tree.nodes
-    output = nodes.new(type='ShaderNodeOutputMaterial')
+    #nodes = material.node_tree.nodes
+    output = material.node_tree.nodes.new(type='ShaderNodeOutputMaterial')
 
-    bdsf = nodes.new(type='ShaderNodeBsdfPrincipled')
+    bdsf = material.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
     bdsf.inputs[0].default_value = (1,1,1,1)
     bdsf.inputs[2].default_value[0] = 1
     bdsf.inputs[3].default_value = (1,1,1,1)
@@ -174,23 +174,23 @@ class SkopeCone:
     bdsf.inputs[2].default_value[2] = 0
 
     # links the nodes in the material
-    self.material.node_tree.links.new(bdsf.outputs[0], output.inputs[0])
+    material.node_tree.links.new(bdsf.outputs[0], output.inputs[0])
     # link the material to the object
-    self.object.data.materials.append(self.material)
+    object.data.materials.append(material)
 
     # add a bevel mod to the object
     if self.enable_bevel:
-      self.bevel = self.object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
-      self.bevel.affect='EDGES'
-      self.bevel.limit_method=self.settings.bevel['fixed_limit_method']
-      self.bevel.width = self.settings.bevel['fixed_width']
-      self.bevel.segments = self.settings.bevel['fixed_segments']
-      self.bevel.harden_normals = self.settings.bevel['fixed_harden_normals']
-    else:
-      self.bevel = None
+      bevel = object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
+      bevel.affect='EDGES'
+      bevel.limit_method=self.settings.bevel['fixed_limit_method']
+      bevel.width = self.settings.bevel['fixed_width']
+      bevel.segments = self.settings.bevel['fixed_segments']
+      bevel.harden_normals = self.settings.bevel['fixed_harden_normals']
+    #else:
+    #  bevel = None
 
     # link the object to the scene
-    scene.collection.objects.link(self.object)
+    scene.collection.objects.link(object)
 
   def createBMesh(self):
 
@@ -411,7 +411,7 @@ class SkopeCone:
           for edge in face.edges:
             edge[bevelWeightLayer] = self.beams[index]['bevel']
     
-    self.bmesh.to_mesh(self.mesh)
+    self.bmesh.to_mesh(mesh)
     mesh.update()
     object.rotation_euler.z = self.rotation
     

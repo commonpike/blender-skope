@@ -62,8 +62,6 @@ class SkopeCamera:
         raise Exception("Sorry, only one SkopeCamera per scene")
       else:
         self.create(scene)
-    else:
-        self.object = None
     self.reset()
 
     if scene:
@@ -82,23 +80,23 @@ class SkopeCamera:
   def create(self,scene):
     print("SkopeCamera creating camera")
     camera_data = bpy.data.cameras.new(name='camera')
-    self.object = bpy.data.objects.new('camera', camera_data)
-    self.object.location.x = self.settings.get('location_x')
-    self.object.location.y = self.settings.get('location_y')
-    self.object.location.z = self.settings.get('location_z')
-    self.object.data.shift_x = self.settings.get('shift')
-    self.object.data.shift_y = self.settings.get('shift')
+    object = bpy.data.objects.new('camera', camera_data)
+    object.location.x = self.settings.get('location_x')
+    object.location.y = self.settings.get('location_y')
+    object.location.z = self.settings.get('location_z')
+    object.data.shift_x = self.settings.get('shift')
+    object.data.shift_y = self.settings.get('shift')
     
-    self.object.data.lens = self.settings.get('lens')
-    self.object.data.sensor_width = self.settings.get('sensor_width')
-    self.object.data.type = self.settings.get('type')
-    self.object.data.clip_start = self.settings.get('clip_start')
-    self.object.data.clip_end = self.settings.get('clip_end')
-    self.object.rotation_euler[0] = self.settings.get('rotation_x')
-    self.object.rotation_euler[1] = self.settings.get('rotation_y')
-    self.object.rotation_euler[2] = self.settings.get('rotation_z')
-    scene.collection.objects.link(self.object)
-    scene.camera = self.object ## ??
+    object.data.lens = self.settings.get('lens')
+    object.data.sensor_width = self.settings.get('sensor_width')
+    object.data.type = self.settings.get('type')
+    object.data.clip_start = self.settings.get('clip_start')
+    object.data.clip_end = self.settings.get('clip_end')
+    object.rotation_euler[0] = self.settings.get('rotation_x')
+    object.rotation_euler[1] = self.settings.get('rotation_y')
+    object.rotation_euler[2] = self.settings.get('rotation_z')
+    scene.collection.objects.link(object)
+    scene.camera = object ## ??
 
 
 

@@ -2,7 +2,7 @@ import bpy
 import uuid
 import glob
 import os
-
+import gc
 
 from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
@@ -64,7 +64,7 @@ class Skope:
       scene.render.motion_blur_shutter = self.settings.motion_blur_shutter  
       bpy.ops.render.shutter_curve_preset(shape = self.settings.motion_blur_shape)
 
-    bpy.context.view_layer.objects.active = self.state.screen.object
+    bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
     
   def create_random_clip(self, length):
     print("Skope create_random_clip", length)
@@ -176,6 +176,8 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
+    # try colect garbage every frame ... slow 
+    # gc.collect()
     if scene.frame_current >= self.clip.length :
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
