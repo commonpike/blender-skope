@@ -98,8 +98,10 @@ class Skope:
     filename = str(frame).zfill(4);
     scene.render.filepath = self.settings.output_dir+ '/' + filename
     print("Rendering",scene.render.filepath)
+    self.rendering = True
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath +'.json')
+    self.rendering = False
 
   def render_clip(self,length):
     # create a random clip and step it every frame
@@ -121,8 +123,10 @@ class Skope:
     scene.render.filepath = self.settings.output_dir+ '/' + filename
     
     print("Rendering",scene.render.filepath)
+    self.rendering = True
     bpy.ops.render.render(animation=True) # render animation
     #self.clip.writeJSON(scene.render.filepath +'.json')
+    self.rendering = False
 
     scene.render.filepath = ofp
     scene.render.resolution_percentage = orp
@@ -173,12 +177,18 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
-    if scene.frame_current >= self.clip.length :
+    if (not self.rendering) and scene.frame_current >= self.clip.length :
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
     else :
       self.clip.go(scene.frame_current)
       self.clip.apply(scene)
+
+  def apply_start_render(self,scene,x=0):
+    self.rendering = True
+
+  def apply_stop_render(self,scene,x=0):
+    self.rendering = False
 
   def freeze(self,scene,x=0):
     print("freeze")
