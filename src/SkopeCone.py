@@ -72,18 +72,20 @@ class SkopeCone:
     # make bevels smooth
     # removed in blender4
     "smooth" : {
-      "random": False,
+      "random": True,
       "default": True,
       "chance": .5
     },
     # use autosmooth, degrees
     # removed in blender4
     "autosmooth" : {
-      "random": False,
-      "default": 0,
+      "random": True,
+      "default": 30,
       "minimum": 0,
       "maximum": 180,
-      "distribution" : "UNIFORM"
+      "distribution" : "UNIFORM",
+      "delta": .1,
+      "easing": "EASEINOUT"
     }
   })
   
