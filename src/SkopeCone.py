@@ -120,6 +120,10 @@ class SkopeCone:
       self.smooth = self.settings.get('smooth')
     else:
       self.smooth = smooth
+    if self.smooth:
+      self.autosmooth = self.settings.get('autosmooth')
+    else:
+      self.autosmooth = 0
     self.radius = self.settings.get('radius')
     self.height = self.settings.get('height')
     self.rotation = self.settings.get('rotation')
@@ -245,6 +249,9 @@ class SkopeCone:
     # reset straight
     self.reset(numsides,smooth)
     
+    if self.smooth:
+      self.autosmooth = self.settings.rnd('autosmooth')
+
     # wiggle some
     if self.settings.wiggle['random']:
       if self.settings.wiggle['within_beams']:
@@ -302,6 +309,8 @@ class SkopeCone:
     self.radius = self.settings.rnd_delta('radius',self.radius)
     self.height = self.settings.rnd_delta('height',self.height)
     self.rotation = self.settings.rnd_delta('rotation',self.rotation)
+    if self.smooth:
+      self.autosmooth = self.settings.rnd_delta('autosmooth',self.autosmooth)
     if self.settings.wiggle['random']:
       self.removeWiggle()
       if self.settings.wiggle['within_beams']:
@@ -343,7 +352,8 @@ class SkopeCone:
     numsides = max(src.numsides,dst.numsides)
     smooth = dst.smooth
     if self.numsides != numsides or self.smooth != smooth:
-      self.reset(numsides)
+      self.reset(numsides, smooth)
+    self.autosmooth = mix(src.autosmooth,dst.autosmooth,pct)
     self.radius = mix(src.radius,dst.radius,pct)
     self.height = mix(src.height,dst.height,pct)
     self.rotation = mix(src.rotation,dst.rotation,pct,self.settings.rotation["easing"])
@@ -391,13 +401,9 @@ class SkopeCone:
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
 
-    if self.smooth:
-      autosmooth = self.settings.rnd('autosmooth')
-      if autosmooth>0:
-        self.mesh.use_auto_smooth=True
-        self.mesh.auto_smooth_angle=PI*autosmooth/180
-      else:
-        self.mesh.use_auto_smooth=False
+    if self.autosmooth:
+      self.mesh.use_auto_smooth=True
+      self.mesh.auto_smooth_angle=PI*self.autosmooth/180
     else:
       self.mesh.use_auto_smooth=False
 
@@ -428,6 +434,7 @@ class SkopeCone:
     self.radius = data['radius']
     self.height = data['height']
     self.smooth = data['smooth']
+    self.autosmooth = data['autosmooth']
     self.createBMesh()
     self.beams = data['beams']
     
