@@ -2,7 +2,7 @@ import bpy
 import uuid
 import glob
 import os
-
+import gc
 
 from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
@@ -64,7 +64,7 @@ class Skope:
       scene.render.motion_blur_shutter = self.settings.motion_blur_shutter  
       bpy.ops.render.shutter_curve_preset(shape = self.settings.motion_blur_shape)
 
-    bpy.context.view_layer.objects.active = self.state.screen.object
+    bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
     
   def create_random_clip(self, length):
     print("Skope create_random_clip", length)
@@ -74,6 +74,8 @@ class Skope:
     self.clip = SkopeClip(scene,length)
     self.clip.random()
     self.clip.apply(scene)
+    filename = str(uuid.uuid4())[:4]+'-';
+    scene.render.filepath = self.settings.output_dir+ '/' + filename
     
   
   def render_stills(self, amount): 
@@ -120,7 +122,7 @@ class Skope:
     bpy.app.handlers.frame_change_pre.clear()
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
     filename = str(uuid.uuid4())[:4];
-    scene.render.filepath = self.settings.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
     
     print("Rendering",scene.render.filepath)
     self.rendering = True
@@ -161,15 +163,16 @@ class Skope:
   # framechange handlers
   # test mode frame_change_pre handler
   
-  def apply_random_filepath(self,scene):
-    print("apply_random_filepath")
-    filename = str(uuid.uuid4())[:4]+'-';
-    scene.render.filepath = self.settings.output_dir+ '/' + filename
+  #def apply_random_filepath(self,scene,x):
+  #  print("apply_random_filepath")
+  #  filename = str(uuid.uuid4())[:4]+'-';
+  #  scene.render.filepath = self.settings.output_dir+ '/' + filename
 
   def apply_random_state(self,scene,x=0):
     if not self.frozen:
       print("apply_random_state",SkopeState.frame_num,scene.frame_current)
-      bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.context.scene.render.use_lock_interface = True
       SkopeState.frame_num = scene.frame_current
       self.state.random()
       self.state.apply(scene)
@@ -177,11 +180,15 @@ class Skope:
 
   def apply_clip_step(self,scene,x=0):
     print("apply_clip_step")
+    # try colect garbage every frame ... slow 
+    # gc.collect()
     if (not self.rendering) and scene.frame_current >= self.clip.length :
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
     else :
       self.clip.go(scene.frame_current)
+      #bpy.types.RenderSettings.use_lock_interface = True
+      #bpy.context.scene.render.use_lock_interface = True
       self.clip.apply(scene)
 
   def apply_start_render(self,scene,x=0):

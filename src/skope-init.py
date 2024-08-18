@@ -36,7 +36,7 @@ def main():
   skope.settings.type = args.type
   skope.apply(bpy.context.scene)
 
-  if args.mode == "test":
+  if args.mode == "ui":
     
     bpy.app.handlers.render_init.append(skope.apply_start_render)
     bpy.app.handlers.render_cancel.append(skope.apply_stop_render)
@@ -56,8 +56,7 @@ def main():
       skope.create_random_clip(int(args.length))
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
-      bpy.app.handlers.render_pre.append(skope.apply_random_filepath)
-      
+      #bpy.app.handlers.render_pre.append(skope.apply_random_filepath)
 
     else:
       raise Exception("Type "+args.type+" not supported")
