@@ -36,7 +36,7 @@ def main():
   skope.settings.type = args.type
   skope.apply(bpy.context.scene)
 
-  if args.mode == "test":
+  if args.mode == "ui":
     
     bpy.app.handlers.render_init.append(skope.apply_start_render)
     bpy.app.handlers.render_cancel.append(skope.apply_stop_render)

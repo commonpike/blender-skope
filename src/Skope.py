@@ -122,7 +122,7 @@ class Skope:
     bpy.app.handlers.frame_change_pre.clear()
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
     filename = str(uuid.uuid4())[:4];
-    scene.render.filepath = self.settings.output_dir+ '/' + filename
+    scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
     
     print("Rendering",scene.render.filepath)
     self.rendering = True

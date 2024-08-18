@@ -7,7 +7,7 @@ BLENDER="${BLENDER:=$BLENDER_LOCATION}"
 
 cd `dirname $0`;
 
-COMMAND=${1:-help} # help, edit,test,render,regenerate
+COMMAND=${1:-help} # help, edit,ui,render,regenerate
 TYPE=stills # stills, clips
 SCALE=10 # percentage
 AMOUNT=10 #number of stills
@@ -95,7 +95,19 @@ fi
 
 if [ ! -d "$INPUTDIR" ]; then
   echo "INPUTDIR $INPUTDIR does not exist"
-  exit 1;
+  images=`find $PROJECTDIR -type f -exec file --mime-type {} \+ | awk -F: '{if ($2 ~/image\//) print $1}'`
+  if [ "$images" != "" ]; then
+    echo found $images ..
+    read -p "Move these files to $PROJECTDIR/input [Y/n]? " -n 1 -r
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+      mkdir $PROJECTDIR/input
+      mv $images $PROJECTDIR/input
+    else
+      exit;
+    fi
+  else
+    exit;
+  fi
 fi
 
 mkdir -p "$OUTPUTDIR"
@@ -119,10 +131,10 @@ case $COMMAND in
           --scale $SCALE
         ;;
         
-    test)
+    ui)
         $BLENDER ./src/skope.blend \
           --python ./src/skope-init.py -- \
-          --mode test\
+          --mode ui\
           --type $TYPE\
           --input-dir $INPUTDIR \
           --output-dir $OUTPUTDIR \
@@ -183,7 +195,7 @@ case $COMMAND in
     *)
         # help
         echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
-        echo 'Commands: help, test, render, regenerate'
+        echo 'Commands: help, edit, ui, render, regenerate'
         echo 'Arguments: --amount, --type, --scale, --format, --length'
         echo 'Type: stills (default) or clip'
         echo 'Project dir expects subdirs input, output, import'
