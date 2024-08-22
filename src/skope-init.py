@@ -12,6 +12,8 @@ import Skope
 parser = argparse.ArgumentParser(description='Skope runner')
 parser.add_argument('--mode', default='edit')
 parser.add_argument('--type', default='stills')
+parser.add_argument('--width', default='1920')
+parser.add_argument('--height', default='1920')
 parser.add_argument('--scale', default='10')
 parser.add_argument('--format', default='PNG')
 parser.add_argument('--amount', default='10')
@@ -32,6 +34,8 @@ def main():
   skope.settings.output_dir = args.output_dir
   skope.settings.import_dir = args.import_dir
   skope.settings.image_format = args.format
+  skope.settings.width = int(args.width)
+  skope.settings.height = int(args.height)
   skope.settings.scale = int(args.scale)
   skope.settings.type = args.type
   skope.apply(bpy.context.scene)

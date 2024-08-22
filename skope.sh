@@ -9,6 +9,8 @@ cd `dirname $0`;
 
 COMMAND=${1:-help} # help, edit,ui,render,regenerate
 TYPE=stills # stills, clips
+WIDTH=1920 # pixels
+HEIGHT=1920 # pixels
 SCALE=10 # percentage
 AMOUNT=10 #number of stills
 LENGTH=360 #number of frames in clip
@@ -36,6 +38,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     -s|--scale)
       SCALE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -w|--width)
+      WIDTH="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -h|--height)
+      HEIGHT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -128,6 +140,8 @@ case $COMMAND in
           --output-dir $OUTPUTDIR \
           --import-dir $IMPORTDIR \
           --format $FORMAT \
+          --width $WIDTH \
+          --height $HEIGHT \
           --scale $SCALE
         ;;
         
@@ -140,6 +154,8 @@ case $COMMAND in
           --output-dir $OUTPUTDIR \
           --import-dir $IMPORTDIR \
           --format $FORMAT \
+          --width $WIDTH \
+          --height $HEIGHT \
           --scale $SCALE \
           --length $LENGTH
         ;;
@@ -154,6 +170,8 @@ case $COMMAND in
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
             --format $FORMAT \
+            --width $WIDTH \
+            --height $HEIGHT \
             --scale $SCALE \
             --amount $AMOUNT
         elif [ $TYPE = "clip" ]; then
@@ -165,6 +183,8 @@ case $COMMAND in
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
             --format $FORMAT \
+            --width $WIDTH \
+            --height $HEIGHT \
             --scale $SCALE \
             --length $LENGTH
         else
@@ -182,6 +202,8 @@ case $COMMAND in
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
             --format $FORMAT \
+            --width $WIDTH \
+            --height $HEIGHT \
             --scale $SCALE
         elif [ $TYPE = "clip" ]; then
           echo "Regenerate clip: unimplemented" >&2
@@ -196,7 +218,7 @@ case $COMMAND in
         # help
         echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
         echo 'Commands: help, edit, ui, render, regenerate'
-        echo 'Arguments: --amount, --type, --scale, --format, --length'
+        echo 'Arguments: --amount, --type, --width, --height, --scale, --format, --length'
         echo 'Type: stills (default) or clip'
         echo 'Project dir expects subdirs input, output, import'
 

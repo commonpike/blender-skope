@@ -18,6 +18,8 @@ class Skope:
     'output_dir': '',
     'import_dir': '',
     'type': 'stills', #stills | clip
+    'width': 1920,
+    'height': 1920,
     'scale': 10,
     'image_format': 'PNG',
     'video_format': 'FFMPEG',
@@ -48,6 +50,8 @@ class Skope:
     self.clip = None
 
   def apply(self,scene):
+    scene.render.resolution_x = self.settings.width
+    scene.render.resolution_y = self.settings.height
     scene.render.resolution_percentage = self.settings.scale
     filename = str(uuid.uuid4())[:4]
     if self.settings.type == 'stills':
