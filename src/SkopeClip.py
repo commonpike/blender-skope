@@ -1,11 +1,14 @@
-from SkopeState import SkopeState
 import math
+import json
 
+from SkopeState import SkopeState
+from JSONEncoder import JSONEncoder 
 
 
 class SkopeClip:
   
   def __init__(self,scene,length):
+    self.id = 'init'
     self.state = scene.skope.state
     self.src = self.state.clone()
     self.dst = self.state.clone()
@@ -16,7 +19,8 @@ class SkopeClip:
     self.src.random()
     self.dst = self.src.clone()
     self.dst.rnd_delta()
-    
+    self.id = self.src.id+'-'+self.dst.id
+
   def start(self):
     return self.go(0)
   
@@ -42,6 +46,7 @@ class SkopeClip:
     self.dst.screen.swapOneInvisibleImage()
     self.src = self.dst.clone()
     self.dst.rnd_delta()
+    self.id = self.src.id+'-'+self.dst.id
 
   def apply(self,scene):
     pct = self.current * 100 / ( self.length - 1) # think twice
@@ -49,4 +54,25 @@ class SkopeClip:
     self.state.mix(self.src,self.dst,pct)
     self.state.apply(scene)
 
+  def writeJSON(self,file):
+    print("Write json", file)
+    with open(file, "w") as outfile:
+      outfile.write(json.dumps(self,cls=JSONEncoder,indent=4))
+    
+  def readJSON(self,file):
+    print("Read json", file)
+    with open(file, "r") as infile:
+      data = json.load(infile)
+      self.fromJSON(data)
+
+  def toJSON(self):
+    return { 
+      k:v for (k,v) in vars(self).items() 
+      if not k in ['state','current'] 
+    }
+
   
+  def fromJSON(self,data):
+    self.id = data['id']
+    self.src.fromJSON(data['src'])
+    self.dst.fromJSON(data['dst'])

@@ -1,5 +1,5 @@
 import bpy
-import uuid
+#import uuid
 import glob
 import os
 import gc
@@ -53,7 +53,8 @@ class Skope:
     scene.render.resolution_x = self.settings.width
     scene.render.resolution_y = self.settings.height
     scene.render.resolution_percentage = self.settings.scale
-    filename = str(uuid.uuid4())[:4]
+    #filename = str(uuid.uuid4())[:4]
+    filename = scene.skope.state.id
     if self.settings.type == 'stills':
       scene.render.image_settings.file_format = self.settings.image_format
     else:
@@ -78,7 +79,8 @@ class Skope:
     self.clip = SkopeClip(scene,length)
     self.clip.random()
     self.clip.apply(scene)
-    filename = str(uuid.uuid4())[:4]+'-';
+    #filename = str(uuid.uuid4())[:4]+'-';
+    filename = scene.skope.state.id
     scene.render.filepath = self.settings.output_dir+ '/' + filename
     
   
@@ -101,7 +103,8 @@ class Skope:
     SkopeState.frame_num = frame
     self.state.random()
     self.state.apply(scene)
-    filename = str(frame).zfill(4);
+    #filename = str(frame).zfill(4);
+    filename = self.state.id;
     scene.render.filepath = self.settings.output_dir+ '/' + filename
     print("Rendering",scene.render.filepath)
     self.rendering = True
@@ -127,11 +130,11 @@ class Skope:
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
     self.rendering = True
     while amount > 0:
-      filename = str(uuid.uuid4())[:4];
+      filename = self.clip.id;
+      self.clip.writeJSON(self.settings.output_dir+ '/' + filename +'.json')
       scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
       print("Rendering",scene.render.filepath)
       bpy.ops.render.render(animation=True) # render animation
-      #self.clip.writeJSON(scene.render.filepath +'.json')
       amount = amount - 1
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
