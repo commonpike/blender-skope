@@ -174,7 +174,7 @@ case $COMMAND in
             --height $HEIGHT \
             --scale $SCALE \
             --amount $AMOUNT
-        elif [ $TYPE = "clip" ]; then
+        elif [ $TYPE = "clips" ]; then
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
             --mode render \
@@ -186,7 +186,8 @@ case $COMMAND in
             --width $WIDTH \
             --height $HEIGHT \
             --scale $SCALE \
-            --length $LENGTH
+            --length $LENGTH \
+            --amount $AMOUNT
         else
           echo "Render: unknown type $type" >&2
           exit 1
@@ -219,7 +220,7 @@ case $COMMAND in
         echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
         echo 'Commands: help, edit, ui, render, regenerate'
         echo 'Arguments: --amount, --type, --width, --height, --scale, --format, --length'
-        echo 'Type: stills (default) or clip'
+        echo 'Type: stills (default) or clips'
         echo 'Project dir expects subdirs input, output, import'
 
         exit 1

@@ -69,7 +69,7 @@ def main():
     if args.type == "stills":
       skope.render_stills(int(args.amount))
     elif args.type == "clip":
-      skope.render_clip(int(args.length))
+      skope.render_clips(int(args.length),int(args.amount))
     else:
       raise Exception("Type "+args.type+" not supported")
     

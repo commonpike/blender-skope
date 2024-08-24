@@ -109,7 +109,7 @@ class Skope:
     self.state.writeJSON(scene.render.filepath +'.json')
     self.rendering = False
 
-  def render_clip(self,length):
+  def render_clips(self,length,amount=1):
     # create a random clip and step it every frame
     self.create_random_clip(int(length))
     scene = bpy.context.scene
@@ -125,15 +125,18 @@ class Skope:
     
     bpy.app.handlers.frame_change_pre.clear()
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
-    filename = str(uuid.uuid4())[:4];
-    scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
-    
-    print("Rendering",scene.render.filepath)
     self.rendering = True
-    bpy.ops.render.render(animation=True) # render animation
-    #self.clip.writeJSON(scene.render.filepath +'.json')
-    self.rendering = False
+    while amount > 0:
+      filename = str(uuid.uuid4())[:4];
+      scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
+      print("Rendering",scene.render.filepath)
+      bpy.ops.render.render(animation=True) # render animation
+      #self.clip.writeJSON(scene.render.filepath +'.json')
+      amount = amount - 1
+      self.clip.next_delta()
+      bpy.context.scene.frame_set(0)
 
+    self.rendering = False
     scene.render.filepath = ofp
     scene.render.resolution_percentage = orp
     scene.render.image_settings.file_format = oif
