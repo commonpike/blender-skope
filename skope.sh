@@ -178,7 +178,7 @@ case $COMMAND in
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
             --mode render \
-            --type clip \
+            --type clips \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
@@ -206,8 +206,8 @@ case $COMMAND in
             --width $WIDTH \
             --height $HEIGHT \
             --scale $SCALE
-        elif [ $TYPE = "clip" ]; then
-          echo "Regenerate clip: unimplemented" >&2
+        elif [ $TYPE = "clips" ]; then
+          echo "Regenerate clips: unimplemented" >&2
           exit 1
         else
           echo "Regenerate: unknown type $type" >&2

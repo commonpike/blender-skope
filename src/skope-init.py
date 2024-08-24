@@ -55,7 +55,7 @@ def main():
       bpy.app.handlers.render_pre.append(skope.freeze)
       bpy.app.handlers.render_post.clear()
       bpy.app.handlers.render_post.append(skope.unfreeze)
-    elif args.type == "clip":
+    elif args.type == "clips":
       # create a random clip and step it every frame
       skope.create_random_clip(int(args.length))
       bpy.app.handlers.frame_change_pre.clear()
@@ -68,7 +68,7 @@ def main():
   elif args.mode == "render":
     if args.type == "stills":
       skope.render_stills(int(args.amount))
-    elif args.type == "clip":
+    elif args.type == "clips":
       skope.render_clips(int(args.length),int(args.amount))
     else:
       raise Exception("Type "+args.type+" not supported")
