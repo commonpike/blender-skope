@@ -69,10 +69,10 @@ class SkopeCone:
       "distribution" : "UNIFORM",
       "delta": .1,
       "easing": "EASEINOUT",
-      "fixed_limit_method": 'WEIGHT',
-      "fixed_width": 4,
+      "fixed_limit_method": 'WEIGHT', # 'NONE',
+      "fixed_width": 4, # 1
       "fixed_segments": 16,
-      "fixed_harden_normals": True,
+      "fixed_harden_normals": True, # True generates autosmooth errors but also works
       "easing": "EASEINOUT"
     },
     # make bevels smooth
@@ -89,7 +89,7 @@ class SkopeCone:
       "default": 30,
       "minimum": 0,
       "maximum": 180,
-      "distribution" : "UNIFORM",
+      "distribution" : "GAUSSIAN",
       "delta": .1,
       "easing": "EASEINOUT"
     }
@@ -201,6 +201,7 @@ class SkopeCone:
     if self.enable_bevel:
       bevel = object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
       bevel.affect='EDGES'
+      bevel.offset_type='OFFSET'
       bevel.limit_method=self.settings.bevel['fixed_limit_method']
       bevel.width = self.settings.bevel['fixed_width']
       bevel.segments = self.settings.bevel['fixed_segments']
@@ -525,6 +526,8 @@ class SkopeCone:
 
     # bevel
     for index in range(0,len(self.beams)):
+      srcindex = math.floor(index*srcnum/self.numsides)
+      dstindex = math.floor(index*dstnum/self.numsides)
       self.beams[index]['bevel'] = mix(
         src.beams[srcindex]['bevel'],
         dst.beams[dstindex]['bevel'],
@@ -547,11 +550,9 @@ class SkopeCone:
       self.bmesh.verts[index*2+1].co = self.beams[index]['top']
     self.bmesh.verts.ensure_lookup_table()
 
-    if self.autosmooth:
-      autosmooth = self.settings.rnd('autosmooth')
-      #if autosmooth>0:
+    if self.smooth and self.autosmooth:
       mesh.use_auto_smooth=True
-      mesh.auto_smooth_angle=PI*autosmooth/180
+      mesh.auto_smooth_angle=PI*self.autosmooth/180
     else:
       mesh.use_auto_smooth=False
 

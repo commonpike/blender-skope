@@ -7,8 +7,6 @@ from SkopeSettings import SkopeSettings
 class SkopeCamera:
 
   settings = SkopeSettings({
-    "lens": 70,
-    "sensor_width": 70,
     "type": "PERSP",
     "clip_start": .1,
     "clip_end": 100,
@@ -52,7 +50,25 @@ class SkopeCamera:
       "distribution" : "UNIFORM",
       "delta": .5,
       "easing": "EASEINOUT"
-    }
+    },
+    "lens": {
+      "random": True,
+      "default": 70,
+      "minimum": 10,
+      "maximum": 100,
+      "distribution" : "UNIFORM",
+      "delta": .5,
+      "easing": "EASEINOUT"
+    },
+    "sensor_width": {
+      "random": True,
+      "default": 70,
+      "minimum": 10,
+      "maximum": 100,
+      "distribution" : "UNIFORM",
+      "delta": .5,
+      "easing": "EASEINOUT"
+    },
   })
 
   def __init__(self,scene=None):
@@ -76,6 +92,8 @@ class SkopeCamera:
     }
     self.shift_x = self.settings.get('shift')
     self.shift_y = self.settings.get('shift')
+    self.lens = self.settings.get('lens')
+    self.sensor_width = self.settings.get('sensor_width')
 
   def create(self,scene):
     print("SkopeCamera creating camera")
@@ -86,9 +104,9 @@ class SkopeCamera:
     object.location.z = self.settings.get('location_z')
     object.data.shift_x = self.settings.get('shift')
     object.data.shift_y = self.settings.get('shift')
-    
     object.data.lens = self.settings.get('lens')
     object.data.sensor_width = self.settings.get('sensor_width')
+
     object.data.type = self.settings.get('type')
     object.data.clip_start = self.settings.get('clip_start')
     object.data.clip_end = self.settings.get('clip_end')
@@ -114,7 +132,9 @@ class SkopeCamera:
     self.location['z'] = self.settings.rnd('location_z')
     self.shift_x = self.settings.rnd('shift')
     self.shift_y = self.settings.rnd('shift')
-    
+    self.lens = self.settings.rnd('lens')
+    self.sensor_width = self.settings.rnd('sensor_width')
+
   def rnd_delta(self):
     print("SkopeCamera rnd_delta")
     self.location['x'] = self.settings.rnd_delta('location_x',self.location['x'])  
@@ -122,7 +142,8 @@ class SkopeCamera:
     self.location['z'] = self.settings.rnd_delta('location_z',self.location['z']) 
     self.shift_x  = self.settings.rnd_delta('shift',self.shift_x)
     self.shift_y  = self.settings.rnd_delta('shift',self.shift_y)
-    
+    self.lens = self.settings.rnd_delta('lens',self.lens)
+    self.sensor_width = self.settings.rnd_delta('sensor_width',self.sensor_width)
 
   def mix(self, src, dst, pct = 0):
     print("SkopeCamera mix")
@@ -131,6 +152,8 @@ class SkopeCamera:
     self.location['z'] = mix(src.location['z'],dst.location['z'],pct,self.settings.location_z['easing'])
     self.shift_x  = mix(src.shift_x,dst.shift_x,pct,self.settings.shift['easing'])
     self.shift_y  = mix(src.shift_y,dst.shift_y,pct,self.settings.shift['easing'])
+    self.lens = mix(src.lens,dst.lens,pct,self.settings.lens['easing'])
+    self.sensor_width = mix(src.sensor_width,dst.sensor_width,pct,self.settings.sensor_width['easing'])
 
   def apply(self,scene):
     print("SkopeCamera apply")
@@ -143,6 +166,8 @@ class SkopeCamera:
     object.location.z = self.location['z']
     object.data.shift_x = self.shift_x
     object.data.shift_y = self.shift_y
+    object.data.lens = self.lens
+    object.data.sensor_width = self.sensor_width
 
   def toJSON(self):
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
@@ -153,3 +178,5 @@ class SkopeCamera:
     self.location['z'] = data["location"]["z"]
     self.shift_x = data["shift_x"]
     self.shift_y = data["shift_y"]
+    self.lens = data["lens"]
+    self.sensor_width = data["sensor_width"]
