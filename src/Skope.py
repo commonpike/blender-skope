@@ -24,7 +24,7 @@ class Skope:
     'image_format': 'PNG',
     'video_format': 'FFMPEG',
     'ffmpeg_format': 'MPEG4',
-    'motion_blur': True,
+    'motion_blur': False,
     'motion_blur_shutter': 8,
     'motion_blur_shape': 'SHARP'
   })
