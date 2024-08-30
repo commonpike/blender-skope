@@ -24,7 +24,7 @@ class Skope:
     'image_format': 'PNG',
     'video_format': 'FFMPEG',
     'ffmpeg_format': 'MPEG4',
-    'motion_blur': True,
+    'motion_blur': False,
     'motion_blur_shutter': 8,
     'motion_blur_shape': 'SHARP'
   })
@@ -130,11 +130,7 @@ class Skope:
     bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
     self.rendering = True
     while amount > 0:
-      filename = self.clip.id;
-      self.clip.writeJSON(self.settings.output_dir+ '/' + filename +'.json')
-      scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
-      print("Rendering",scene.render.filepath)
-      bpy.ops.render.render(animation=True) # render animation
+      self.render_clip(scene)
       amount = amount - 1
       self.clip.next_delta()
       bpy.context.scene.frame_set(0)
@@ -145,6 +141,13 @@ class Skope:
     scene.render.image_settings.file_format = oif
     print("Rendering done.")
 
+  def render_clip(self,scene): 
+    filename = self.clip.id;
+    self.clip.writeJSON(self.settings.output_dir+ '/' + filename +'.json')
+    scene.render.filepath = self.settings.output_dir+ '/' + filename + '-'
+    print("Rendering",scene.render.filepath)
+    bpy.ops.render.render(animation=True) # render animation
+  
   # regenerate mode 
   
   def regenerate_stills(self): 
