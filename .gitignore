@@ -1,6 +1,7 @@
-# gitignore for kaleidogen
-source
-output
+# gitignore for skope
+.env
+render
 __pycache__/
 .DS_Store
 *.blend1
+vendor
