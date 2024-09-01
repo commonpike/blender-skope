@@ -1,8 +1,10 @@
 import bpy
-#import uuid
+import math
 import glob
 import os
-import gc
+import re
+import random
+import json
 
 from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
@@ -26,7 +28,8 @@ class Skope:
     'ffmpeg_format': 'MPEG4',
     'motion_blur': False,
     'motion_blur_shutter': 8,
-    'motion_blur_shape': 'SHARP'
+    'motion_blur_shape': 'SHARP',
+    'loop_branch_chance' : .1
   })
 
   def __init__(self, input_dir):
@@ -83,7 +86,8 @@ class Skope:
     filename = scene.skope.state.id
     scene.render.filepath = self.settings.output_dir+ '/' + filename
     
-  
+  ## --------- RENDER MODE -------------- ##
+
   def render_stills(self, amount): 
     print("Rendering random stills ..")
     scene = bpy.context.scene
@@ -148,7 +152,134 @@ class Skope:
     print("Rendering",scene.render.filepath)
     bpy.ops.render.render(animation=True) # render animation
   
-  # regenerate mode 
+  def render_loops(self,length,amount=2.0):
+    # a loop is a collection of clips, where the endstate
+    # of every clip is the beginstate of another clip, so
+    # you are garantueed to be able to loop whereever
+    # you are. skope will look at the existing clips 
+    # in the output dir and randomly create new clips tying
+    # existing clips together. it also randomly creates 
+    # new clips starting with an existing endstate.
+    # you have to pass an even amount in order for at 
+    # least every new clip to be available in reverse.
+
+    scene = bpy.context.scene
+    scene.frame_end = length # +-1 ?
+    scene.frame_set(1)
+    self.clip = SkopeClip(scene,length)
+
+    ofp = scene.render.filepath
+    orp = scene.render.resolution_percentage
+    oif = scene.render.image_settings.file_format
+    scene.render.resolution_percentage = self.settings.scale
+    scene.render.image_settings.file_format = self.settings.video_format
+    scene.render.ffmpeg.format=self.settings.ffmpeg_format
+    # scene.render.ffmpeg.codec
+    # scene.render.ffmpeg.ffmpeg_preset
+    # ...
+
+    # make amount even
+    amount = math.ceil(amount/2.0)*2
+
+    bpy.app.handlers.frame_change_pre.clear()
+    bpy.app.handlers.frame_change_pre.append(self.apply_clip_step)
+    self.rendering = True
+    while amount > 0:
+        #   glob output dir for jsons
+        clips = []
+        pattern = '([0-9a-z]+)-([0-9a-z]+)\.json'
+        for file in os.listdir(self.settings.output_dir):
+            match = re.match(pattern,file)
+            if match:
+                with open(self.settings.output_dir+'/'+file, "r") as infile:
+                  clips.append({
+                      'file': file,
+                      'start_state': match.group(1),
+                      'end_state': match.group(2),
+                      'data': json.load(infile)
+                  })
+        print("Found clips",[clip['file'] for clip in clips])
+
+        if not len(clips):   
+            print("creating random clip")
+            self.create_random_clip(int(length))
+            self.render_clip(scene)
+            amount = amount - 1
+            self.clip.reverse()
+            print("creating reverse clip",self.clip.id)
+            self.render_clip(scene)
+            amount = amount - 1
+            continue
+
+        #   take random end state
+        end_clip = random.choice(clips)
+        end_state = end_clip['end_state']
+        end_data = end_clip['data']['dst']
+        print("using end state",end_state,"as start")
+        
+        if not random.random()<self.settings.loop_branch_chance:
+            # find one random clip from end_state to start_state
+            # that does *not* exist yet and create that
+            existing_end_states = [
+              clip['end_state'] for clip in clips if clip['start_state'] == end_state
+            ]
+            print("existing end states starting with",end_state,existing_end_states)
+            missing_start_clips = [
+              clip for clip in clips if clip['start_state'] not in existing_end_states 
+              and clip['start_state'] != end_state
+            ]
+            if len(missing_start_clips):
+                print("found missing start states",[
+                  clip['start_state'] for clip in missing_start_clips
+                ])
+                random.shuffle(missing_start_clips)
+                start_clip = missing_start_clips[0]
+                start_state = start_clip['start_state']
+                start_data = start_clip['data']['src']
+                # check your logic
+                # existing_clips = [clip for clip in clips if clip['start_state']==end_state and clip['end_state']==start_state]
+                #if len(existing_clips):
+                #  print("fail: that already exists. Exiting.")
+                #  exit
+                self.clip.fromJSON({
+                  'id' : end_state+'-'+start_state,
+                  'src': end_data,
+                  'dst' : start_data
+                })
+                print("creating",self.clip.id)
+                print()
+                self.render_clip(scene)
+                amount = amount - 1
+                continue
+            else:
+                print("no missing startstates")
+                
+        else:
+            print("randomly creating new branch")
+
+        # create a new clip with this end_state as start
+        # and a random end_state, and create the reverse clip
+        self.clip.fromJSON({
+          'id' : end_state+'-'+end_state,
+          'src': end_data,
+          'dst' : end_data
+        })
+        self.clip.next_delta()
+        print("render new endstate",self.clip.id)
+        self.render_clip(scene)
+        amount = amount - 1
+        self.clip.reverse()
+        print("creating reverse clip",self.clip.id)
+        self.render_clip(scene)
+        amount = amount - 1
+    self.rendering = False
+    scene.render.filepath = ofp
+    scene.render.resolution_percentage = orp
+    scene.render.image_settings.file_format = oif
+    print("Rendering done.")
+    
+  ## --------- REGENERATE MODE -------------- ##
+  
   
   def regenerate_stills(self): 
     print("Regenerating selected json files ..")
@@ -156,12 +287,15 @@ class Skope:
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
+    oif = scene.render.image_settings.file_format
     scene.render.resolution_percentage = self.settings.scale
     scene.render.image_settings.file_format = self.settings.image_format
+    
     for state_file in state_files:
       self.regenerate_still(state_file,scene)
     scene.render.filepath = ofp
     scene.render.resolution_percentage = orp
+    scene.render.image_settings.file_format = oif
     print("Regenerating done.")
     
   def regenerate_still(self,file,scene): 
@@ -172,9 +306,40 @@ class Skope:
     print("Regenerating",file)
     bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath+'.json');
+  
+  def regenerate_clips(self,length): 
+    print("Regenerating selected json files ..")
+    clip_files=glob.glob(self.settings.import_dir+'/*-*.json')
+    scene = bpy.context.scene
+    scene.frame_end = length # +-1 ?
+    scene.frame_set(1)
+    self.clip = SkopeClip(scene,length)
+    ofp = scene.render.filepath
+    orp = scene.render.resolution_percentage
+    oif = scene.render.image_settings.file_format
+    scene.render.resolution_percentage = self.settings.scale
+    scene.render.image_settings.file_format = self.settings.video_format
+    scene.render.ffmpeg.format=self.settings.ffmpeg_format
+    # scene.render.ffmpeg.codec
+    # scene.render.ffmpeg.ffmpeg_preset
+    # ...
+
+    self.rendering = True
+    for clip_file in clip_files:
+      self.regenerate_clip(clip_file,scene)
+    self.rendering = False
+
+    scene.render.filepath = ofp
+    scene.render.resolution_percentage = orp
+    scene.render.image_settings.file_format = oif
+    print("Regenerating done.")
     
-  # framechange handlers
-  # test mode frame_change_pre handler
+  def regenerate_clip(self,file,scene):  ##~~
+    self.clip.readJSON(file)
+    self.clip.apply(scene)
+    self.render_clip(scene)
+    
+  ## --------- EVENT HANDLERS -------------- ##
   
   #def apply_random_filepath(self,scene,x):
   #  print("apply_random_filepath")

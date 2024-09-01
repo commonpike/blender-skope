@@ -188,6 +188,20 @@ case $COMMAND in
             --scale $SCALE \
             --length $LENGTH \
             --amount $AMOUNT
+        elif [ $TYPE = "loops" ]; then
+          $BLENDER ./src/skope.blend --background \
+            --python ./src/skope-init.py -- \
+            --mode render \
+            --type loops \
+            --input-dir $INPUTDIR \
+            --output-dir $OUTPUTDIR \
+            --import-dir $IMPORTDIR \
+            --format $FORMAT \
+            --width $WIDTH \
+            --height $HEIGHT \
+            --scale $SCALE \
+            --length $LENGTH \
+            --amount $AMOUNT
         else
           echo "Render: unknown type $type" >&2
           exit 1
@@ -199,6 +213,7 @@ case $COMMAND in
           $BLENDER ./src/skope.blend --background \
             --python ./src/skope-init.py -- \
             --mode regenerate \
+            --type stills \
             --input-dir $INPUTDIR \
             --output-dir $OUTPUTDIR \
             --import-dir $IMPORTDIR \
@@ -207,8 +222,18 @@ case $COMMAND in
             --height $HEIGHT \
             --scale $SCALE
         elif [ $TYPE = "clips" ]; then
-          echo "Regenerate clips: unimplemented" >&2
-          exit 1
+          $BLENDER ./src/skope.blend --background \
+            --python ./src/skope-init.py -- \
+            --mode regenerate \
+            --type clips \
+            --input-dir $INPUTDIR \
+            --output-dir $OUTPUTDIR \
+            --import-dir $IMPORTDIR \
+            --format $FORMAT \
+            --width $WIDTH \
+            --height $HEIGHT \
+            --scale $SCALE \
+            --length $LENGTH
         else
           echo "Regenerate: unknown type $type" >&2
           exit 1
@@ -220,7 +245,7 @@ case $COMMAND in
         echo 'Usage: ' `basename $0` '[command] [arguments] --project-dir render/foobar'
         echo 'Commands: help, edit, ui, render, regenerate'
         echo 'Arguments: --amount, --type, --width, --height, --scale, --format, --length'
-        echo 'Type: stills (default) or clips'
+        echo 'Type: stills (default), clips or loops'
         echo 'Project dir expects subdirs input, output, import'
 
         exit 1

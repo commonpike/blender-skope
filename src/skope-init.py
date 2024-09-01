@@ -70,13 +70,20 @@ def main():
       skope.render_stills(int(args.amount))
     elif args.type == "clips":
       skope.render_clips(int(args.length),int(args.amount))
+    elif args.type == "loops":
+      skope.render_loops(int(args.length),int(args.amount))
     else:
       raise Exception("Type "+args.type+" not supported")
     
   elif args.mode == "regenerate":
     # this will manually regenerate stills based on
     # the state files from  the import dir
-    skope.regenerate_stills()
+    if args.type == "stills":
+      skope.regenerate_stills()
+    elif args.type == "clips":
+      bpy.app.handlers.frame_change_pre.clear()
+      bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
+      skope.regenerate_clips(int(args.length))
 
   else:
     # just open the file

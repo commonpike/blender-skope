@@ -21,6 +21,12 @@ class SkopeClip:
     self.dst.rnd_delta()
     self.id = self.src.id+'-'+self.dst.id
 
+  def reverse(self):
+    old_dst = self.dst
+    self.dst = self.src.clone()
+    self.src = old_dst.clone()
+    self.id = self.src.id+'-'+self.dst.id
+
   def start(self):
     return self.go(0)
   
