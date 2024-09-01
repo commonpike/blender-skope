@@ -359,32 +359,48 @@ class SkopeScreen:
     if src.image1['src'] == dst.image1['src']:
       self.image1['src'] = src.image1['src']
       self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],pct,self.settings.images_fade['easing'])
+    elif src.image1['fade'] == 0.0:
+      # src has no image1, fade in destination
+      self.image1['src'] = dst.image1['src']
+      self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],pct,self.settings.images_fade['easing'])
+    elif dst.image1['fade'] == 0.0:
+      # dst has no image1, fade out source
+      self.image1['src'] = src.image1['src']
+      self.image1['fade'] = mix(src.image1['fade'],dst.image1['fade'],100-pct,self.settings.images_fade['easing'])
     else:
       # fade out src.image1 at 33%, fade in dst.image1 from 33%
       fadepoint = 100.0/3
       if pct < fadepoint:
         self.image1['src'] = src.image1['src']
-        fadepct = 100 - (100 / fadepoint ) * pct
+        fadepct = 100.0 - (100.0 / fadepoint ) * pct
         self.image1['fade'] = mix(src.image1['fade'],0.0,fadepct,self.settings.images_fade['easing'])
       else:
         self.image1['src'] = dst.image1['src']
-        fadepct = ( 100 / ( 100 - fadepoint )) * ( pct - fadepoint )
-        self.image1['fade'] = mix(0,dst.image1['fade'],fadepct,self.settings.images_fade['easing'])
+        fadepct = ( 100.0 / ( 100.0 - fadepoint )) * ( pct - fadepoint )
+        self.image1['fade'] = mix(0.0,dst.image1['fade'],fadepct,self.settings.images_fade['easing'])
 
     if src.image2['src'] == dst.image2['src']:
       self.image2['src'] = src.image2['src']
       self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],pct,self.settings.images_fade['easing'])
+    elif src.image2['fade'] == 0.0:
+      # src has no image2, fade in destination
+      self.image2['src'] = dst.image2['src']
+      self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],pct,self.settings.images_fade['easing'])
+    elif dst.image2['fade'] == 0.0:
+      # dst has no image2, fade out source
+      self.image2['src'] = src.image2['src']
+      self.image2['fade'] = mix(src.image2['fade'],dst.image2['fade'],100-pct,self.settings.images_fade['easing'])
     else:
       # fade out src.image2 at 66%, fade in dst.image2 from 66%
       fadepoint = 2*100.0/3
       if pct < fadepoint:
         self.image2['src'] = src.image2['src']
-        fadepct = 100 - (100 / fadepoint ) * pct
+        fadepct = 100.0 - (100.0 / fadepoint ) * pct
         self.image2['fade'] = mix(src.image2['fade'],0.0,fadepct,self.settings.images_fade['easing'])
       else:
         self.image2['src'] = dst.image2['src']
-        fadepct = ( 100 / ( 100 - fadepoint )) * ( pct - fadepoint )
-        self.image2['fade'] = mix(0,dst.image2['fade'],fadepct,self.settings.images_fade['easing'])
+        fadepct = ( 100.0 / ( 100.0 - fadepoint )) * ( pct - fadepoint )
+        self.image2['fade'] = mix(0.0,dst.image2['fade'],fadepct,self.settings.images_fade['easing'])
     
   def toJSON(self):
     return { 
