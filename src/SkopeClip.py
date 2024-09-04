@@ -55,8 +55,8 @@ class SkopeClip:
     self.id = self.src.id+'-'+self.dst.id
 
   def apply(self,scene):
-    pct = self.current * 100 / ( self.length - 1) # think twice
-    print("SkopeClip apply",pct);
+    pct = self.current * 100.0 / ( self.length - 1) # think twice
+    print("SkopeClip apply",pct)
     self.state.mix(self.src,self.dst,pct)
     self.state.apply(scene)
 
