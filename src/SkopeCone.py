@@ -69,15 +69,26 @@ class SkopeCone:
       "random": True,
       "default": False,
       "chance": .5,
+      "distribution" : "UNIFORM",
+      #"minimum": 0,
+      #"maximum": 1,
+      #"distribution" : "UNIFORM",
+      #"delta": .1,
+      "easing": "EASEINOUT",
+      # fixed_harden_normals True also works but generates autosmooth errors 
+      # and seems to create glitches in the first frame of a clip
+      "fixed_harden_normals": False, 
+    },
+    # if bevel, randomize bevel weight
+    # of every beam
+    "bevel_weight" : {
+      "random": True,
+      "default": 0.5,
       "minimum": 0,
       "maximum": 1,
       "distribution" : "UNIFORM",
       "delta": .1,
       "easing": "EASEINOUT",
-      # fixed_harden_normals True also works but generates autosmooth errors 
-      # and seems to create glitches in the first frame of a clip
-      "fixed_harden_normals": False, 
-      "easing": "EASEINOUT"
     },
     # make bevels smooth
     # removed in blender4
@@ -298,11 +309,11 @@ class SkopeCone:
     # set a random bevel on all beams
     if self.enable_bevel:
       for index in range(0,len(self.beams)):
-        if self.settings.bevel['random']:
-          if self.settings.rndbool('bevel'):
-            self.beams[index]['bevel'] = self.settings.rnd('bevel')
-        elif self.settings.get('bevel'):
-          self.beams[index]['bevel'] = self.settings.rnd('bevel')
+        #if self.settings.bevel['random']:
+        #  if self.settings.rndbool('bevel'):
+        self.beams[index]['bevel'] = self.settings.rnd('bevel_weight') 
+        #elif self.settings.get('bevel'):
+        #  self.beams[index]['bevel'] = self.settings.rnd('bevel') # is this a float or bool ?
 
     # warp
     # warp some. this will make the number of 
@@ -388,20 +399,19 @@ class SkopeCone:
           # remove bevel on all beams; some of the 
           # beams may disappear at the end of the delta
           self.beams[index]['bevel'] = 0.0
-        elif self.beams[index]['bevel']:
-          if self.settings.rndbool('bevel'):
-            # remove bevel on beam index
-            self.beams[index]['bevel'] = 0.0
-          else:
-            # delta bevel on beam index
-            self.beams[index]['bevel'] = self.settings.rnd_delta('bevel',self.beams[index]['bevel'])
+        #elif self.beams[index]['bevel']:
+        #  if self.settings.rndbool('bevel'):
+        #    # remove bevel on beam index
+        #    self.beams[index]['bevel'] = 0.0
+        #  else:
+        #    # delta bevel on beam index
+        #    self.beams[index]['bevel'] = self.settings.rnd_delta('bevel_weight',self.beams[index]['bevel']) 
         else:
           if self.settings.rndbool('bevel'):
             # add bevel on beam index
-            self.beams[index]['bevel'] = self.settings.rnd_delta('bevel',self.beams[index]['bevel'])
-          else:
-            # leave bevel at 0 on beam index
-            self.beams[index]['bevel'] = 0.0
+            self.beams[index]['bevel'] = self.settings.rnd_delta('bevel_weight',self.beams[index]['bevel'])
+          #else:
+          #  # leave bevel as it is
 
     # warp
     if self.settings.numsides['warp']:
@@ -500,7 +510,7 @@ class SkopeCone:
       self.beams[index]['bevel'] = mix(
         src.beams[srcindex]['bevel'],
         dst.beams[dstindex]['bevel'],
-        pct,self.settings.bevel["easing"]
+        pct,self.settings.bevel_weight["easing"]
       )
 
     # warp

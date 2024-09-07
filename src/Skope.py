@@ -19,17 +19,18 @@ class Skope:
     'input_dir': '',
     'output_dir': '',
     'import_dir': '',
-    'type': 'stills', #stills | clip
+    'type': 'stills', #stills | clips | loops
     'width': 1920,
     'height': 1920,
-    'scale': 10,
+    'scale': 20,
     'image_format': 'PNG',
     'video_format': 'FFMPEG',
     'ffmpeg_format': 'MPEG4',
     'motion_blur': False,
     'motion_blur_shutter': 8,
     'motion_blur_shape': 'SHARP',
-    'loop_branch_chance' : .1
+    'loop_branch_chance' : 0,
+    'loop_reverse_chance': 0
   })
 
   def __init__(self, input_dir):
@@ -212,11 +213,29 @@ class Skope:
             continue
 
         #   take random end state
-        end_clip = random.choice(clips)
-        end_state = end_clip['end_state']
-        end_data = end_clip['data']['dst']
-        print("using end state",end_state,"as start")
+        rnd_clip = random.choice(clips)
         
+        reverse_clips = [
+              clip for clip in clips if clip['start_state'] == rnd_clip['end_state']
+                and clip['end_state'] == rnd_clip['start_state']
+        ]
+        if not len(reverse_clips) and random.random()<self.settings.loop_reverse_chance:
+          # always create a reverse if it is missing
+          self.clip.fromJSON({
+            'id' : rnd_clip['end_state']+'-'+rnd_clip['start_state'],
+            'src': rnd_clip['data']['dst'],
+            'dst' : rnd_clip['data']['src']
+          })
+          print("creating reverse",self.clip.id)
+          print()
+          self.render_clip(scene)
+          amount = amount - 1
+          continue  
+        
+        end_state = rnd_clip['end_state']
+        end_data = rnd_clip['data']['dst']
+        print("using end state",end_state,"as start")
+
         if not random.random()<self.settings.loop_branch_chance:
             # find one random clip from end_state to start_state
             # that does *not* exist yet and create that

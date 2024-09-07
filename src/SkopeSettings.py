@@ -67,6 +67,7 @@ class SkopeSettings(dict):
                 max = self[key]['maximum']
             else:
                 max = self.get(key)
+            print('rnd',key,min,max)
             return rnd(min,max,dist)
         raise Exception("Key "+key+" not found")
     
@@ -94,7 +95,7 @@ class SkopeSettings(dict):
                 max = self.get(key)
             deltamin = val - (delta * (val-min))
             deltamax = val + (delta * (max-val))
-            print('rnd_delta',val,deltamin,deltamax)
+            print('rnd_delta',key,val,deltamin,deltamax)
             return rnd(deltamin,deltamax,dist)
         
         raise Exception("Key "+key+" not found")
