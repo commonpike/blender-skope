@@ -99,6 +99,7 @@ class SkopeCone:
       "chance": .5
     },
     # if smooth, use autosmooth, degrees
+    # set random:False and default 0.0 to disable
     # removed in blender4
     "autosmooth" : {
       "random": True,
