@@ -28,7 +28,7 @@ The `--project-dir` argument expects to use the following folders:
 
 There are several `command`s available:
  - `edit` (edit the blend file)
- - `test` (edit the blend file with frame change handlers enabled)
+ - `ui` (edit the blend file with frame change handlers enabled)
  - `render` (generate images or clips from scratch) 
  - `regenerate` (regenerate images or clips from saved json files) 
 
