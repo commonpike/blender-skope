@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# reverse all files in a given directory,
+# correcting the filename based on the pattern
+# skope uses
+
 BASEDIR=`dirname $0`;
 FFMPEG="$HOME/Desktop/tmp/vc/bin/ffmpeg"
 SRCDIR=`realpath $1`
