@@ -93,7 +93,10 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
 
     @classmethod
     def init(cls,target,settings):
-        cls.target = getattr(bpy.context.scene.skope.state,target,None)
+        if target != 'skope':
+            cls.target = getattr(bpy.context.scene.skope.state,target,None)
+        else:
+            cls.target = bpy.context.scene.skope
         if cls.target is None:
             raise Exception("Failed to refer SkopePropertyGroup to target "+target)
         cls.settings2properties(settings)
