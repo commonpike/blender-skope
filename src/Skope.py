@@ -9,8 +9,7 @@ import json
 from SkopeSettings import SkopeSettings
 from SkopeState import SkopeState
 from SkopeClip import SkopeClip
-from utilities import dict2obj
-
+from SkopePanelFactory import SkopePanelFactory
 
 class Skope:
   """A kaleidoscope for use in blender"""
@@ -43,15 +42,25 @@ class Skope:
     self.rendering = False
     self.frozen = False
 
+    # tie yourself to the scene
+    bpy.types.Scene.skope=self
+
     # init state class vars
     scene = bpy.context.scene
     SkopeState.num_frames = scene.frame_end - scene.frame_start # why ?
     
-    # current state
+    # create current state
     self.state = SkopeState(scene,input_dir)
 
-    # optional clip
+    # create optional clip
     self.clip = None
+
+  def registerUIPanels(self):
+    SkopePanelFactory.registerOperatorsPanel()
+    SkopePanelFactory.registerSettingsPanel("skope",self.settings)
+    SkopePanelFactory.registerSettingsPanel("cone",self.state.cone.settings)
+    SkopePanelFactory.registerSettingsPanel("screen",self.state.screen.settings)
+    SkopePanelFactory.registerSettingsPanel("camera",self.state.camera.settings)
 
   def apply(self,scene):
     scene.render.resolution_x = self.settings.width

@@ -1,6 +1,15 @@
 
 import sys, random
 
+def getDistributions():
+    return [
+        "UNIFORM",
+        "TRIANGULAR",
+        "BETA",
+        "GAUSSIAN",
+        "LOGNORM"
+    ]
+
 def rnd(min=0.0,max=1.0,dist='UNIFORM'):
     if dist == "UNIFORM":
         return rndUniformFloat(min,max)
