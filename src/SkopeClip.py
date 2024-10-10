@@ -15,6 +15,11 @@ class SkopeClip:
     self.length = length
     self.current = 0
 
+  def reset(self):
+    self.src.reset()
+    self.dst = self.src.clone()
+    self.id = self.src.id+'-'+self.dst.id
+
   def random(self):
     self.src.random()
     self.dst = self.src.clone()

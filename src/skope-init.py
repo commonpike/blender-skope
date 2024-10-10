@@ -62,7 +62,8 @@ elif not os.path.isdir(args.import_dir):
   raise Exception("--import-dir "+args.import_dir+" is not a directory")
 
 skope = Skope.Skope(args.input_dir)
-bpy.types.Scene.skope = skope
+# skope.__init__ does this 
+# bpy.types.Scene.skope = skope
 
 def main():
 
@@ -82,6 +83,8 @@ def main():
     bpy.app.handlers.render_cancel.append(skope.apply_stop_render)
     bpy.app.handlers.render_complete.append(skope.apply_stop_render)
     
+    skope.registerUIPanels()
+
     if args.type == "stills":
       # call apply_random_state on every frame
       bpy.app.handlers.frame_change_pre.clear()

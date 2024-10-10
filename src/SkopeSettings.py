@@ -11,13 +11,12 @@
 # with methods like `get()`, `rnd()`, etc.
 #
 
-import random
 from distributions import rnd,rndint,rndbool
 
 class SkopeSettings(dict):
-    def __init__(self, mapping=None):
-        self.config = mapping
-        super().__init__(mapping)
+    def __init__(self, settings=None):
+        self.settings = settings
+        super().__init__(settings)
 
     def __getattr__(self,key):
         if key in self:
@@ -134,6 +133,4 @@ class SkopeSettings(dict):
             return rndbool(chance,dist)
         raise Exception("Key "+key+" not found")
   
-    
-        
         

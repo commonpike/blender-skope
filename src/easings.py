@@ -3,6 +3,19 @@ import math
 
 # https://easings.net/
 
+def getEasings():
+    return [
+        "LINEAR",
+        "EASEINOUT",
+        "INOUTSINE",
+        "INOUTQUAD",
+        "INOUTCUBIC",
+        "INOUTQUART",
+        "INOUTQUINT",
+        "INOUTEXPO",
+        "INOUTCIRC",
+    ]
+
 def mix(src,dst,pct,easing="LINEAR"):
     if easing == "LINEAR":
         return mixLinear(src,dst,pct)
