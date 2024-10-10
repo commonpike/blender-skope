@@ -3,7 +3,6 @@ import json
 import uuid
 
 from JSONEncoder import JSONEncoder 
-from SkopePanelFactory import SkopePanelFactory 
 from SkopeCamera import SkopeCamera 
 from SkopeScreen import SkopeScreen 
 from SkopeCone import SkopeCone 
