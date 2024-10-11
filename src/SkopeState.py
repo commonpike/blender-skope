@@ -9,8 +9,8 @@ from SkopeCone import SkopeCone
 
 class SkopeState:
 
-  frame_num=0
-  num_frames=360
+  #frame_num=0
+  # num_frames=360
 
   def __init__(self,scene=None,inputdir=None):
     self.id = 'init';
@@ -18,10 +18,14 @@ class SkopeState:
     self.camera = SkopeCamera(scene)
     self.screen = SkopeScreen(scene,inputdir)
     self.cone = SkopeCone(scene)
-    SkopeState.frame_num = bpy.context.scene.frame_current
-  
-  def reset(self):
+    #SkopeState.frame_num = bpy.context.scene.frame_current
+
+  def reset(self,applyFixedSettings=False):
     print("Skopestate reset")
+    if applyFixedSettings:
+      self.screen.applyFixedSettings()
+      self.camera.applyFixedSettings()
+      #self.cone.fix()
     self.screen.reset()
     self.camera.reset()
     # broken since 

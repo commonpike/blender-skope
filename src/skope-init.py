@@ -68,14 +68,15 @@ skope = Skope.Skope(args.input_dir)
 def main():
 
   print("skope-init",args)
-  skope.settings.output_dir = args.output_dir
-  skope.settings.import_dir = args.import_dir
-  skope.settings.image_format = args.format
-  skope.settings.width = int(args.width)
-  skope.settings.height = int(args.height)
-  skope.settings.scale = int(args.scale)
-  skope.settings.type = args.type
-  skope.apply(bpy.context.scene)
+  skope.settings.fixed['output_dir'] = args.output_dir
+  skope.settings.fixed['import_dir'] = args.import_dir
+  skope.settings.fixed['image_format'] = args.format
+  skope.settings.fixed['length'] = int(args.length)
+  skope.settings.fixed['width'] = int(args.width)
+  skope.settings.fixed['height'] = int(args.height)
+  skope.settings.fixed['scale'] = int(args.scale)
+  skope.type = args.type
+  skope.applyFixedSettings()
 
   if args.command == "ui":
     

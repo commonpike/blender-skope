@@ -76,7 +76,7 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
             else:
                 value = cls.target.settings[key][propname]
                 for i in range(len(items)):
-                    print(i,items[i])
+                    #print(i,items[i])
                     if items[i][0] == value:
                         return i
                 return 0
@@ -122,7 +122,22 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
         elif isinstance(settings[key][propname],int):
             cls.__annotations__[propid] = bpy.props.IntProperty(**config)
         elif isinstance(settings[key][propname],float):
-            cls.__annotations__[propid] = bpy.props.FloatProperty(**config)
+            if propname.startswith('rotation') or propname.endswith('rotation'):
+                cls.__annotations__[propid] = bpy.props.FloatProperty(
+                    subtype="ANGLE",
+                    **config
+                )
+            elif (key.startswith('rotation') 
+                  or key.endswith('rotation')
+                ) and (propname in [
+                    'default','minimum','maximum','x','y','z'
+                ]):
+                cls.__annotations__[propid] = bpy.props.FloatProperty(
+                    subtype="ANGLE",
+                    **config
+                )
+            else:
+                cls.__annotations__[propid] = bpy.props.FloatProperty(**config)
         elif isinstance(settings[key][propname],str):
             if propname == 'easing':
                 items = []
@@ -144,6 +159,12 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
                     get = cls.getter(key,propname,items),
                     set = cls.setter(key,propname,items),
                 )
+            elif propname == 'directory' or propname.endswith('_dir'):
+                cls.__annotations__[propid] = bpy.props.StringProperty(
+                    subtype='DIR_PATH',
+                    **config
+                )
+        
             else:
                 cls.__annotations__[propid] = bpy.props.StringProperty(**config)
         
@@ -213,8 +234,7 @@ class SkopeResetOperator(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
-        skope.state.reset()
-        skope.state.apply(scene)
+        skope.reset(True)
         return {'FINISHED'}
     
 class SkopeRandomOperator(bpy.types.Operator):
