@@ -16,8 +16,6 @@ class Skope:
   
   settings = SkopeSettings({
     'fixed': {
-      #'input_dir': '',
-      #'type': 'stills', #stills | clips | loops
       'output_dir': '',
       'import_dir': '',
       'width': 1920,
@@ -73,7 +71,6 @@ class Skope:
     scene.render.resolution_x = self.settings.fixed['width']
     scene.render.resolution_y = self.settings.fixed['height']
     scene.render.resolution_percentage = self.settings.fixed['scale']
-    #filename = str(uuid.uuid4())[:4]
     filename = scene.skope.state.id
     if self.type == 'stills':
       scene.render.image_settings.file_format = self.settings.fixed['image_format']
@@ -123,7 +120,6 @@ class Skope:
     scene.frame_set(1)
     self.clip = SkopeClip(scene,length)
     self.clip.apply(scene)
-    #filename = str(uuid.uuid4())[:4]+'-';
     filename = scene.skope.state.id
     scene.render.filepath = self.settings.fixed['output_dir']+ '/' + filename
     
@@ -145,10 +141,8 @@ class Skope:
     print("Rendering done.")
 
   def render_still(self,frame,scene): 
-    #SkopeState.frame_num = frame
     self.state.random()
     self.state.apply(scene)
-    #filename = str(frame).zfill(4);
     filename = self.state.id;
     scene.render.filepath = self.settings.fixed['output_dir']+ '/' + filename
     print("Rendering",scene.render.filepath)
