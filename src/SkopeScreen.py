@@ -94,7 +94,8 @@ class SkopeScreen:
   def __init__(self,scene=None,inputdir=None):
 
     print("Skopescreen",inputdir)
-    self.settings.sources['directory'] = inputdir
+    if inputdir:
+      self.settings.sources['directory'] = inputdir
 
     if scene:
       self.createObjects(scene)

@@ -40,17 +40,10 @@ class Skope:
   
     print("Kaleidoscope init",input_dir)
     
-    # set by skope-init.py
-    #self.settings.input_dir = input_dir
-    #self.settings.output_dir = 'unknown'
-    #self.import_dir = 'unknown'
     self.type = 'none' #stills | clips | loops
 
     self.rendering = False
     self.frozen = False
-
-    # init state class vars
-    # SkopeState.num_frames = scene.frame_end - scene.frame_start # why ?
 
     # tie yourself to the scene
     bpy.types.Scene.skope=self
@@ -102,7 +95,7 @@ class Skope:
 
   def initUI(self):
 
-    SkopePanelFactory.registerOperatorsPanel()
+    SkopePanelFactory.registerOperatorsPanel(self.type)
     SkopePanelFactory.registerSettingsPanel("skope",self.settings)
     SkopePanelFactory.registerSettingsPanel("cone",self.state.cone.settings)
     SkopePanelFactory.registerSettingsPanel("screen",self.state.screen.settings)
@@ -123,13 +116,12 @@ class Skope:
           break
     
 
-  def create_random_clip(self, length):
-    print("Skope create_random_clip", length)
+  def create_clip(self, length):
+    print("Skope create_clip", length)
     scene = bpy.context.scene
     scene.frame_end = length # +-1 ?
     scene.frame_set(1)
     self.clip = SkopeClip(scene,length)
-    self.clip.random()
     self.clip.apply(scene)
     #filename = str(uuid.uuid4())[:4]+'-';
     filename = scene.skope.state.id
@@ -167,7 +159,8 @@ class Skope:
 
   def render_clips(self,length,amount=1):
     # create a random clip and step it every frame
-    self.create_random_clip(int(length))
+    self.create_clip(int(length))
+    self.clip.random()
     scene = bpy.context.scene
     ofp = scene.render.filepath
     orp = scene.render.resolution_percentage
@@ -251,7 +244,8 @@ class Skope:
 
         if not len(clips):   
             print("creating random clip")
-            self.create_random_clip(int(length))
+            self.create_clip(int(length))
+            self.clip.random()
             self.render_clip(scene)
             amount = amount - 1
             self.clip.reverse()

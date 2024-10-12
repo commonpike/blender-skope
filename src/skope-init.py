@@ -97,7 +97,7 @@ def main():
       bpy.app.handlers.render_post.append(skope.unfreeze)
     elif args.type == "clips":
       # create a random clip and step it every frame
-      skope.create_random_clip(int(args.length))
+      skope.create_clip(int(args.length))
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
       #bpy.app.handlers.render_pre.append(skope.apply_random_filepath)

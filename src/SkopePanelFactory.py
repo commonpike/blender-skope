@@ -44,19 +44,32 @@ class SkopePanelFactory():
                 })        
                 bpy.utils.register_class(panel)
 
-    def registerOperatorsPanel():
-        bpy.utils.register_class(SkopeStepOperator)
-        bpy.utils.register_class(SkopeSaveOperator)
-        bpy.utils.register_class(SkopeLoadOperator)
-        bpy.utils.register_class(SkopeResetOperator)
-        bpy.utils.register_class(SkopeRandomOperator)
-        bpy.utils.register_class(SkopeDeltaOperator)
-        bpy.utils.register_class(SkopeResetClipOperator)
-        bpy.utils.register_class(SkopeRandomClipOperator)
-        bpy.utils.register_class(SkopeDeltaClipOperator)
-        bpy.utils.register_class(VIEW3D_PT_skope_operators)
+    def registerOperatorsPanel(type):
+        if type == 'stills':
+            bpy.utils.register_class(SkopeSaveOperator)
+            bpy.utils.register_class(SkopeLoadOperator)
+            bpy.utils.register_class(SkopeResetOperator)
+            bpy.utils.register_class(SkopeApplyOperator)
+            bpy.utils.register_class(SkopeRandomOperator)
+            bpy.utils.register_class(SkopeDeltaOperator)
+            bpy.utils.register_class(SkopeExportStillOperator)
+            bpy.utils.register_class(SkopeExportStillsOperator)
+            bpy.utils.register_class(VIEW3D_PT_skope_stillops)
+        if type == 'clips':
+            bpy.utils.register_class(SkopeSaveOperator)
+            bpy.utils.register_class(SkopeLoadOperator)
+            bpy.utils.register_class(SkopePlayOperator)
+            bpy.utils.register_class(SkopePauseOperator)
+            bpy.utils.register_class(SkopeResetClipOperator)
+            bpy.utils.register_class(SkopeApplyClipOperator)
+            bpy.utils.register_class(SkopeRandomClipOperator)
+            bpy.utils.register_class(SkopeDeltaClipOperator)
+            bpy.utils.register_class(SkopeExportClipOperator)
+            bpy.utils.register_class(SkopeExportClipsOperator)
+            bpy.utils.register_class(VIEW3D_PT_skope_clipops)
 
 
+# PROPERTIES
 
 # A SkopePropertyGroup represents all of the 
 # entries in a SkopeSettings object. The 'target'
@@ -170,6 +183,8 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
                     subtype='COLOR', min=0.0, max=1.0, size=len(settings[key][propname]), **config
                 )
 
+# PANELS
+
 # Each SkopeSettingsPanel only refers to the properties of 
 # single key within a targets settings, eg 
 # Screen > location_x > *
@@ -199,18 +214,103 @@ class SkopeSettingsPanel(bpy.types.Panel):
             self.layout.prop(properties, propid)
 
 
+class VIEW3D_PT_skope_stillops(bpy.types.Panel):  
+
+    # where to add the panel in the UI
+    bl_space_type = "VIEW_3D"  
+    bl_region_type = "UI"  
+    bl_order = 1
+    #bl_options = {"DEFAULT_CLOSED"}
+    use_pin = True #- doesnt pin
+
+    # add labels
+    bl_category = "Skope"  
+    bl_label = "Skope still operators" 
+    
+    def draw(self, context):
         
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeResetOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeApplyOperator.bl_idname)
+        
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeRandomOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeDeltaOperator.bl_idname)
+        
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeExportStillOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeExportStillsOperator.bl_idname)
 
-# Operators & operator panel
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeLoadOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeSaveOperator.bl_idname)
 
-class SkopeStepOperator(bpy.types.Operator):
-    bl_idname = "scene.skope_step_operator"
-    bl_label = "Step"
-    bl_description = "Step a frame"
-    def execute(self, context):
-        scene = context.scene
-        scene.frame_set(scene.frame_current + 1)
-        return {'FINISHED'}
+class VIEW3D_PT_skope_clipops(bpy.types.Panel):  
+
+    # where to add the panel in the UI
+    bl_space_type = "VIEW_3D"  
+    bl_region_type = "UI"  
+    bl_order = 1
+    #bl_options = {"DEFAULT_CLOSED"}
+    use_pin = True #- doesnt pin
+
+    # add labels
+    bl_category = "Skope"  
+    bl_label = "Skope clips operators" 
+    
+    def draw(self, context):
+        
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopePlayOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopePauseOperator.bl_idname)
+
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeResetClipOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeApplyClipOperator.bl_idname)
+        
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeRandomClipOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeDeltaClipOperator.bl_idname)
+
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeExportClipOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeExportClipsOperator.bl_idname)
+
+        row = self.layout.row()
+        split = row.split()
+        col = split.column()
+        col.operator(SkopeLoadOperator.bl_idname)
+        col = split.column()
+        col.operator(SkopeSaveOperator.bl_idname)
+
+
+# OPERATORS
+
+# Shared operators
 
 class SkopeLoadOperator(bpy.types.Operator):
     bl_idname = "scene.skope_load_operator"
@@ -228,8 +328,20 @@ class SkopeSaveOperator(bpy.types.Operator):
         print("Save settings not implemented")
         return {'CANCELLED'}
 
+# stills operators 
+
 class SkopeResetOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_operator"
+    bl_label = "Reset"
+    bl_description = "Reset scene"
+    def execute(self, context):
+        scene = context.scene
+        skope = scene.skope
+        skope.reset()
+        return {'FINISHED'}
+    
+class SkopeApplyOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_apply_operator"
     bl_label = "Apply"
     bl_description = "Apply fixed settings and reset scene"
     def execute(self, context):
@@ -260,22 +372,68 @@ class SkopeDeltaOperator(bpy.types.Operator):
         skope.state.apply(scene)
         return {'FINISHED'}
     
+class SkopeExportStillOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_export_still_operator"
+    bl_label = "Export"
+    bl_description = "Export still - unimplemented"
+    def execute(self, context):
+        print("Export still not implemented")
+        return {'CANCELLED'}
+    
+class SkopeExportStillsOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_export_stills_operator"
+    bl_label = "Export N"
+    bl_description = "Export stills - unimplemented"
+    def execute(self, context):
+        print("Export stills not implemented")
+        return {'CANCELLED'}
+    
+    
+# clips operators
+
+class SkopePlayOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_play_operator"
+    bl_label = "Play"
+    bl_description = "Play clip"
+    def execute(self, context):
+        bpy.ops.screen.animation_play()
+        return {'FINISHED'}
+
+class SkopePauseOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_pause_operator"
+    bl_label = "Pause"
+    bl_description = "Pause clip"
+    def execute(self, context):
+        bpy.ops.screen.animation_cancel(restore_frame=False)
+        return {'FINISHED'}
+    
 class SkopeResetClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_clip_operator"
-    bl_label = "Apply Clip"
+    bl_label = "Reset"
+    bl_description = "Apply fixed settings and reset clip"
+    def execute(self, context):
+        scene = context.scene
+        skope = scene.skope
+        if hasattr(skope,'clip'):
+            skope.clip.reset()
+            return {'FINISHED'}
+        return {'CANCELLED'}
+    
+class SkopeApplyClipOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_apply_clip_operator"
+    bl_label = "Apply"
     bl_description = "Apply fixed settings and reset clip"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
         if hasattr(skope,'clip'):
             skope.clip.reset(True)
-            skope.clip.apply(scene)
             return {'FINISHED'}
         return {'CANCELLED'}
     
 class SkopeRandomClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_clip_operator"
-    bl_label = "Random Clip"
+    bl_label = "Random"
     bl_description = "Randomize clip with given settings"
     def execute(self, context):
         scene = context.scene
@@ -288,7 +446,7 @@ class SkopeRandomClipOperator(bpy.types.Operator):
     
 class SkopeDeltaClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_delta_clip_operator"
-    bl_label = "Delta Clip"
+    bl_label = "Delta"
     bl_description = "Use current end state as start state; create new end state using delta settings"
     def execute(self, context):
         scene = context.scene
@@ -298,52 +456,20 @@ class SkopeDeltaClipOperator(bpy.types.Operator):
             skope.clip.apply(scene)
             return {'FINISHED'}
         return {'CANCELLED'}
-
-
-class VIEW3D_PT_skope_operators(bpy.types.Panel):  
-
-    # where to add the panel in the UI
-    bl_space_type = "VIEW_3D"  
-    bl_region_type = "UI"  
-    bl_order = 1
-    #bl_options = {"DEFAULT_CLOSED"}
-    use_pin = True #- doesnt pin
-
-    # add labels
-    bl_category = "Skope"  
-    bl_label = "Skope operators" 
     
-    def draw(self, context):
-        
-        row = self.layout.row()
-        split = row.split()
-        col = split.column()
-        if not context.scene.skope.clip:
-            col.operator(SkopeResetOperator.bl_idname)
-        else:
-            col.operator(SkopeResetClipOperator.bl_idname)
-        col = split.column()
-        col.operator(SkopeStepOperator.bl_idname)
-        
-        row = self.layout.row()
-        split = row.split()
-        if not context.scene.skope.clip:
-            col = split.column()
-            col.operator(SkopeRandomOperator.bl_idname)
-            col = split.column()
-            col.operator(SkopeDeltaOperator.bl_idname)
-        else:            
-            col = split.column()
-            col.operator(SkopeRandomClipOperator.bl_idname)
-            col = split.column()
-            col.operator(SkopeDeltaClipOperator.bl_idname)
-
-        row = self.layout.row()
-        split = row.split()
-        col = split.column()
-        col.operator(SkopeLoadOperator.bl_idname)
-        col = split.column()
-        col.operator(SkopeSaveOperator.bl_idname)
-
-
+class SkopeExportClipOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_export_clip_operator"
+    bl_label = "Export"
+    bl_description = "Export clip - unimplemented"
+    def execute(self, context):
+        print("Export clip not implemented")
+        return {'CANCELLED'}
+    
+class SkopeExportClipsOperator(bpy.types.Operator):
+    bl_idname = "scene.skope_export_clips_operator"
+    bl_label = "Export N"
+    bl_description = "Export clips - unimplemented"
+    def execute(self, context):
+        print("Export clips not implemented")
+        return {'CANCELLED'}
        
