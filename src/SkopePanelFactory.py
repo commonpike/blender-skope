@@ -124,8 +124,7 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
         elif isinstance(settings[key][propname],float):
             if propname.startswith('rotation') or propname.endswith('rotation'):
                 cls.__annotations__[propid] = bpy.props.FloatProperty(
-                    subtype="ANGLE",
-                    **config
+                    subtype="ANGLE", **config
                 )
             elif (key.startswith('rotation') 
                   or key.endswith('rotation')
@@ -133,8 +132,7 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
                     'default','minimum','maximum','x','y','z'
                 ]):
                 cls.__annotations__[propid] = bpy.props.FloatProperty(
-                    subtype="ANGLE",
-                    **config
+                    subtype="ANGLE", **config
                 )
             else:
                 cls.__annotations__[propid] = bpy.props.FloatProperty(**config)
@@ -161,13 +159,16 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
                 )
             elif propname == 'directory' or propname.endswith('_dir'):
                 cls.__annotations__[propid] = bpy.props.StringProperty(
-                    subtype='DIR_PATH',
-                    **config
+                    subtype='DIR_PATH', **config
                 )
         
             else:
                 cls.__annotations__[propid] = bpy.props.StringProperty(**config)
-        
+        elif isinstance(settings[key][propname],tuple):
+            if propname == 'color' or propname.endswith('_color'):
+                cls.__annotations__[propid] = bpy.props.FloatVectorProperty(
+                    subtype='COLOR', min=0.0, max=1.0, size=len(settings[key][propname]), **config
+                )
 
 # Each SkopeSettingsPanel only refers to the properties of 
 # single key within a targets settings, eg 
@@ -205,7 +206,7 @@ class SkopeSettingsPanel(bpy.types.Panel):
 class SkopeStepOperator(bpy.types.Operator):
     bl_idname = "scene.skope_step_operator"
     bl_label = "Step"
-
+    bl_description = "Step a frame"
     def execute(self, context):
         scene = context.scene
         scene.frame_set(scene.frame_current + 1)
@@ -214,7 +215,7 @@ class SkopeStepOperator(bpy.types.Operator):
 class SkopeLoadOperator(bpy.types.Operator):
     bl_idname = "scene.skope_load_operator"
     bl_label = "Load"
-
+    bl_description = "Load settings - unimplemented"
     def execute(self, context):
         print("Load settings not implemented")
         return {'CANCELLED'}
@@ -222,15 +223,15 @@ class SkopeLoadOperator(bpy.types.Operator):
 class SkopeSaveOperator(bpy.types.Operator):
     bl_idname = "scene.skope_save_operator"
     bl_label = "Save"
-
+    bl_description = "Save settings - unimplemented"
     def execute(self, context):
         print("Save settings not implemented")
         return {'CANCELLED'}
 
 class SkopeResetOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_operator"
-    bl_label = "Reset"
-
+    bl_label = "Apply"
+    bl_description = "Apply fixed settings and reset scene"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -240,7 +241,7 @@ class SkopeResetOperator(bpy.types.Operator):
 class SkopeRandomOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_operator"
     bl_label = "Random"
-
+    bl_description = "Randomize scene with given settings"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -251,7 +252,7 @@ class SkopeRandomOperator(bpy.types.Operator):
 class SkopeDeltaOperator(bpy.types.Operator):
     bl_idname = "scene.skope_delta_operator"
     bl_label = "Delta"
-
+    bl_description = "Partially randomize scene using delta settings"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -262,7 +263,7 @@ class SkopeDeltaOperator(bpy.types.Operator):
 class SkopeResetClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_clip_operator"
     bl_label = "Reset Clip"
-
+    bl_description = "Apply fixed settings and reset clip"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -275,7 +276,7 @@ class SkopeResetClipOperator(bpy.types.Operator):
 class SkopeRandomClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_clip_operator"
     bl_label = "Random Clip"
-
+    bl_description = "Randomize clip with given settings"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -288,7 +289,7 @@ class SkopeRandomClipOperator(bpy.types.Operator):
 class SkopeDeltaClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_delta_clip_operator"
     bl_label = "Delta Clip"
-
+    bl_description = "Use current end state as start state; create new end state using delta settings"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope

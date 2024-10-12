@@ -103,6 +103,7 @@ class SkopeScreen:
       self.apply(scene)
     else:
       print("Skopescreen off-scene")
+      self.images = []
       self.reset()
 
   def createObjects(self,scene):
@@ -130,7 +131,12 @@ class SkopeScreen:
     material = bpy.data.materials.new(name = "ScreenMaterial")
     material.name = "ScreenMaterial"
     material.use_nodes = True
-    material.node_tree.nodes.clear()
+    # clean it up
+    # material.node_tree.nodes.clear()
+    if material.node_tree:
+        material.node_tree.links.clear()
+        material.node_tree.nodes.clear()
+    
     
     output = material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
     output.name = 'Output'
@@ -221,7 +227,7 @@ class SkopeScreen:
 
   
   def applyFixedSettings(self):
-    print("SkoepScreen applyFixedSettings")
+    print("SkopeScreen applyFixedSettings")
     screen = bpy.data.objects["screen"]
     if not screen:
         raise Exception("screen can not be found")
@@ -229,15 +235,14 @@ class SkopeScreen:
     self.width = self.settings.fixed['width']
     self.height = self.settings.fixed['height']
     self.dist = self.settings.fixed['dist']
-    # todo: adjust screen mesh
-    #vert = [
-    #    (-self.width/2, -self.height/2, self.dist), 
-    #    (self.width/2, -self.height/2, self.dist), 
-    #    (-self.width/2, self.height/2, self.dist), 
-    #    (self.width/2, self.height/2, self.dist)
-    #]
-    #fac = [(0, 1, 3, 2)]
-    #screen.data.from_pydata(vert, [], fac)
+    vert = [
+        (-self.width/2, -self.height/2, self.dist), 
+        (self.width/2, -self.height/2, self.dist), 
+        (-self.width/2, self.height/2, self.dist), 
+        (self.width/2, self.height/2, self.dist)
+    ]
+    for idx, vertice in enumerate(screen.data.vertices):
+      vertice.co = vert[idx]
 
     material = bpy.data.materials["ScreenMaterial"]
     if not material:
