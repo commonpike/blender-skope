@@ -16,7 +16,7 @@ class SkopeCone:
     "fixed": {
       "roughness" : 0.0,
       "metallic" : 1.0,
-      "diffuse_color" : (1,1,1,1), # https://blender.stackexchange.com/questions/6984/color-as-custom-property
+      "diffuse_color" : (1,1,1,1), 
       "enable_bevel" : True,
       "bevel_affect" : 'EDGES',
       "bevel_offset_type" : 'OFFSET',
@@ -122,8 +122,6 @@ class SkopeCone:
 
   def __init__(self,scene=None):
 
-    # moved 
-    # self.reset()
     if scene:
         self.createObjects(scene)
         self.applyFixedSettings()
@@ -137,7 +135,7 @@ class SkopeCone:
 
     
   def createObjects(self,scene):
-    print("SkopeCone create")
+    print("SkopeCone createObjects")
 
     cone = scene.objects.get("cone")
     if cone:

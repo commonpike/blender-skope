@@ -85,6 +85,7 @@ def main():
     bpy.app.handlers.render_complete.append(skope.apply_stop_render)
     
     skope.registerUIPanels()
+    skope.initUI()
 
     if args.type == "stills":
       # call apply_random_state on every frame

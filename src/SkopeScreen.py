@@ -257,7 +257,6 @@ class SkopeScreen:
         self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
 
 
-
   def reset(self):
     print("Skopescreen reset")
 
@@ -287,6 +286,7 @@ class SkopeScreen:
       self.image1['src'] =  self.images[0]
       
     self.image2 = {
+        'src': '',
         'x': self.settings.get('images_location'),
         'y': self.settings.get('images_location'),
         'rotation': self.settings.get('images_rotation'),

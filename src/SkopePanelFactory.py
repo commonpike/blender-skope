@@ -54,7 +54,7 @@ class SkopePanelFactory():
         bpy.utils.register_class(SkopeResetClipOperator)
         bpy.utils.register_class(SkopeRandomClipOperator)
         bpy.utils.register_class(SkopeDeltaClipOperator)
-        bpy.utils.register_class(VIEW3_PT_skope_operators)
+        bpy.utils.register_class(VIEW3D_PT_skope_operators)
 
 
 
@@ -262,13 +262,13 @@ class SkopeDeltaOperator(bpy.types.Operator):
     
 class SkopeResetClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_clip_operator"
-    bl_label = "Reset Clip"
+    bl_label = "Apply Clip"
     bl_description = "Apply fixed settings and reset clip"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
         if hasattr(skope,'clip'):
-            skope.clip.reset()
+            skope.clip.reset(True)
             skope.clip.apply(scene)
             return {'FINISHED'}
         return {'CANCELLED'}
@@ -300,17 +300,17 @@ class SkopeDeltaClipOperator(bpy.types.Operator):
         return {'CANCELLED'}
 
 
-class VIEW3_PT_skope_operators(bpy.types.Panel):  
+class VIEW3D_PT_skope_operators(bpy.types.Panel):  
 
     # where to add the panel in the UI
     bl_space_type = "VIEW_3D"  
     bl_region_type = "UI"  
     bl_order = 1
     #bl_options = {"DEFAULT_CLOSED"}
-    #use_pin = True - doesnt pin
+    use_pin = True #- doesnt pin
 
     # add labels
-    bl_category = "Operators"  
+    bl_category = "Skope"  
     bl_label = "Skope operators" 
     
     def draw(self, context):

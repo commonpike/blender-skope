@@ -68,7 +68,7 @@ class Skope:
     if applyFixedSettings:
       self.applyFixedSettings()
     if self.clip:
-      self.clip.reset()
+      self.clip.reset(applyFixedSettings)
     self.state.reset(applyFixedSettings)
     self.state.apply(scene)
     
@@ -106,6 +106,13 @@ class Skope:
     SkopePanelFactory.registerSettingsPanel("cone",self.state.cone.settings)
     SkopePanelFactory.registerSettingsPanel("screen",self.state.screen.settings)
     SkopePanelFactory.registerSettingsPanel("camera",self.state.camera.settings)
+
+  def initUI(self):
+    for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                with bpy.context.temp_override(area=area):
+                    bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
+                break
     
   def create_random_clip(self, length):
     print("Skope create_random_clip", length)

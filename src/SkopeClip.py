@@ -15,8 +15,8 @@ class SkopeClip:
     self.length = length
     self.current = 0
 
-  def reset(self):
-    self.src.reset()
+  def reset(self,applyFixedSettings=False):
+    self.src.reset(applyFixedSettings)
     self.dst = self.src.clone()
     self.id = self.src.id+'-'+self.dst.id
 
