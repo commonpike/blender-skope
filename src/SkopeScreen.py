@@ -255,7 +255,7 @@ class SkopeScreen:
       for pattern in self.settings.sources['globs'].split(','):
         self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.upper()))
         self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
-
+    self.images.sort()
 
   def reset(self):
     print("Skopescreen reset")
@@ -297,8 +297,6 @@ class SkopeScreen:
       self.image2['src'] =  self.images[1]
     else:
       self.image2['src'] =  self.image1['src']
-
-  
     
   def random(self,minsize = 0):
     global TWO_PI

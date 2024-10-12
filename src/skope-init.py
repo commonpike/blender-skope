@@ -84,7 +84,6 @@ def main():
     bpy.app.handlers.render_cancel.append(skope.apply_stop_render)
     bpy.app.handlers.render_complete.append(skope.apply_stop_render)
     
-    skope.registerUIPanels()
     skope.initUI()
 
     if args.type == "stills":

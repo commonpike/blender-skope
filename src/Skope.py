@@ -99,21 +99,30 @@ class Skope:
       scene.render.use_motion_blur = False
 
     bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
-    
-  def registerUIPanels(self):
+
+  def initUI(self):
+
     SkopePanelFactory.registerOperatorsPanel()
     SkopePanelFactory.registerSettingsPanel("skope",self.settings)
     SkopePanelFactory.registerSettingsPanel("cone",self.state.cone.settings)
     SkopePanelFactory.registerSettingsPanel("screen",self.state.screen.settings)
     SkopePanelFactory.registerSettingsPanel("camera",self.state.camera.settings)
 
-  def initUI(self):
     for area in bpy.context.screen.areas:
-            if area.type == 'VIEW_3D':
-                with bpy.context.temp_override(area=area):
-                    bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
-                break
+      if area.type == 'VIEW_3D':
+          with bpy.context.temp_override(
+              area=area,
+              window=bpy.context.window,
+              region=[region for region in area.regions if region.type == 'WINDOW'][0],
+              screen=bpy.context.window.screen
+          ):
+              bpy.context.space_data.shading.type = 'RENDERED'
+              bpy.context.space_data.show_region_ui = True
+              bpy.ops.view3d.camera_to_view()
+              bpy.ops.screen.screen_full_area()
+          break
     
+
   def create_random_clip(self, length):
     print("Skope create_random_clip", length)
     scene = bpy.context.scene
