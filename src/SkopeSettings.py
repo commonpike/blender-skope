@@ -136,16 +136,3 @@ class SkopeSettings(dict):
             return rndbool(chance,dist)
         raise Exception("Key "+key+" not found")
   
-    
-    # def toJSON(self):
-    #     return vars(self)
-    #     # return { 
-    #     # k:v for (k,v) in vars(self).items() 
-    #     # if not k in ['object','material','fader','sources','mapping1','mapping2'] 
-    #     # }
-    
-    # def fromJSON(self,data):
-    #     self.id = data['id']
-    #     self.screen.fromJSON(data['screen'])
-    #     self.camera.fromJSON(data['camera'])
-    #     self.cone.fromJSON(data['cone'])

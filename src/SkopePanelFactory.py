@@ -315,18 +315,32 @@ class VIEW3D_PT_skope_clipops(bpy.types.Panel):
 class SkopeLoadOperator(bpy.types.Operator):
     bl_idname = "scene.skope_load_operator"
     bl_label = "Load"
-    bl_description = "Load settings - unimplemented"
+    bl_description = "Load settings"
+    
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
+
     def execute(self, context):
-        print("Load settings not implemented")
-        return {'CANCELLED'}
+        context.scene.skope.loadSettings(self.filepath)
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
      
 class SkopeSaveOperator(bpy.types.Operator):
     bl_idname = "scene.skope_save_operator"
     bl_label = "Save"
-    bl_description = "Save settings - unimplemented"
+    bl_description = "Save settings"
+
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
+
     def execute(self, context):
-        print("Save settings not implemented")
-        return {'CANCELLED'}
+        context.scene.skope.saveSettings(self.filepath)
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
 
 # stills operators 
 

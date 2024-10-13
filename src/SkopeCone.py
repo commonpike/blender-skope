@@ -562,6 +562,12 @@ class SkopeCone:
     object.rotation_euler.z = self.rotation
     
 
+  def getSettings(self):
+    return self.settings
+
+  def setSettings(self,settings):
+    self.settings = SkopeSettings(settings)
+    self.applyFixedSettings()
 
   def toJSON(self):
     return { 
