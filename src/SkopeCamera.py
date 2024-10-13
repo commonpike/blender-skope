@@ -7,44 +7,46 @@ from SkopeSettings import SkopeSettings
 class SkopeCamera:
 
   settings = SkopeSettings({
-    "type": "PERSP",
-    "clip_start": .1,
-    "clip_end": 100,
-    "rotation_x": 0,
-    "rotation_y": 0,
-    "rotation_z": 0,
+    "fixed": {
+      "type": "PERSP",
+      "clip_start": .1,
+      "clip_end": 100.0,
+      "rotation_x": 0.0,
+      "rotation_y": 0.0,
+      "rotation_z": 0.0,
+    },
     "location_x": {
-      "default": 0,
+      "default": 0.0,
       "random": True,
-      "minimum": -5,
-      "maximum": 5,
+      "minimum": -5.0,
+      "maximum": 5.0,
       "distribution" : "UNIFORM",
       "within_radius": True,
       "delta": .5,
       "easing": "EASEINOUT"
     },
     "location_y": {
-      "default": 0,
+      "default": 0.0,
       "random": True,
-      "minimum": -5,
-      "maximum": 5,
+      "minimum": -5.0,
+      "maximum": 5.0,
       "distribution" : "UNIFORM",
       "within_radius": True,
       "delta": .5,
       "easing": "EASEINOUT"
     },
     "location_z": {
-      "default": 10,
+      "default": 10.0,
       "random": True,
-      "minimum": 2,
-      "maximum": 20,
+      "minimum": 2.0,
+      "maximum": 20.0,
       "distribution" : "UNIFORM",
       "delta": .5,
       "easing": "EASEINOUT"
     },
     "shift": {
       "random": True,
-      "default": 0,
+      "default": 0.0,
       "minimum": -.25,
       "maximum": .25,
       "distribution" : "UNIFORM",
@@ -53,18 +55,18 @@ class SkopeCamera:
     },
     "lens": {
       "random": True,
-      "default": 70,
-      "minimum": 10,
-      "maximum": 100,
+      "default": 70.0,
+      "minimum": 10.0,
+      "maximum": 100.0,
       "distribution" : "UNIFORM",
       "delta": .5,
       "easing": "EASEINOUT"
     },
     "sensor_width": {
       "random": True,
-      "default": 70,
-      "minimum": 10,
-      "maximum": 100,
+      "default": 70.0,
+      "minimum": 10.0,
+      "maximum": 100.0,
       "distribution" : "UNIFORM",
       "delta": .5,
       "easing": "EASEINOUT"
@@ -73,15 +75,34 @@ class SkopeCamera:
 
   def __init__(self,scene=None):
     if scene:
-      camera = scene.objects.get("camera")
-      if camera:
-        raise Exception("Sorry, only one SkopeCamera per scene")
-      else:
-        self.create(scene)
-    self.reset()
-
-    if scene:
+      self.createObject(scene)
+      self.applyFixedSettings()
+      self.reset()
       self.apply(scene)
+    else:
+      self.reset()
+
+  def createObject(self,scene):
+    print("SkopeCamera creating camera")
+    camera = scene.objects.get("camera")
+    if camera:
+      raise Exception("Sorry, only one SkopeCamera per scene")
+    camera_data = bpy.data.cameras.new(name='camera')
+    object = bpy.data.objects.new('camera', camera_data)
+    scene.collection.objects.link(object)
+    scene.camera = object ## ??
+    
+  def applyFixedSettings(self):
+    print("SkopeCamera applyFixedSettings")
+    object = bpy.data.objects["camera"]
+    if not object:
+        raise Exception("SkopeCamera can not be found")
+    object.data.type = self.settings.fixed['type']
+    object.data.clip_start = self.settings.fixed['clip_start']
+    object.data.clip_end = self.settings.fixed['clip_end']
+    object.rotation_euler[0] = self.settings.fixed['rotation_x']
+    object.rotation_euler[1] = self.settings.fixed['rotation_y']
+    object.rotation_euler[2] = self.settings.fixed['rotation_z']
 
   def reset(self):
     print("SkopeCamera Reset")
@@ -94,29 +115,6 @@ class SkopeCamera:
     self.shift_y = self.settings.get('shift')
     self.lens = self.settings.get('lens')
     self.sensor_width = self.settings.get('sensor_width')
-
-  def create(self,scene):
-    print("SkopeCamera creating camera")
-    camera_data = bpy.data.cameras.new(name='camera')
-    object = bpy.data.objects.new('camera', camera_data)
-    object.location.x = self.settings.get('location_x')
-    object.location.y = self.settings.get('location_y')
-    object.location.z = self.settings.get('location_z')
-    object.data.shift_x = self.settings.get('shift')
-    object.data.shift_y = self.settings.get('shift')
-    object.data.lens = self.settings.get('lens')
-    object.data.sensor_width = self.settings.get('sensor_width')
-
-    object.data.type = self.settings.get('type')
-    object.data.clip_start = self.settings.get('clip_start')
-    object.data.clip_end = self.settings.get('clip_end')
-    object.rotation_euler[0] = self.settings.get('rotation_x')
-    object.rotation_euler[1] = self.settings.get('rotation_y')
-    object.rotation_euler[2] = self.settings.get('rotation_z')
-    scene.collection.objects.link(object)
-    scene.camera = object ## ??
-
-
 
   def random(self, radius = 10):
     print("SkopeCamera random")

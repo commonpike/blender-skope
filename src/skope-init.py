@@ -68,14 +68,15 @@ skope = Skope.Skope(args.input_dir)
 def main():
 
   print("skope-init",args)
-  skope.settings.output_dir = args.output_dir
-  skope.settings.import_dir = args.import_dir
-  skope.settings.image_format = args.format
-  skope.settings.width = int(args.width)
-  skope.settings.height = int(args.height)
-  skope.settings.scale = int(args.scale)
-  skope.settings.type = args.type
-  skope.apply(bpy.context.scene)
+  skope.settings.fixed['output_dir'] = args.output_dir
+  skope.settings.fixed['import_dir'] = args.import_dir
+  skope.settings.fixed['image_format'] = args.format
+  skope.settings.fixed['length'] = int(args.length)
+  skope.settings.fixed['width'] = int(args.width)
+  skope.settings.fixed['height'] = int(args.height)
+  skope.settings.fixed['scale'] = int(args.scale)
+  skope.type = args.type
+  skope.applyFixedSettings()
 
   if args.command == "ui":
     
@@ -83,7 +84,7 @@ def main():
     bpy.app.handlers.render_cancel.append(skope.apply_stop_render)
     bpy.app.handlers.render_complete.append(skope.apply_stop_render)
     
-    skope.registerUIPanels()
+    skope.initUI()
 
     if args.type == "stills":
       # call apply_random_state on every frame
@@ -96,7 +97,7 @@ def main():
       bpy.app.handlers.render_post.append(skope.unfreeze)
     elif args.type == "clips":
       # create a random clip and step it every frame
-      skope.create_random_clip(int(args.length))
+      skope.create_clip(int(args.length))
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_clip_step)
       #bpy.app.handlers.render_pre.append(skope.apply_random_filepath)

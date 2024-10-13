@@ -13,15 +13,30 @@ TWO_PI=2*math.pi
 class SkopeCone:
 
   settings = SkopeSettings({
-    "roughness" : 0,
-    "metallic" : 1,
-    "diffuse_color" : (1,1,1,1),
-    "height": 20,
-    "radius": 4,
+    "fixed": {
+      "roughness" : 0.0,
+      "metallic" : 1.0,
+      "diffuse_color" : (1,1,1,1), 
+      "enable_bevel" : True,
+      "bevel_affect" : 'EDGES',
+      "bevel_offset_type" : 'OFFSET',
+      "bevel_limit_method": 'WEIGHT', # 'NONE',
+      "bevel_width": 4.0, # 1
+      "bevel_segments": 16,
+      # bevel_harden_normals True works but generates autosmooth errors 
+      # and seems to create glitches in the first frame of a clip
+      "bevel_harden_normals": False, 
+    },
+    "height": {
+      "default": 20.0,
+    },
+    "radius": {
+      "default": 4.0
+    },
     "rotation": {
       "random": True,
-      "default": 0,
-      "minimum": 0,
+      "default": 0.0,
+      "minimum": 0.0,
       "maximum": TWO_PI,
       "distribution" : "UNIFORM",
       "delta": .1,
@@ -45,13 +60,13 @@ class SkopeCone:
     # top and bottom of the skope, 1 = TWO_PI*radius/numsides
     "wiggle": {
       "random": True,
-      "default": 0,
-      "minimum": 0,
-      "maximum": 1,
+      "default": 0.0,
+      "minimum": 0.0, 
+      "maximum": 1.0, # set by code if within_beams ..
       "distribution" : "UNIFORM",
       "within_beams" : True,
-      "rel_minimum": 0,
-      "rel_maximum": 1/5,
+      "rel_minimum": 0.0,
+      "rel_maximum": .2,
       "delta": .1,
       "easing": "EASEINOUT",
       # if slant, wiggle vertices at the top
@@ -61,11 +76,6 @@ class SkopeCone:
     # if random>chance, create
     # a random bevel on all edges
     "bevel" : {
-      "fixed_affect" : 'EDGES',
-      "fixed_offset_type" : 'OFFSET',
-      "fixed_limit_method": 'WEIGHT', # 'NONE',
-      "fixed_width": 4, # 1
-      "fixed_segments": 16,
       "random": True,
       "default": False,
       "chance": .5,
@@ -74,18 +84,15 @@ class SkopeCone:
       #"maximum": 1,
       #"distribution" : "UNIFORM",
       #"delta": .1,
-      "easing": "EASEINOUT",
-      # fixed_harden_normals True also works but generates autosmooth errors 
-      # and seems to create glitches in the first frame of a clip
-      "fixed_harden_normals": False, 
+      "easing": "EASEINOUT", #?
     },
     # if bevel, randomize bevel weight
     # of every beam
     "bevel_weight" : {
       "random": True,
       "default": 0.5,
-      "minimum": 0,
-      "maximum": 1,
+      "minimum": 0.0,
+      "maximum": 1.0,
       "distribution" : "UNIFORM",
       "delta": .1,
       "easing": "EASEINOUT",
@@ -103,9 +110,9 @@ class SkopeCone:
     # removed in blender4
     "autosmooth" : {
       "random": True,
-      "default": 30,
-      "minimum": 0,
-      "maximum": 60, # 180
+      "default": 30.0,
+      "minimum": 0.0,
+      "maximum": 60.0, # 180
       "distribution" : "GAUSSIAN",
       "delta": .1,
       "easing": "EASEINOUT"
@@ -114,79 +121,39 @@ class SkopeCone:
   
 
   def __init__(self,scene=None):
-    
-    self.reset()
+
     if scene:
-      cone = scene.objects.get("cone")
-      if cone:
-        raise Exception("Sorry, only one SkopeCone per scene")
-      else:
-        self.create(scene)
+        self.createObjects(scene)
+        self.applyFixedSettings()
+        self.reset()
+        self.apply(scene)
     else:
        self.bmesh = None
        self.beams = []
+       self.reset()
 
-    if scene:
-      self.apply(scene)
-    
-  def reset(self):
-    print("SkopeCone reset")
-    
-    # smooth 
-    self.smooth = self.settings.get('smooth')
-    
-    # numsides  
-    self.numsides = self.settings.get('numsides')
-    
-    # radius, height rotation
-    self.radius = self.settings.get('radius')
-    self.height = self.settings.get('height')
-    self.rotation = self.settings.get('rotation')
-    
-    # autosmooth
-    if self.smooth:
-      self.autosmooth = self.settings.get('autosmooth')
-    else:
-      self.autosmooth = 0.0
-    
-    # beams, bmesh
-    self.beams = []
-    self.bmesh = None
 
-    # bevel
-    self.enable_bevel = self.settings.bevel['random'] or self.settings.get('bevel') 
     
-  def create(self,scene):
-    print("SkopeCone create")
+  def createObjects(self,scene):
+    print("SkopeCone createObjects")
+
+    cone = scene.objects.get("cone")
+    if cone:
+      raise Exception("Sorry, only one SkopeCone per scene")
 
     # create a object
     mesh = bpy.data.meshes.new("SkopeConeMesh")    
     object = bpy.data.objects.new("cone",mesh)
 
-    # insert bmesh into object
-    self.beams = self.createBeams(self.numsides)
-    self.bmesh = self.createBMesh(self.beams,self.smooth)
-    self.bmesh.to_mesh(mesh)
-    mesh.update()
-    #self.bmesh.free()
-
-    # set mirror shading
-    material = bpy.data.materials.get('MirrorMaterial')
-
-    if material is None:
-        material = bpy.data.materials.new(name='MirrorMaterial')
-
+    # create a material
+    material = bpy.data.materials.new(name='MirrorMaterial')
+    material.name = "MirrorMaterial"
     material.use_nodes = True
-
+    # clean it up
     if material.node_tree:
         material.node_tree.links.clear()
         material.node_tree.nodes.clear()
 
-    material.roughness = self.settings.get('roughness')
-    material.metallic = self.settings.get('metallic')
-    material.diffuse_color=self.settings.get('diffuse_color')
-
-    #nodes = material.node_tree.nodes
     output = material.node_tree.nodes.new(type='ShaderNodeOutputMaterial')
 
     bdsf = material.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
@@ -207,20 +174,9 @@ class SkopeCone:
 
     # links the nodes in the material
     material.node_tree.links.new(bdsf.outputs[0], output.inputs[0])
+    
     # link the material to the object
     object.data.materials.append(material)
-
-    # add a bevel mod to the object
-    if self.enable_bevel:
-      bevel = object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
-      bevel.affect=self.settings.bevel['fixed_affect']
-      bevel.offset_type=self.settings.bevel['fixed_offset_type']
-      bevel.limit_method=self.settings.bevel['fixed_limit_method']
-      bevel.width = self.settings.bevel['fixed_width']
-      bevel.segments = self.settings.bevel['fixed_segments']
-      bevel.harden_normals = self.settings.bevel['fixed_harden_normals']
-    #else:
-    #  bevel = None
 
     # link the object to the scene
     scene.collection.objects.link(object)
@@ -265,6 +221,66 @@ class SkopeCone:
         face.smooth = self.smooth
     return new_bmesh
 
+  def applyFixedSettings(self):
+    print("SkopeCone applyFixedSettings")
+
+    # update material
+    material = bpy.data.materials.get('MirrorMaterial')
+    if not material:
+      raise Exception("MirrorMaterial can not be applied")
+    
+    # not sure if these show up, perhaps you have to
+    # get into the material.node_tree...ShaderNodeBsdfPrincipled
+    material.roughness = self.settings.fixed['roughness']
+    material.metallic = self.settings.fixed['metallic']
+    material.diffuse_color=self.settings.fixed['diffuse_color']
+    
+    # add or remove a bevel mod to the object
+    object = bpy.data.objects["cone"]
+    if not object:
+      raise Exception("Bevel can not be applied")
+    if self.settings.fixed['enable_bevel']:
+      bevel = object.modifiers.get("SkopeConeBevel")
+      if not bevel:
+        print("Adding bevel modifier")
+        bevel = object.modifiers.new(name="SkopeConeBevel", type='BEVEL')
+      bevel.affect=self.settings.fixed['bevel_affect']
+      bevel.offset_type=self.settings.fixed['bevel_offset_type']
+      bevel.limit_method=self.settings.fixed['bevel_limit_method']
+      bevel.width = self.settings.fixed['bevel_width']
+      bevel.segments = self.settings.fixed['bevel_segments']
+      bevel.harden_normals = self.settings.fixed['bevel_harden_normals']
+    else:
+      bevel = object.modifiers.get("SkopeConeBevel")
+      if bevel:
+        print("Removing bevel modifier")
+        object.modifiers.remove(bevel)
+
+
+  def reset(self):
+    print("SkopeCone reset")
+    
+    # smooth 
+    self.smooth = self.settings.get('smooth')
+    
+    # numsides  
+    self.numsides = self.settings.get('numsides')
+    
+    # radius, height rotation
+    self.radius = self.settings.get('radius')
+    self.height = self.settings.get('height')
+    self.rotation = self.settings.get('rotation')
+    
+    # autosmooth
+    if self.smooth:
+      self.autosmooth = self.settings.get('autosmooth')
+    else:
+      self.autosmooth = 0.0
+    
+    # beams and mesh
+    self.beams = self.createBeams(self.numsides)
+    self.bmesh = self.createBMesh(self.beams,self.smooth)
+  
   def random(self):
     global TWO_PI
     print("SkopeCone random")
@@ -308,16 +324,12 @@ class SkopeCone:
     
     # bevel
     # set a random bevel on all beams
-    if self.enable_bevel:
+    if self.settings.fixed['enable_bevel']:
       for index in range(0,len(self.beams)):
-        #if self.settings.bevel['random']:
-        #  if self.settings.rndbool('bevel'):
         self.beams[index]['bevel'] = self.settings.rnd('bevel_weight') 
-        #elif self.settings.get('bevel'):
-        #  self.beams[index]['bevel'] = self.settings.rnd('bevel') # is this a float or bool ?
 
-    # warp
-    # warp some. this will make the number of 
+    # warp some
+    # this will make the number of 
     # sides on the bottom less than those 
     # at the top
     if self.settings.numsides['warp']:
@@ -394,7 +406,7 @@ class SkopeCone:
           self.beams[index]['top'][1] = self.beams[index]['bottom'][1]
 
     # bevel
-    if self.enable_bevel:
+    if self.settings.fixed['enable_bevel']:
       for index in range(0,len(self.beams)):
         if changing_numsides:
           # remove bevel on all beams; some of the 
@@ -536,7 +548,7 @@ class SkopeCone:
     else:
       mesh.use_auto_smooth=False
 
-    if self.enable_bevel:
+    if self.settings.fixed['enable_bevel']:
       bevelWeightLayer = self.bmesh.edges.layers.bevel_weight.verify()
       self.bmesh.faces.ensure_lookup_table()
       for index in range(0,len(self.beams)):

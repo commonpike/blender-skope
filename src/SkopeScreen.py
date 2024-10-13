@@ -12,34 +12,40 @@ TWO_PI=2*math.pi
 class SkopeScreen:
 
   settings = SkopeSettings({
+    "fixed": {
+      "roughness" : 0.0,
+      'width': 10.0,
+      'height': 10.0,
+      'dist':  0.0
+    },
     'sources': {
       'directory' : '',
-      'globs': ['*.JPG','*.PNG'],
+      'globs': '*.jpg,*.png',
       'random': True
     },
-    "roughness" : 0,
-    'width': 10.0,
-    'height': 10.0,
-    'dist':  0.0,
-    'location_x':0,
-    'location_y': 0,
-    'location_z': 0,
-    'rotation_x': 0,
-    'rotation_y': 0,
     'scale': {
       'random': True,
-      'default': 1,
+      'default': 1.0,
       'minimum':.5,
-      'maximum': 2,
+      'maximum': 2.0,
       "distribution" : "UNIFORM",
       "extend_radius": True,
       'delta': .1,
       "easing": "EASEINOUT"
     },
+    'location': {
+      'x' : 0.0,
+      'y' : 0.0,
+      'z' : 0.0
+    },
+    'rotation_xy': {
+      'x' : 0.0,
+      'y': 0.0
+    },
     'rotation_z': {
       'random': True,
-      'default': 0,
-      'minimum':0,
+      'default': 0.0,
+      'minimum':0.0,
       'maximum': TWO_PI,
       "distribution" : "UNIFORM",
       'delta': .1,
@@ -47,17 +53,17 @@ class SkopeScreen:
     },
     "images_location": {
       "random": True,
-      'default': 0,
-      'minimum': -5,
-      'maximum': 5,
+      'default': 0.0,
+      'minimum': -5.0,
+      'maximum': 5.0,
       "distribution" : "UNIFORM",
       'delta': .1,
       "easing": "EASEINOUT"
     },
     "images_rotation": {
       "random": True,
-      'default': 0,
-      'minimum': 0,
+      'default': 0.0,
+      'minimum': 0.0,
       'maximum': TWO_PI,
       "distribution" : "UNIFORM",
       'delta': .05,
@@ -65,7 +71,7 @@ class SkopeScreen:
     },
     "images_scale": {
       "random": True,
-      'default': 1,
+      'default': 1.0,
       'minimum': .5,
       'maximum': 1.5,
       "distribution" : "UNIFORM",
@@ -75,8 +81,8 @@ class SkopeScreen:
     'images_fade': {
       'random': True,
       'default': .5,
-      'minimum':0,
-      'maximum': 1,
+      'minimum':0.0,
+      'maximum': 1.0,
       "distribution" : "GAUSSIAN",
       'delta': .75,
       'fadeout_chance': .25,
@@ -88,81 +94,29 @@ class SkopeScreen:
   def __init__(self,scene=None,inputdir=None):
 
     print("Skopescreen",inputdir)
-    self.settings.sources['directory'] = inputdir
-    self.reset();
+    if inputdir:
+      self.settings.sources['directory'] = inputdir
 
     if scene:
-      screen = scene.objects.get("screen")
-      if screen:
-        raise Exception("Sorry, only one SkopeScreen per scene")
-      else:
-        self.create(scene)
+      self.createObjects(scene)
+      self.applyFixedSettings()
+      self.reset()
+      self.apply(scene)
     else:
       print("Skopescreen off-scene")
-      #self.object = None
-      #self.material = None
-      #self.fader = None
-      #self.sources = []
-      #self.mapping1 = None
-      #self.mapping2 = None
-        
-    if scene:
-      self.apply(scene)
-
-
-  def reset(self, reset_images=True):
-    print("Skopescreen reset", reset_images)
-
-    self.width = self.settings.get('width')
-    self.height = self.settings.get('height')
-    self.location = {
-      'x': self.settings.get('location_x'),
-      'y': self.settings.get('location_y'),
-      'z': self.settings.get('location_z')
-    }
-    self.rotation = {
-      'x': self.settings.get('rotation_x'),
-      'y': self.settings.get('rotation_x'),
-      'z': self.settings.get('rotation_z'),
-    }
-    self.scale = {
-      'x': self.settings.get('scale'),
-      'y': self.settings.get('scale'),
-    }
-    self.dist = self.settings.get('dist')
-    if reset_images:
-      print("reloading images",self.settings.sources['directory'])
       self.images = []
-      if self.settings.sources['directory']:
-        for pattern in self.settings.sources['globs']:
-          self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.upper()))
-          self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
-      
-      self.image1 = {
-          'src': '',
-          'x': 0,
-          'y': 0,
-          'rotation': 0,
-          'scale' : 1,
-          'fade': .5
-      }
-      if len(self.images):
-        self.image1['src'] =  self.images[0]
-        
-      self.image2 = {
-          'src': '',
-          'x': 0,
-          'y': 0,
-          'rotation': 0,
-          'scale' : 1,
-          'fade': .5
-      }
-      if len(self.images) > 1:
-        self.image2['src'] =  self.images[1]
+      self.reset()
 
-  def create(self,scene):
+  def createObjects(self,scene):
     print("SkopeScreen create")
 
+    screen = scene.objects.get("screen")
+    if screen:
+      raise Exception("Sorry, only one SkopeScreen per scene")
+      
+    self.width = self.settings.fixed['width']
+    self.height = self.settings.fixed['height']
+    self.dist = self.settings.fixed['dist']
     vert = [
         (-self.width/2, -self.height/2, self.dist), 
         (self.width/2, -self.height/2, self.dist), 
@@ -177,9 +131,13 @@ class SkopeScreen:
 
     material = bpy.data.materials.new(name = "ScreenMaterial")
     material.name = "ScreenMaterial"
-    material.roughness = self.settings.get('roughness')
     material.use_nodes = True
-    material.node_tree.nodes.clear()
+    # clean it up
+    # material.node_tree.nodes.clear()
+    if material.node_tree:
+        material.node_tree.links.clear()
+        material.node_tree.nodes.clear()
+    
     
     output = material.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
     output.name = 'Output'
@@ -199,13 +157,11 @@ class SkopeScreen:
     imgnode1.location.y = 400
     imgnode1.extension = 'MIRROR'
 
-    self.image1['src'] = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource1')
     source1 = bpy.data.images['ScreenSource1']
     source1.source = 'FILE'
-    source1.filepath = self.image1['src']
+    source1.filepath = '' # self.image1['src']
     imgnode1.image = source1
-    #self.sources.append(source1)
 
     coords1= material.node_tree.nodes.new(type="ShaderNodeTexCoord")
     coords1.name = "Coordinates1"
@@ -223,13 +179,11 @@ class SkopeScreen:
     imgnode2.location.y = 0
     imgnode2.extension = 'MIRROR'
     
-    self.image2['src'] = random.choice(self.images)
     bpy.ops.image.new(name='ScreenSource2')
     source2 = bpy.data.images['ScreenSource2']
     source2.source = 'FILE'
-    source2.filepath = self.image2['src']
+    source2.filepath = '' # self.image2['src']
     imgnode2.image = source2
-    #self.sources.append(source2)
     
     coords2= material.node_tree.nodes.new(type="ShaderNodeTexCoord")
     coords2.name = "Coordinates2"
@@ -273,18 +227,90 @@ class SkopeScreen:
     scene.collection.objects.link(object)
 
   
+  def applyFixedSettings(self):
+    print("SkopeScreen applyFixedSettings")
+    screen = bpy.data.objects["screen"]
+    if not screen:
+        raise Exception("screen can not be found")
+
+    self.width = self.settings.fixed['width']
+    self.height = self.settings.fixed['height']
+    self.dist = self.settings.fixed['dist']
+    vert = [
+        (-self.width/2, -self.height/2, self.dist), 
+        (self.width/2, -self.height/2, self.dist), 
+        (-self.width/2, self.height/2, self.dist), 
+        (self.width/2, self.height/2, self.dist)
+    ]
+    for idx, vertice in enumerate(screen.data.vertices):
+      vertice.co = vert[idx]
+
+    material = bpy.data.materials["ScreenMaterial"]
+    if not material:
+        raise Exception("material can not be found")
+    material.roughness = self.settings.fixed['roughness']
+
+    print("reloading images",self.settings.sources['directory'])
+    self.images = []
+    if self.settings.sources['directory']:
+      for pattern in self.settings.sources['globs'].split(','):
+        self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.upper()))
+        self.images.extend(glob.glob(self.settings.sources['directory']+'/'+pattern.lower()))
+    self.images.sort()
+
+  def reset(self):
+    print("Skopescreen reset")
+
+    self.location = {
+      'x': self.settings['location']['x'],
+      'y': self.settings['location']['y'],
+      'z': self.settings['location']['z'],
+    }
+    self.rotation = {
+      'x': self.settings['rotation_xy']['x'],
+      'y': self.settings['rotation_xy']['y'],
+      'z': self.settings.get('rotation_z'),
+    }
+    self.scale = {
+      'x': self.settings.get('scale'),
+      'y': self.settings.get('scale'),
+    }    
+    self.image1 = {
+        'src': '',
+        'x': self.settings.get('images_location'),
+        'y': self.settings.get('images_location'),
+        'rotation': self.settings.get('images_rotation'),
+        'scale' : self.settings.get('images_scale'),
+        'fade': self.settings.get('images_fade')
+    }
+    if len(self.images):
+      self.image1['src'] =  self.images[0]
+      
+    self.image2 = {
+        'src': '',
+        'x': self.settings.get('images_location'),
+        'y': self.settings.get('images_location'),
+        'rotation': self.settings.get('images_rotation'),
+        'scale' : self.settings.get('images_scale'),
+        'fade': self.settings.get('images_fade')
+    }
+    if len(self.images) > 1:
+      self.image2['src'] =  self.images[1]
+    else:
+      self.image2['src'] =  self.image1['src']
     
   def random(self,minsize = 0):
     global TWO_PI
     print("Skopescreen random")
     
-    self.reset(False)
+    self.reset()
     
     self.rotation['z'] = self.settings.rnd('rotation_z')
     
     if self.settings.scale['random']:
       if self.settings.scale['extend_radius']:
         if minsize != 0:
+          # unkeen: changing settings dynamically..
           self.settings.scale['minimum'] = minsize / self.width
       scale = self.settings.rnd('scale')
       self.scale['x'] = scale
