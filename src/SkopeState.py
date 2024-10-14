@@ -35,6 +35,18 @@ class SkopeState:
     #self.cone.reset()
     self.id = f'rset{self.cone.settings.get("numsides")}';
     
+  def getSettings(self):
+    return {
+      "screen" : self.screen.getSettings(),
+      "camera" : self.camera.getSettings(),
+      "cone" : self.cone.getSettings()
+    }
+  
+  def setSettings(self,settings):
+    self.screen.setSettings(settings['screen'])
+    self.camera.setSettings(settings['camera'])
+    self.cone.setSettings(settings['cone'])
+    
   def random(self):
     print("Skopestate random")
     self.cone.random()

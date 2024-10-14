@@ -90,6 +90,24 @@ class Skope:
 
     bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
 
+  def loadSettings(self,path):
+    print("Skope loadSettings", path)
+    with open(path, "r") as infile:
+      settings = json.load(infile)
+      self.settings = SkopeSettings(settings['skope'])
+      self.applyFixedSettings()
+      self.state.setSettings(settings['state'])
+        
+  def saveSettings(self,path):
+    print("Skope saveSettings", path)
+    settings = {
+      "skope": self.settings,
+      "state": self.state.getSettings()
+    }
+    with open(path, "w") as outfile:
+      outfile.write(json.dumps(settings,indent=4))
+    
+    
   def initUI(self):
 
     SkopePanelFactory.registerOperatorsPanel(self.type)

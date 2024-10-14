@@ -225,7 +225,6 @@ class SkopeScreen:
     )
     object.data.materials.append(material)
     scene.collection.objects.link(object)
-
   
   def applyFixedSettings(self):
     print("SkopeScreen applyFixedSettings")
@@ -432,28 +431,6 @@ class SkopeScreen:
         print('fade in dst.image2',pct,fadepct)
         self.image2['fade'] = mix(0.0,dst.image2['fade'],fadepct,self.settings.images_fade['easing'])
     
-  def toJSON(self):
-    return { 
-      k:v for (k,v) in vars(self).items() 
-      if not k in ['object','material','fader','sources','mapping1','mapping2'] 
-    }
-  
-  def fromJSON(self,data):
-    self.location['x'] = data["location"]["x"]
-    self.location['y'] = data["location"]["y"]
-    self.location['z'] = data["location"]["z"]
-    self.rotation['x'] = data["rotation"]["x"]
-    self.rotation['y'] = data["rotation"]["y"]
-    self.rotation['z'] = data["rotation"]["z"]
-    self.width = data['width']
-    self.height = data['height']
-    self.dist = data['dist']
-    self.scale['x'] = data["scale"]["x"]
-    self.scale['y'] = data["scale"]["y"]
-    self.images = data["images"]
-    self.image1 = data["image1"]
-    self.image2 = data["image2"]
-
   def apply(self,scene):
 
     print("Skopescreen apply")
@@ -515,3 +492,32 @@ class SkopeScreen:
         if self.image2['fade'] == 0.0:
             self.image2['src'] = random.choice(self.images)
             print("fadein2",self.image2['src'])
+
+  def getSettings(self):
+    return self.settings
+
+  def setSettings(self,settings):
+    self.settings = SkopeSettings(settings)
+    self.applyFixedSettings()
+
+  def toJSON(self):
+    return { 
+      k:v for (k,v) in vars(self).items() 
+      if not k in ['object','material','fader','sources','mapping1','mapping2'] 
+    }
+  
+  def fromJSON(self,data):
+    self.location['x'] = data["location"]["x"]
+    self.location['y'] = data["location"]["y"]
+    self.location['z'] = data["location"]["z"]
+    self.rotation['x'] = data["rotation"]["x"]
+    self.rotation['y'] = data["rotation"]["y"]
+    self.rotation['z'] = data["rotation"]["z"]
+    self.width = data['width']
+    self.height = data['height']
+    self.dist = data['dist']
+    self.scale['x'] = data["scale"]["x"]
+    self.scale['y'] = data["scale"]["y"]
+    self.images = data["images"]
+    self.image1 = data["image1"]
+    self.image2 = data["image2"]

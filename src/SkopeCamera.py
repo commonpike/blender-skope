@@ -167,6 +167,13 @@ class SkopeCamera:
     object.data.lens = self.lens
     object.data.sensor_width = self.sensor_width
 
+  def getSettings(self):
+    return self.settings
+
+  def setSettings(self,settings):
+    self.settings = SkopeSettings(settings)
+    self.applyFixedSettings()
+
   def toJSON(self):
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
   
