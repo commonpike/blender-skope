@@ -18,7 +18,7 @@ parser.add_argument('--scale', default='20')
 parser.add_argument('--format', default='PNG')
 parser.add_argument('--amount', default='10')
 parser.add_argument('--length', default='360')
-parser.add_argument('--project-dir', default=os.path.dirname(bpy.data.filepath)+'/../render/default')
+parser.add_argument('--project-dir', default='')
 parser.add_argument('--input-dir', default='')
 parser.add_argument('--output-dir', default='')
 parser.add_argument('--import-dir', default='')
@@ -27,12 +27,15 @@ parser.add_argument('--import-dir', default='')
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
 # guess more sensible defaults 
-if args.input_dir:
+if not args.project_dir:
+  if args.input_dir:
     args.project_dir = os.path.dirname(args.input_dir)
-elif args.output_dir:
+  elif args.output_dir:
     args.project_dir = os.path.dirname(args.output_dir)
-elif args.import_dir:
+  elif args.import_dir:
     args.project_dir = os.path.dirname(args.import_dir)
+  else:
+    args.project_dir = os.path.dirname(bpy.data.filepath)+'/../render/default'
     
 if not os.path.isdir(args.project_dir):
   bpy.ops.wm.quit_blender()
@@ -45,23 +48,7 @@ if not args.output_dir:
 if not args.import_dir:
   args.import_dir = args.project_dir+'/import'
 
-# check if dirs exist
-
-if not os.path.isdir(args.input_dir):
-  bpy.ops.wm.quit_blender()
-  raise Exception("--input-dir "+args.input_dir+" does not exist")
-if not os.path.exists(args.output_dir):
-  os.makedirs(args.output_dir)
-elif not os.path.isdir(args.output_dir):
-  bpy.ops.wm.quit_blender()
-  raise Exception("--output-dir "+args.output_dir+" is not a directory")
-if not os.path.exists(args.output_dir):
-  os.makedirs(args.output_dir)
-elif not os.path.isdir(args.import_dir):
-  bpy.ops.wm.quit_blender()
-  raise Exception("--import-dir "+args.import_dir+" is not a directory")
-
-skope = Skope.Skope(args.input_dir)
+skope = Skope.Skope(args.project_dir)
 # skope.__init__ does this 
 # bpy.types.Scene.skope = skope
 
@@ -70,13 +57,14 @@ def main():
   print("skope-init",args)
   skope.settings.fixed['output_dir'] = args.output_dir
   skope.settings.fixed['import_dir'] = args.import_dir
+  skope.state.screen.settings.sources['directory'] = args.input_dir
   skope.settings.fixed['image_format'] = args.format
   skope.settings.fixed['length'] = int(args.length)
   skope.settings.fixed['width'] = int(args.width)
   skope.settings.fixed['height'] = int(args.height)
   skope.settings.fixed['scale'] = int(args.scale)
   skope.type = args.type
-  skope.applyFixedSettings()
+  skope.reset(True)
 
   if args.command == "ui":
     

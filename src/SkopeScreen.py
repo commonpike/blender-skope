@@ -91,12 +91,10 @@ class SkopeScreen:
 
   })
 
-  def __init__(self,scene=None,inputdir=None):
+  def __init__(self,scene=None):
 
-    print("Skopescreen",inputdir)
-    if inputdir:
-      self.settings.sources['directory'] = inputdir
-
+    print("Skopescreen")
+    
     if scene:
       self.createObjects(scene)
       self.applyFixedSettings()
