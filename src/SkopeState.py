@@ -12,11 +12,11 @@ class SkopeState:
   #frame_num=0
   # num_frames=360
 
-  def __init__(self,scene=None,inputdir=None):
+  def __init__(self,scene=None):
     self.id = 'init';
     self.delta = 0
     self.camera = SkopeCamera(scene)
-    self.screen = SkopeScreen(scene,inputdir)
+    self.screen = SkopeScreen(scene)
     self.cone = SkopeCone(scene)
     #SkopeState.frame_num = bpy.context.scene.frame_current
 

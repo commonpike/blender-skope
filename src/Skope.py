@@ -18,6 +18,7 @@ class Skope:
     'fixed': {
       'output_dir': '',
       'import_dir': '',
+      'length': 360,
       'width': 1920,
       'height': 1920,
       'scale': 20,
@@ -34,9 +35,9 @@ class Skope:
     }
   })
 
-  def __init__(self, input_dir):
+  def __init__(self, project_dir):
   
-    print("Kaleidoscope init",input_dir)
+    print("Kaleidoscope init",project_dir)
     
     self.type = 'none' #stills | clips | loops
 
@@ -48,11 +49,14 @@ class Skope:
     
     # create current state
     scene = bpy.context.scene
-    self.state = SkopeState(scene,input_dir)
+    self.state = SkopeState(scene)
 
     # create optional clip
     self.clip = None
 
+    # set correct dirs 
+    self.setProjectDir(project_dir)
+  
   def reset(self,applyFixedSettings=False):
     print("Skope reset")
     scene = bpy.context.scene
@@ -62,8 +66,7 @@ class Skope:
       self.clip.reset(applyFixedSettings)
     self.state.reset(applyFixedSettings)
     self.state.apply(scene)
-    
-
+  
   def applyFixedSettings(self):
     scene = bpy.context.scene
     scene.frame_end = self.settings.fixed['length'] # +-1 ?
@@ -89,6 +92,48 @@ class Skope:
       scene.render.use_motion_blur = False
 
     bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
+
+    
+  def setProjectDir(self,project_dir,reset=False):
+    print("setProjectDir "+project_dir)
+
+    if not os.path.exists(project_dir) or not os.path.isdir(project_dir):
+      raise Exception("--project-dir "+project_dir+" is not a directory")
+    
+    input_dir = project_dir+'/input'
+    output_dir = project_dir+'/output'
+    import_dir = project_dir+'/import'
+  
+    if not os.path.isdir(input_dir):
+      # if project_dir contains images, create input_dir
+      # and move all images to the input_dir
+      images = []
+      for pattern in ['*.jpg','*.jpeg','*.png']:
+        images.extend(glob.glob(project_dir+'/'+pattern.upper()))
+        images.extend(glob.glob(project_dir+'/'+pattern.lower()))
+      if not len(images):
+        raise Exception(input_dir+" does not exist and "+output_dir+" contains no images")
+      print("Creating "+input_dir+" and moving images from "+output_dir+" there..")
+      os.makedirs(input_dir)
+      for image in images:
+          newimage = input_dir+"/"+os.path.basename(image)
+          os.rename(image, newimage)
+
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    elif not os.path.isdir(output_dir):
+      raise Exception("--output-dir "+output_dir+" is not a directory")
+    if not os.path.exists(import_dir):
+      os.makedirs(import_dir)
+    elif not os.path.isdir(import_dir):
+      raise Exception("--import-dir "+import_dir+" is not a directory")
+
+    self.project_dir = project_dir
+    self.settings.fixed['import_dir'] = import_dir
+    self.settings.fixed['output_dir'] = output_dir
+    self.state.screen.settings.sources['directory'] = input_dir
+    if reset:
+      self.reset(True)
 
   def loadSettings(self,path):
     print("Skope loadSettings", path)

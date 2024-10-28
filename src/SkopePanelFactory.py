@@ -45,6 +45,16 @@ class SkopePanelFactory():
                 bpy.utils.register_class(panel)
 
     def registerOperatorsPanel(type):
+
+        setattr(bpy.types.Scene,'skope_project_dir',
+            bpy.props.StringProperty(
+                name = "Project dir",
+                description = "Directory containing input, output and import dirs; updating will reset and apply various settings",
+                subtype="DIR_PATH",
+                get = lambda _: bpy.context.scene.skope.project_dir,
+                set = lambda _, dir: bpy.context.scene.skope.setProjectDir(dir, True),
+            ) 
+        )
         if type == 'stills':
             bpy.utils.register_class(SkopeSaveOperator)
             bpy.utils.register_class(SkopeLoadOperator)
@@ -230,6 +240,9 @@ class VIEW3D_PT_skope_stillops(bpy.types.Panel):
     def draw(self, context):
         
         row = self.layout.row()
+        row.prop(context.scene, 'skope_project_dir')
+
+        row = self.layout.row()
         split = row.split()
         col = split.column()
         col.operator(SkopeResetOperator.bl_idname)
@@ -272,6 +285,9 @@ class VIEW3D_PT_skope_clipops(bpy.types.Panel):
     
     def draw(self, context):
         
+        row = self.layout.row()
+        row.prop(context.scene, 'skope_project_dir')
+
         row = self.layout.row()
         split = row.split()
         col = split.column()
@@ -324,6 +340,8 @@ class SkopeLoadOperator(bpy.types.Operator):
         return {'FINISHED'}
     
     def invoke(self, context, event):
+        if not self.filepath:
+            self.filepath = context.scene.skope.project_dir+"/settings.json"
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
      
@@ -331,7 +349,7 @@ class SkopeSaveOperator(bpy.types.Operator):
     bl_idname = "scene.skope_save_operator"
     bl_label = "Save"
     bl_description = "Save settings"
-
+    
     filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
 
     def execute(self, context):
@@ -339,9 +357,11 @@ class SkopeSaveOperator(bpy.types.Operator):
         return {'FINISHED'}
     
     def invoke(self, context, event):
+        if not self.filepath:
+            self.filepath = context.scene.skope.project_dir+"/settings.json"
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
-
+     
 # stills operators 
 
 class SkopeResetOperator(bpy.types.Operator):
