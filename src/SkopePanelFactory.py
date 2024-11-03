@@ -62,8 +62,8 @@ class SkopePanelFactory():
             bpy.utils.register_class(SkopeApplyOperator)
             bpy.utils.register_class(SkopeRandomOperator)
             bpy.utils.register_class(SkopeDeltaOperator)
-            bpy.utils.register_class(SkopeExportStillOperator)
-            bpy.utils.register_class(SkopeExportStillsOperator)
+            bpy.utils.register_class(SkopeRenderStillOperator)
+            bpy.utils.register_class(SkopeRenderStillsOperator)
             bpy.utils.register_class(VIEW3D_PT_skope_stillops)
         if type == 'clips':
             bpy.utils.register_class(SkopeSaveOperator)
@@ -74,8 +74,8 @@ class SkopePanelFactory():
             bpy.utils.register_class(SkopeApplyClipOperator)
             bpy.utils.register_class(SkopeRandomClipOperator)
             bpy.utils.register_class(SkopeDeltaClipOperator)
-            bpy.utils.register_class(SkopeExportClipOperator)
-            bpy.utils.register_class(SkopeExportClipsOperator)
+            bpy.utils.register_class(SkopeRenderClipOperator)
+            bpy.utils.register_class(SkopeRenderClipsOperator)
             bpy.utils.register_class(VIEW3D_PT_skope_clipops)
 
 
@@ -259,9 +259,9 @@ class VIEW3D_PT_skope_stillops(bpy.types.Panel):
         row = self.layout.row()
         split = row.split()
         col = split.column()
-        col.operator(SkopeExportStillOperator.bl_idname)
+        col.operator(SkopeRenderStillOperator.bl_idname)
         col = split.column()
-        col.operator(SkopeExportStillsOperator.bl_idname)
+        col.operator(SkopeRenderStillsOperator.bl_idname)
 
         row = self.layout.row()
         split = row.split()
@@ -312,9 +312,9 @@ class VIEW3D_PT_skope_clipops(bpy.types.Panel):
         row = self.layout.row()
         split = row.split()
         col = split.column()
-        col.operator(SkopeExportClipOperator.bl_idname)
+        col.operator(SkopeRenderClipOperator.bl_idname)
         col = split.column()
-        col.operator(SkopeExportClipsOperator.bl_idname)
+        col.operator(SkopeRenderClipsOperator.bl_idname)
 
         row = self.layout.row()
         split = row.split()
@@ -406,21 +406,40 @@ class SkopeDeltaOperator(bpy.types.Operator):
         skope.state.apply(scene)
         return {'FINISHED'}
     
-class SkopeExportStillOperator(bpy.types.Operator):
+class SkopeRenderStillOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_still_operator"
-    bl_label = "Export"
-    bl_description = "Export still - unimplemented"
+    bl_label = "Render"
+    bl_description = "Render still"
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
+
     def execute(self, context):
-        print("Export still not implemented")
-        return {'CANCELLED'}
+        scene = context.scene
+        skope = scene.skope
+        skope.render_still(scene,self.filepath)
+        return {'FINISHED'}
     
-class SkopeExportStillsOperator(bpy.types.Operator):
+    def invoke(self, context, event):
+        self.filepath = (
+            context.scene.skope.project_dir+
+            "/output/"+context.scene.skope.state.id+
+            "."+context.scene.skope.settings.fixed['image_format'].lower())
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+    
+class SkopeRenderStillsOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_stills_operator"
-    bl_label = "Export N"
-    bl_description = "Export stills - unimplemented"
+    bl_label = "Render N"
+    bl_description = "Render multiple random stills in the projects output dir"
+    amount: bpy.props.IntProperty(name="Amount",default=5) # type: ignore
+    
     def execute(self, context):
-        print("Export stills not implemented")
-        return {'CANCELLED'}
+        scene = context.scene
+        skope = scene.skope
+        skope.render_stills(self.amount)
+        return {'FINISHED'}
+    
+    def invoke(self,context,event):
+        return context.window_manager.invoke_props_dialog(self)
     
     
 # clips operators
@@ -491,19 +510,19 @@ class SkopeDeltaClipOperator(bpy.types.Operator):
             return {'FINISHED'}
         return {'CANCELLED'}
     
-class SkopeExportClipOperator(bpy.types.Operator):
+class SkopeRenderClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_clip_operator"
-    bl_label = "Export"
-    bl_description = "Export clip - unimplemented"
+    bl_label = "Render"
+    bl_description = "Render clip - unimplemented"
     def execute(self, context):
-        print("Export clip not implemented")
+        print("Render clip not implemented")
         return {'CANCELLED'}
     
-class SkopeExportClipsOperator(bpy.types.Operator):
+class SkopeRenderClipsOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_clips_operator"
-    bl_label = "Export N"
-    bl_description = "Export clips - unimplemented"
+    bl_label = "Render N"
+    bl_description = "Render clips - unimplemented"
     def execute(self, context):
-        print("Export clips not implemented")
+        print("Render clips not implemented")
         return {'CANCELLED'}
        

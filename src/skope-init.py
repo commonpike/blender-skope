@@ -78,11 +78,13 @@ def main():
       # call apply_random_state on every frame
       bpy.app.handlers.frame_change_pre.clear()
       bpy.app.handlers.frame_change_pre.append(skope.apply_random_state)
-      # but not if you render one frame
-      bpy.app.handlers.render_pre.clear()
-      bpy.app.handlers.render_pre.append(skope.freeze)
-      bpy.app.handlers.render_post.clear()
-      bpy.app.handlers.render_post.append(skope.unfreeze)
+      # bpy.ops.render.render calls a frame change :-/
+      # using freeze to prevent random state before/after rendering
+      # this is now called in skope.render_still
+      #bpy.app.handlers.render_pre.clear()
+      #bpy.app.handlers.render_pre.append(skope.freeze)
+      #bpy.app.handlers.render_post.clear()
+      #bpy.app.handlers.render_post.append(skope.unfreeze)
     elif args.type == "clips":
       # create a random clip and step it every frame
       skope.create_clip(int(args.length))
