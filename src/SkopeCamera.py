@@ -1,8 +1,11 @@
 import bpy
 
-
+import math
 from easings import mix
 from SkopeSettings import SkopeSettings
+
+PI=math.pi
+TWO_PI=2*math.pi
 
 class SkopeCamera:
 
@@ -10,10 +13,34 @@ class SkopeCamera:
     "fixed": {
       "type": "PERSP",
       "clip_start": .1,
-      "clip_end": 100.0,
-      "rotation_x": 0.0,
-      "rotation_y": 0.0,
-      "rotation_z": 0.0,
+      "clip_end": 100.0
+    },
+    "rotation_x": {
+      "default": 0.0,
+      "random": True,
+      "minimum": -TWO_PI/24,
+      "maximum": TWO_PI/24,
+      "distribution" : "UNIFORM",
+      "delta": TWO_PI/72,
+      "easing": "EASEINOUT"
+    },
+    "rotation_y": {
+      "default": 0.0,
+      "random": True,
+      "minimum": -TWO_PI/24,
+      "maximum": TWO_PI/24,
+      "distribution" : "UNIFORM",
+      "delta": TWO_PI/72,
+      "easing": "EASEINOUT"
+    },
+    "rotation_z": {
+      "default": 0.0,
+      "random": True,
+      "minimum": -TWO_PI/24,
+      "maximum": TWO_PI/24,
+      "distribution" : "UNIFORM",
+      "delta": TWO_PI/72,
+      "easing": "EASEINOUT"
     },
     "location_x": {
       "default": 0.0,
@@ -100,12 +127,14 @@ class SkopeCamera:
     object.data.type = self.settings.fixed['type']
     object.data.clip_start = self.settings.fixed['clip_start']
     object.data.clip_end = self.settings.fixed['clip_end']
-    object.rotation_euler[0] = self.settings.fixed['rotation_x']
-    object.rotation_euler[1] = self.settings.fixed['rotation_y']
-    object.rotation_euler[2] = self.settings.fixed['rotation_z']
 
   def reset(self):
     print("SkopeCamera Reset")
+    self.rotation = {
+      'x': self.settings.get('rotation_x'),
+      'y': self.settings.get('rotation_y'),
+      'z': self.settings.get('rotation_z')
+    }
     self.location = {
       'x': self.settings.get('location_x'),
       'y': self.settings.get('location_y'),
@@ -119,6 +148,9 @@ class SkopeCamera:
   def random(self, radius = 10):
     print("SkopeCamera random")
     self.reset()
+    self.rotation['x'] = self.settings.rnd('rotation_x')  
+    self.rotation['y'] = self.settings.rnd('rotation_y')  
+    self.rotation['z'] = self.settings.rnd('rotation_y')
     if self.settings.location_x['within_radius']:
         self.settings.location_x['maximum'] = radius/2
         self.settings.location_x['minimum'] = -radius/2
@@ -135,6 +167,9 @@ class SkopeCamera:
 
   def rnd_delta(self):
     print("SkopeCamera rnd_delta")
+    self.rotation['x'] = self.settings.rnd_delta('rotation_x',self.rotation['x'])  
+    self.rotation['y'] = self.settings.rnd_delta('rotation_y',self.rotation['y']) 
+    self.rotation['z'] = self.settings.rnd_delta('rotation_z',self.rotation['z']) 
     self.location['x'] = self.settings.rnd_delta('location_x',self.location['x'])  
     self.location['y'] = self.settings.rnd_delta('location_y',self.location['y']) 
     self.location['z'] = self.settings.rnd_delta('location_z',self.location['z']) 
@@ -145,6 +180,9 @@ class SkopeCamera:
 
   def mix(self, src, dst, pct = 0):
     print("SkopeCamera mix")
+    self.rotation['x'] = mix(src.rotation['x'],dst.rotation['x'],pct,self.settings.rotation_x['easing'])
+    self.rotation['y'] = mix(src.rotation['y'],dst.rotation['y'],pct,self.settings.rotation_y['easing'])
+    self.rotation['z'] = mix(src.rotation['z'],dst.rotation['z'],pct,self.settings.rotation_z['easing'])
     self.location['x'] = mix(src.location['x'],dst.location['x'],pct,self.settings.location_x['easing'])
     self.location['y'] = mix(src.location['y'],dst.location['y'],pct,self.settings.location_y['easing'])
     self.location['z'] = mix(src.location['z'],dst.location['z'],pct,self.settings.location_z['easing'])
@@ -158,7 +196,9 @@ class SkopeCamera:
     object = bpy.data.objects["camera"]
     if not object:
         raise Exception("SkopeCamera can not be applied")
-    
+    object.rotation_euler[0] = self.rotation['x']
+    object.rotation_euler[1] = self.rotation['y']
+    object.rotation_euler[2] = self.rotation['z']
     object.location.x = self.location['x']
     object.location.y = self.location['y']
     object.location.z = self.location['z']
@@ -178,6 +218,9 @@ class SkopeCamera:
     return { k:v for (k,v) in vars(self).items() if not k == 'object' }
   
   def fromJSON(self,data):
+    self.rotation['x'] = data["rotation"]["x"]
+    self.rotation['y'] = data["rotation"]["y"]
+    self.rotation['z'] = data["rotation"]["z"]
     self.location['x'] = data["location"]["x"]
     self.location['y'] = data["location"]["y"]
     self.location['z'] = data["location"]["z"]

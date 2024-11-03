@@ -152,7 +152,7 @@ class SkopePropertyGroup(bpy.types.PropertyGroup):
             elif (key.startswith('rotation') 
                   or key.endswith('rotation')
                 ) and (propname in [
-                    'default','minimum','maximum','x','y','z'
+                    'default','minimum','maximum','x','y','z','delta'
                 ]):
                 cls.__annotations__[propid] = bpy.props.FloatProperty(
                     subtype="ANGLE", **config
