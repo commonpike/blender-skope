@@ -415,7 +415,9 @@ class SkopeRenderStillOperator(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
+        self.report({'INFO'},"Rendering still ..")
         skope.render_still(scene,self.filepath)
+        self.report({'INFO'},"Rendered still.")
         return {'FINISHED'}
     
     def invoke(self, context, event):
@@ -430,15 +432,21 @@ class SkopeRenderStillsOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_stills_operator"
     bl_label = "Render N"
     bl_description = "Render multiple random stills in the projects output dir"
-    amount: bpy.props.IntProperty(name="Amount",default=5) # type: ignore
+    amount: bpy.props.IntProperty(name="Amount") # type: ignore
     
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
+        self.report({'INFO'},"Rendering "+str(self.amount)+" stills ..")
         skope.render_stills(self.amount)
+        self.report({'INFO'},"Rendered stills.")
         return {'FINISHED'}
     
     def invoke(self,context,event):
+        scene = context.scene
+        skope = scene.skope
+        if not self.amount:
+            self.amount = skope.settings.fixed['amount']
         return context.window_manager.invoke_props_dialog(self)
     
     
@@ -479,10 +487,8 @@ class SkopeApplyClipOperator(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
-        if hasattr(skope,'clip'):
-            skope.clip.reset(True)
-            return {'FINISHED'}
-        return {'CANCELLED'}
+        skope.reset(True)
+        return {'FINISHED'}
     
 class SkopeRandomClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_clip_operator"
@@ -513,16 +519,49 @@ class SkopeDeltaClipOperator(bpy.types.Operator):
 class SkopeRenderClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_clip_operator"
     bl_label = "Render"
-    bl_description = "Render clip - unimplemented"
+    bl_description = "Render clip"
+    #def execute(self, context):
+    #    print("Render clip not implemented")
+    #    return {'CANCELLED'}
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
+
     def execute(self, context):
-        print("Render clip not implemented")
-        return {'CANCELLED'}
+        scene = context.scene
+        skope = scene.skope
+        self.report({'INFO'},"Rendering clip ..")
+        skope.render_clip(scene,self.filepath)
+        self.report({'INFO'},"Rendered clip.")
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        self.filepath = (
+            context.scene.skope.project_dir+
+            "/output/"+context.scene.skope.clip.id+
+            ".mp4"
+        )
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
     
 class SkopeRenderClipsOperator(bpy.types.Operator):
     bl_idname = "scene.skope_export_clips_operator"
     bl_label = "Render N"
-    bl_description = "Render clips - unimplemented"
+    bl_description = "Render multiple consecutive random clips in the projects output dir"
+    length: bpy.props.IntProperty(name="Length") # type: ignore
+    amount: bpy.props.IntProperty(name="Amount") # type: ignore
+    
     def execute(self, context):
-        print("Render clips not implemented")
-        return {'CANCELLED'}
-       
+        scene = context.scene
+        skope = scene.skope
+        self.report({'INFO'},"Rendering "+str(self.amount)+" clips ..")
+        skope.render_clips(self.length,self.amount)
+        self.report({'INFO'},"Rendered clips.")
+        return {'FINISHED'}
+    
+    def invoke(self,context,event):
+        scene = context.scene
+        skope = scene.skope
+        if not self.length:
+            self.length = skope.settings.fixed['length']
+        if not self.amount:
+            self.amount = skope.settings.fixed['amount']
+        return context.window_manager.invoke_props_dialog(self)

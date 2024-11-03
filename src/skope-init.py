@@ -60,6 +60,7 @@ def main():
   skope.state.screen.settings.sources['directory'] = args.input_dir
   skope.settings.fixed['image_format'] = args.format
   skope.settings.fixed['length'] = int(args.length)
+  skope.settings.fixed['amount'] = int(args.amount)
   skope.settings.fixed['width'] = int(args.width)
   skope.settings.fixed['height'] = int(args.height)
   skope.settings.fixed['scale'] = int(args.scale)

@@ -19,6 +19,7 @@ class Skope:
       'output_dir': '',
       'import_dir': '',
       'length': 360,
+      'amount': 10,
       'width': 1920,
       'height': 1920,
       'scale': 20,
@@ -213,8 +214,8 @@ class Skope:
     scene.render.filepath = filepath
     print("Rendering",scene.render.filepath)
     self.frozen = True
-    bpy.ops.render.render(write_still=True) # render still
     self.state.writeJSON(scene.render.filepath +'.json')
+    bpy.ops.render.render(write_still=True) # render still
     self.frozen = False
 
   def render_clips(self,length,amount=1):
@@ -247,12 +248,19 @@ class Skope:
     scene.render.image_settings.file_format = oif
     print("Rendering done.")
 
-  def render_clip(self,scene): 
-    filename = self.clip.id;
-    self.clip.writeJSON(self.settings.fixed['output_dir']+ '/' + filename +'.json')
-    scene.render.filepath = self.settings.fixed['output_dir']+ '/' + filename + '-'
+  def render_clip(self,scene,filepath=None): 
+    if not filepath:
+      filepath = self.settings.fixed['output_dir']+ '/' + self.clip.id
+    else:
+      filepath = os.path.splitext(filepath)[0]
+    #scene.render.filepath = filepath
+    #filename = self.clip.id;
+    scene.render.filepath = filepath + '-'
     print("Rendering",scene.render.filepath)
+    self.frozen = True
+    self.clip.writeJSON(filepath +'.json')
     bpy.ops.render.render(animation=True) # render animation
+    self.frozen = False
   
   def render_loops(self,length,amount=2.0):
     # a loop is a collection of clips, where the endstate
