@@ -15,13 +15,13 @@ class SkopeClip:
     self.length = length
     self.current = 0
 
-  def reset(self,applyFixedSettings=False):
-    self.src.reset(applyFixedSettings)
+  def reset(self):
+    self.src.reset() # should read settings from state
     self.dst = self.src.clone()
     self.id = self.src.id+'-'+self.dst.id
-
+    
   def random(self):
-    self.src.random()
+    self.src.random() # should read settings from state
     self.dst = self.src.clone()
     self.dst.rnd_delta()
     self.id = self.src.id+'-'+self.dst.id
@@ -56,7 +56,7 @@ class SkopeClip:
     print("SkopeClip next_delta")
     self.dst.screen.swapOneInvisibleImage()
     self.src = self.dst.clone()
-    self.dst.rnd_delta()
+    self.dst.rnd_delta() # should read settings from state
     self.id = self.src.id+'-'+self.dst.id
 
   def apply(self,scene):

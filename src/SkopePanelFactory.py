@@ -375,11 +375,11 @@ class SkopeResetOperator(bpy.types.Operator):
 class SkopeApplyOperator(bpy.types.Operator):
     bl_idname = "scene.skope_apply_operator"
     bl_label = "Apply"
-    bl_description = "Apply fixed settings and reset skope"
+    bl_description = "Apply fixed settings"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
-        skope.reset(True)
+        skope.applyFixedSettings()
         return {'FINISHED'}
     
 # stills operators 

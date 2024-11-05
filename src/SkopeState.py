@@ -20,20 +20,17 @@ class SkopeState:
     self.cone = SkopeCone(scene)
     #SkopeState.frame_num = bpy.context.scene.frame_current
 
-  def reset(self,applyFixedSettings=False):
+  def reset(self):
     print("Skopestate reset")
-    if applyFixedSettings:
-      self.screen.applyFixedSettings()
-      self.camera.applyFixedSettings()
-      self.cone.applyFixedSettings()
     self.screen.reset()
     self.camera.reset()
     self.cone.reset()
-    # broken since 
-    # https://github.com/commonpike/blender-skope/commit/dd81c68bd427556ed55284ccd505801f8e20318f#diff-29d2025da89dff0e23e91af099479b7eb7d31a4c229b66e02bad44a1be4a93b5L133
-    # cant apply after reset
-    #self.cone.reset()
     self.id = f'rset{self.cone.settings.get("numsides")}';
+    
+  def applyFixedSettings(self):
+    self.screen.applyFixedSettings()
+    self.camera.applyFixedSettings()
+    self.cone.applyFixedSettings()
     
   def getSettings(self):
     return {

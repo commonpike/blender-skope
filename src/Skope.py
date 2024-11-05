@@ -64,14 +64,13 @@ class Skope:
     if applyFixedSettings:
       self.applyFixedSettings()
     if self.clip:
-      self.clip.reset(applyFixedSettings)
-    self.state.reset(applyFixedSettings)
+      self.clip.reset()
+    self.state.reset()
     self.state.apply(scene)
   
   def applyFixedSettings(self):
     scene = bpy.context.scene
     scene.frame_end = self.settings.fixed['length'] # +-1 ?
-    scene.frame_set(1)
     scene.render.resolution_x = self.settings.fixed['width']
     scene.render.resolution_y = self.settings.fixed['height']
     scene.render.resolution_percentage = self.settings.fixed['scale']
@@ -93,6 +92,8 @@ class Skope:
       scene.render.use_motion_blur = False
 
     bpy.context.view_layer.objects.active = bpy.data.objects["screen"]
+
+    self.state.applyFixedSettings()
 
     
   def setProjectDir(self,project_dir,reset=False):
