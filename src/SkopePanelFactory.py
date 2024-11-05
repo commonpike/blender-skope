@@ -60,18 +60,18 @@ class SkopePanelFactory():
             bpy.utils.register_class(SkopeLoadOperator)
             bpy.utils.register_class(SkopeResetOperator)
             bpy.utils.register_class(SkopeApplyOperator)
-            bpy.utils.register_class(SkopeRandomOperator)
-            bpy.utils.register_class(SkopeDeltaOperator)
+            bpy.utils.register_class(SkopeRandomStillOperator)
+            bpy.utils.register_class(SkopeDeltaStillOperator)
             bpy.utils.register_class(SkopeRenderStillOperator)
             bpy.utils.register_class(SkopeRenderStillsOperator)
             bpy.utils.register_class(VIEW3D_PT_skope_stillops)
         if type == 'clips':
             bpy.utils.register_class(SkopeSaveOperator)
             bpy.utils.register_class(SkopeLoadOperator)
+            bpy.utils.register_class(SkopeResetOperator)
+            bpy.utils.register_class(SkopeApplyOperator)
             bpy.utils.register_class(SkopePlayOperator)
             bpy.utils.register_class(SkopePauseOperator)
-            bpy.utils.register_class(SkopeResetClipOperator)
-            bpy.utils.register_class(SkopeApplyClipOperator)
             bpy.utils.register_class(SkopeRandomClipOperator)
             bpy.utils.register_class(SkopeDeltaClipOperator)
             bpy.utils.register_class(SkopeRenderClipOperator)
@@ -252,9 +252,9 @@ class VIEW3D_PT_skope_stillops(bpy.types.Panel):
         row = self.layout.row()
         split = row.split()
         col = split.column()
-        col.operator(SkopeRandomOperator.bl_idname)
+        col.operator(SkopeRandomStillOperator.bl_idname)
         col = split.column()
-        col.operator(SkopeDeltaOperator.bl_idname)
+        col.operator(SkopeDeltaStillOperator.bl_idname)
         
         row = self.layout.row()
         split = row.split()
@@ -298,9 +298,9 @@ class VIEW3D_PT_skope_clipops(bpy.types.Panel):
         row = self.layout.row()
         split = row.split()
         col = split.column()
-        col.operator(SkopeResetClipOperator.bl_idname)
+        col.operator(SkopeResetOperator.bl_idname)
         col = split.column()
-        col.operator(SkopeApplyClipOperator.bl_idname)
+        col.operator(SkopeApplyOperator.bl_idname)
         
         row = self.layout.row()
         split = row.split()
@@ -362,12 +362,10 @@ class SkopeSaveOperator(bpy.types.Operator):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
      
-# stills operators 
-
 class SkopeResetOperator(bpy.types.Operator):
     bl_idname = "scene.skope_reset_operator"
     bl_label = "Reset"
-    bl_description = "Reset scene"
+    bl_description = "Reset skope"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
@@ -377,14 +375,16 @@ class SkopeResetOperator(bpy.types.Operator):
 class SkopeApplyOperator(bpy.types.Operator):
     bl_idname = "scene.skope_apply_operator"
     bl_label = "Apply"
-    bl_description = "Apply fixed settings and reset scene"
+    bl_description = "Apply fixed settings and reset skope"
     def execute(self, context):
         scene = context.scene
         skope = scene.skope
         skope.reset(True)
         return {'FINISHED'}
     
-class SkopeRandomOperator(bpy.types.Operator):
+# stills operators 
+
+class SkopeRandomStillOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_operator"
     bl_label = "Random"
     bl_description = "Randomize scene with given settings"
@@ -395,7 +395,7 @@ class SkopeRandomOperator(bpy.types.Operator):
         skope.state.apply(scene)
         return {'FINISHED'}
     
-class SkopeDeltaOperator(bpy.types.Operator):
+class SkopeDeltaStillOperator(bpy.types.Operator):
     bl_idname = "scene.skope_delta_operator"
     bl_label = "Delta"
     bl_description = "Partially randomize scene using delta settings"
@@ -467,29 +467,7 @@ class SkopePauseOperator(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.screen.animation_cancel(restore_frame=False)
         return {'FINISHED'}
-    
-class SkopeResetClipOperator(bpy.types.Operator):
-    bl_idname = "scene.skope_reset_clip_operator"
-    bl_label = "Reset"
-    bl_description = "Apply fixed settings and reset clip"
-    def execute(self, context):
-        scene = context.scene
-        skope = scene.skope
-        if hasattr(skope,'clip'):
-            skope.clip.reset()
-            return {'FINISHED'}
-        return {'CANCELLED'}
-    
-class SkopeApplyClipOperator(bpy.types.Operator):
-    bl_idname = "scene.skope_apply_clip_operator"
-    bl_label = "Apply"
-    bl_description = "Apply fixed settings and reset clip"
-    def execute(self, context):
-        scene = context.scene
-        skope = scene.skope
-        skope.reset(True)
-        return {'FINISHED'}
-    
+
 class SkopeRandomClipOperator(bpy.types.Operator):
     bl_idname = "scene.skope_random_clip_operator"
     bl_label = "Random"
